@@ -5,6 +5,7 @@ import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.mapper.UserMapper;
 import users.java.LifeOS.models.User;
 import users.java.LifeOS.repositories.UserRepository;
+import users.java.LifeOS.views.UserView;
 
 import java.util.List;
 
@@ -18,8 +19,8 @@ public class UserService {
         this.userMapper = userMapper;
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserView> findAll() {
+        return userRepository.findALlBy();
     }
 
     public User findById(Long id) {
