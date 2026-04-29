@@ -3,8 +3,10 @@ package users.java.LifeOS.services;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.dtos.JwtResponseDto;
 import users.java.LifeOS.dtos.LoginDto;
 import users.java.LifeOS.dtos.UpdateUserDto;
 import users.java.LifeOS.dtos.UserDto;
@@ -12,6 +14,7 @@ import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.mapper.UserMapper;
 import users.java.LifeOS.models.User;
 import users.java.LifeOS.repositories.UserRepository;
+import users.java.LifeOS.security.services.JwtService;
 import users.java.LifeOS.views.UserView;
 
 import java.util.List;
@@ -22,11 +25,14 @@ public class UserService {
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    private final JwtService jwtService;
 
-    UserService(UserRepository userRepository, UserMapper userMapper, AuthenticationManager authenticationManager){
+    UserService(UserRepository userRepository, UserMapper userMapper,
+                AuthenticationManager authenticationManager, JwtService jwtService){
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
     public List<UserView> findAll() {
@@ -61,14 +67,18 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public String verify(LoginDto user){
+    public JwtResponseDto verify(LoginDto user){
         if (!this.userRepository.existsByEmail(user.email()))
             throw new NotFoundException("User email not found. Register to make a new account");
         Authentication auth = this.authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(user.email(), user.password()));
         if (auth.isAuthenticated()){
-            return "Authentication Successful";
+            return JwtResponseDto.builder()
+                    .jwt_token(this.jwtService.generateToken(this.userRepository.findByEmail(user.email())
+                            .orElseThrow(() -> new UsernameNotFoundException("No user found with the provided email"))))
+                    .build();
+        } else {
+            throw new UsernameNotFoundException("Invalid username/email provided");
         }
-        return "Authentication failed";
     }
 }

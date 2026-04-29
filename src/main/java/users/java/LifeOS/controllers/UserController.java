@@ -28,10 +28,6 @@ public class UserController {
         return ResponseEntity.ok(userService.findById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<?> createUser(@Valid @RequestBody UserDto request) {
-        return ResponseEntity.ok(userService.save(request));
-    }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserDto request) {
