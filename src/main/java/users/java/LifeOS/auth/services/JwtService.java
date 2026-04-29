@@ -1,4 +1,4 @@
-package users.java.LifeOS.security.services;
+package users.java.LifeOS.auth.services;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -10,8 +10,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.exceptions.InvalidJwtException;
 import users.java.LifeOS.exceptions.JwtExpiredException;
-import users.java.LifeOS.models.User;
-import users.java.LifeOS.security.config.JwtConfig;
+import users.java.LifeOS.user.User;
+import users.java.LifeOS.auth.config.JwtConfig;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;

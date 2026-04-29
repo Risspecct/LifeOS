@@ -1,4 +1,4 @@
-package users.java.LifeOS.services;
+package users.java.LifeOS.user;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -7,16 +7,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import users.java.LifeOS.dtos.JwtResponseDto;
-import users.java.LifeOS.dtos.LoginDto;
-import users.java.LifeOS.dtos.UpdateUserDto;
-import users.java.LifeOS.dtos.UserDto;
+import users.java.LifeOS.auth.dtos.JwtResponseDto;
+import users.java.LifeOS.auth.dtos.LoginDto;
 import users.java.LifeOS.exceptions.NotFoundException;
-import users.java.LifeOS.mapper.UserMapper;
-import users.java.LifeOS.models.User;
-import users.java.LifeOS.repositories.UserRepository;
-import users.java.LifeOS.security.services.JwtService;
-import users.java.LifeOS.views.UserView;
+import users.java.LifeOS.auth.services.JwtService;
 
 import java.util.List;
 

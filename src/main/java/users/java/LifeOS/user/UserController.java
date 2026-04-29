@@ -1,15 +1,9 @@
-package users.java.LifeOS.controllers;
+package users.java.LifeOS.user;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import users.java.LifeOS.dtos.UpdateUserDto;
-import users.java.LifeOS.dtos.UserDto;
-import users.java.LifeOS.models.User;
-import users.java.LifeOS.services.UserService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")

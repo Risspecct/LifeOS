@@ -1,7 +1,6 @@
-package users.java.LifeOS.dtos;
+package users.java.LifeOS.user;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 
 public record UpdateUserDto (
         @Email

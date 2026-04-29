@@ -1,4 +1,4 @@
-package users.java.LifeOS.dtos;
+package users.java.LifeOS.auth.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

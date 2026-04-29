@@ -1,4 +1,4 @@
-package users.java.LifeOS.views;
+package users.java.LifeOS.user;
 
 public interface UserView {
     long getId();

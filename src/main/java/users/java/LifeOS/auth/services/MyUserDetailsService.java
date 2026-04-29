@@ -1,4 +1,4 @@
-package users.java.LifeOS.security.services;
+package users.java.LifeOS.auth.services;
 
 
 import org.springframework.security.core.userdetails.UserDetails;
@@ -6,8 +6,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.exceptions.NotFoundException;
-import users.java.LifeOS.repositories.UserRepository;
-import users.java.LifeOS.security.UserPrincipal;
+import users.java.LifeOS.user.UserRepository;
+import users.java.LifeOS.auth.UserPrincipal;
 
 @Service
 public class MyUserDetailsService implements UserDetailsService {
