@@ -1,8 +1,11 @@
 package users.java.LifeOS.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import users.java.LifeOS.dtos.UpdateUserDto;
+import users.java.LifeOS.dtos.UserDto;
 import users.java.LifeOS.models.User;
 import users.java.LifeOS.services.UserService;
 
@@ -26,13 +29,13 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.save(user));
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserDto request) {
+        return ResponseEntity.ok(userService.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User user) {
-        return ResponseEntity.ok(userService.update(id, user));
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserDto request) {
+        return ResponseEntity.ok(userService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
