@@ -28,15 +28,19 @@ public class UserController {
         return ResponseEntity.ok(userService.findById(id));
     }
 
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserDto request) {
-        return ResponseEntity.ok(userService.update(id, request));
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(){
+        return ResponseEntity.ok(userService.findById(userService.getUserId()));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        userService.delete(id);
+    @PutMapping()
+    public ResponseEntity<?> updateUser(@Valid @RequestBody UpdateUserDto request) {
+        return ResponseEntity.ok(userService.update(userService.getUserId(), request));
+    }
+
+    @DeleteMapping()
+    public ResponseEntity<?> deleteUser() {
+        userService.delete(userService.getUserId());
         return ResponseEntity.ok("User deleted successfully");
     }
 }
