@@ -1,7 +1,11 @@
 package users.java.LifeOS.services;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.dtos.LoginDto;
 import users.java.LifeOS.dtos.UpdateUserDto;
 import users.java.LifeOS.dtos.UserDto;
 import users.java.LifeOS.exceptions.NotFoundException;
@@ -16,11 +20,13 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final AuthenticationManager authenticationManager;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
-    UserService(UserRepository userRepository, UserMapper userMapper){
+    UserService(UserRepository userRepository, UserMapper userMapper, AuthenticationManager authenticationManager){
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.authenticationManager = authenticationManager;
     }
 
     public List<UserView> findAll() {
@@ -53,5 +59,16 @@ public class UserService {
     public void delete(long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("No user found"));
         userRepository.delete(user);
+    }
+
+    public String verify(LoginDto user){
+        if (!this.userRepository.existsByEmail(user.email()))
+            throw new NotFoundException("User email not found. Register to make a new account");
+        Authentication auth = this.authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(user.email(), user.password()));
+        if (auth.isAuthenticated()){
+            return "Authentication Successful";
+        }
+        return "Authentication failed";
     }
 }
