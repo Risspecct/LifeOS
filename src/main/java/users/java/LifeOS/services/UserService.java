@@ -1,5 +1,6 @@
 package users.java.LifeOS.services;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.dtos.UpdateUserDto;
 import users.java.LifeOS.dtos.UserDto;
@@ -15,6 +16,7 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     UserService(UserRepository userRepository, UserMapper userMapper){
         this.userRepository = userRepository;
@@ -33,7 +35,9 @@ public class UserService {
     public UserView save(UserDto request) {
         User user = userMapper.toEntity(request);
         user.setRole("USER");
+        user.setPassword(encoder.encode(user.getPassword()));
         userRepository.save(user);
+        System.out.println(user.getPassword());
         return findById(user.getId());
     }
 
