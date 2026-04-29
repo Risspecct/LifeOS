@@ -1,10 +1,7 @@
-package users.java.LifeOS.mapper;
+package users.java.LifeOS.user;
 
 
 import org.mapstruct.*;
-import users.java.LifeOS.dtos.UpdateUserDto;
-import users.java.LifeOS.dtos.UserDto;
-import users.java.LifeOS.models.User;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {

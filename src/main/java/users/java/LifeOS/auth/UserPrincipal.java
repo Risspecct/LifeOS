@@ -1,9 +1,9 @@
-package users.java.LifeOS.security;
+package users.java.LifeOS.auth;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import users.java.LifeOS.models.User;
+import users.java.LifeOS.user.User;
 
 import java.util.Collection;
 import java.util.Collections;

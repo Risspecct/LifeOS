@@ -1,4 +1,4 @@
-package users.java.LifeOS.models;
+package users.java.LifeOS.user;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

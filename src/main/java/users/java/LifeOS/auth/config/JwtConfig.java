@@ -1,4 +1,4 @@
-package users.java.LifeOS.security.config;
+package users.java.LifeOS.auth.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
