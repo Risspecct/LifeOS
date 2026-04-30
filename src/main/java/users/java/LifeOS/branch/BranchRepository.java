@@ -8,4 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface BranchRepository extends JpaRepository<Branch, Long> {
+    Boolean existsByCode(String Code);
 }

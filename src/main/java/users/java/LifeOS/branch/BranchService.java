@@ -8,15 +8,13 @@ import java.util.List;
 @Service
 public class BranchService {
     private final BranchRepository branchRepository;
-    private final BranchMapper mapper;
 
-    BranchService(BranchRepository branchRepository, BranchMapper branchMapper){
+    BranchService(BranchRepository branchRepository){
         this.branchRepository = branchRepository;
-        mapper = branchMapper;
     }
 
     public Branch create(BranchDto dto){
-        Branch branch = mapper.toBranch(dto);
+        Branch branch = new Branch(dto.name(), dto.code());
         return branchRepository.save(branch);
     }
 
