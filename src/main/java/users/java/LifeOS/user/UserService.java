@@ -38,7 +38,7 @@ public class UserService {
 
     public UserView findById(Long id) {
         return userRepository.findUserById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     public UserView save(UserDto request) {
