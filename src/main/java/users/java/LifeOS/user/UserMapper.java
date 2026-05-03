@@ -1,6 +1,5 @@
 package users.java.LifeOS.user;
 
-
 import org.mapstruct.*;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
