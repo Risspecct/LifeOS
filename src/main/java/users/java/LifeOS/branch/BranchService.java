@@ -25,6 +25,10 @@ public class BranchService {
         return branches;
     }
 
+    public Branch getById(long id) {
+        return branchRepository.findById(id).orElseThrow(() -> new NotFoundException("Branch Not Found"));
+    }
+
     public void delete(long id){
         Branch branch = branchRepository.findById(id).orElseThrow(() -> new NotFoundException("Branch doesn't exist"));
         branchRepository.delete(branch);

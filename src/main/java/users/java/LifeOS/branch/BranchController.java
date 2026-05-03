@@ -14,12 +14,12 @@ public class BranchController {
         this.branchService = branchService;
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<?> create(@RequestBody @Valid BranchDto dto) {
         return new ResponseEntity<>(branchService.create(dto), HttpStatus.CREATED);
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(branchService.getAll());
     }
