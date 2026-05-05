@@ -35,7 +35,7 @@ public class Student extends BaseEntity {
     private Integer age;
 
     @Column
-    private String College;
+    private String college;
 
     @Column
     @Min(1)

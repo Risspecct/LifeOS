@@ -32,6 +32,11 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getStudentProfile(userId));
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllProfiles() {
+        return ResponseEntity.ok(studentService.getProfileList());
+    }
+
     @PutMapping
     public ResponseEntity<?> updateProfile(@Valid @RequestBody StudentUpdateDto dto) {
         return new ResponseEntity<>(studentService.update(userService.getUserId(), dto), HttpStatus.ACCEPTED);
