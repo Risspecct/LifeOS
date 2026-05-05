@@ -24,6 +24,8 @@ public class TaskService {
         User user = userService.getById(userId);
         Task task = mapper.toEntity(dto);
 
+        if (dto.status() == null)
+            task.setStatus(Status.TO_DO);
         task.setUser(user);
 
         taskRepository.save(task);
@@ -46,6 +48,16 @@ public class TaskService {
     private Task getTask(long taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> new NotFoundException("No task found with given id"));
+    }
+
+    public TaskDetailView updateTask(long userId, long taskId, TaskUpdateDto dto) {
+        Task task = getTask(taskId);
+        verifyAccess(userId, task);
+        Task updatedTask = mapper.updateTask(dto, task);
+
+        taskRepository.save(updatedTask);
+
+        return getTask(userId, taskId);
     }
 
     public TaskDetailView updateStatus(long userId, long taskId, Status status) {
