@@ -6,6 +6,7 @@ import users.java.LifeOS.branch.BranchService;
 import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.user.UserService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -63,5 +64,9 @@ public class StudentService {
                 .orElseThrow(() -> new NotFoundException("No Student profile found associated with this user"));
 
         return mapper.toProfileView(student);
+    }
+
+    public List<StudentListView> getProfileList() {
+        return studentRepository.findALlBy();
     }
 }

@@ -21,4 +21,6 @@ public interface StudentMapper {
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "branchCode", source = "branch.code")
     StudentProfileView toProfileView(Student student);
+
+
 }
