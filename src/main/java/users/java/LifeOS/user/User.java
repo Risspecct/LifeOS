@@ -6,13 +6,14 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import users.java.LifeOS.util.BaseEntity;
 
 @NoArgsConstructor
 @Setter
 @Getter
 @Entity
 @Table(name="users")
-public class User {
+public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column
@@ -31,5 +32,4 @@ public class User {
     @Column(nullable = false)
     @NotNull
     private String role;
-
 }

@@ -41,12 +41,16 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
+    public User getById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
     public UserView save(UserDto request) {
         User user = userMapper.toEntity(request);
         user.setRole("USER");
         user.setPassword(encoder.encode(user.getPassword()));
         userRepository.save(user);
-        System.out.println(user.getPassword());
         return findById(user.getId());
     }
 
