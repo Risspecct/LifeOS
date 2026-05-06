@@ -8,6 +8,7 @@ public record TaskDetailView (
     String description,
     Status status,
     String taskType,
+    String label,
     LocalDateTime dueDate
 )
 {}

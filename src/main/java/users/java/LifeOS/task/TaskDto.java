@@ -10,5 +10,6 @@ public record TaskDto(
         String description,
         Status status,
         String taskType,
+        String label,
         LocalDateTime dueDate
 ) {}

@@ -7,6 +7,7 @@ public record TaskView (
         long id,
         String title,
         String description,
+        String label,
         LocalDateTime dueDate
 )
 {}

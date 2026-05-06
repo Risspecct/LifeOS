@@ -41,5 +41,8 @@ public class Task extends BaseEntity {
     String taskType;
 
     @Column
+    String label;
+
+    @Column
     LocalDateTime dueDate;
 }
