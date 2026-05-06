@@ -1,5 +1,6 @@
 package users.java.LifeOS.task;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.exceptions.NotFoundException;
@@ -24,6 +25,8 @@ public class TaskService {
         User user = userService.getById(userId);
         Task task = mapper.toEntity(dto);
 
+        if (dto.status() == null)
+            task.setStatus(Status.TO_DO);
         task.setUser(user);
 
         taskRepository.save(task);
@@ -31,10 +34,12 @@ public class TaskService {
     }
 
     public List<TaskListView> getAll(long userId) {
-        List<TaskListView> tasks = taskRepository.findAllByUser_Id(userId);
+        List<Task> tasks = taskRepository.findAllByUser_Id(userId);
         if (tasks.isEmpty())
             throw new NotFoundException("No tasks found!");
-        return tasks;
+
+
+        return mapper.toTaskListViewList(tasks);
     }
 
     public TaskDetailView getTask(long userId, long taskId) {
@@ -48,6 +53,16 @@ public class TaskService {
                 .orElseThrow(() -> new NotFoundException("No task found with given id"));
     }
 
+    public TaskDetailView updateTask(long userId, long taskId, TaskUpdateDto dto) {
+        Task task = getTask(taskId);
+        verifyAccess(userId, task);
+        Task updatedTask = mapper.updateTask(dto, task);
+
+        taskRepository.save(updatedTask);
+
+        return getTask(userId, taskId);
+    }
+
     public TaskDetailView updateStatus(long userId, long taskId, Status status) {
         Task task = getTask(taskId);
         verifyAccess(userId, task);
@@ -55,6 +70,17 @@ public class TaskService {
         taskRepository.save(task);
 
         return getTask(userId, taskId);
+    }
+
+    public List<TaskListView> getTasks(Long userId, Status status, String label, String taskType) {
+        Specification<Task> spec = TaskSpecification.filterTasks(
+                userId,
+                status,
+                label,
+                taskType
+        );
+        List<Task> tasks = taskRepository.findAll(spec);
+        return mapper.toTaskListViewList(tasks);
     }
 
     private void verifyAccess(long userId, Task task) {
