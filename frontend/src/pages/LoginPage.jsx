@@ -8,7 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 const LoginPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, setAuthFromToken } = useAuth();
+  const { isAuthenticated, setAuthFromToken, refreshProfileStatus, clearAuth } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -66,8 +66,15 @@ const LoginPage = () => {
       }
 
       setAuthFromToken(response.jwt_token);
-      navigate("/", { replace: true });
+
+      const profileResult = await refreshProfileStatus();
+      if (profileResult?.hasProfile) {
+        navigate("/", { replace: true });
+      } else {
+        navigate("/profile-setup", { replace: true });
+      }
     } catch (error) {
+      clearAuth();
       setApiError(getApiErrorMessage(error, "Unable to login right now."));
     } finally {
       setIsSubmitting(false);

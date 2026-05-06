@@ -1,7 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import SignupPage from "../pages/SignupPage";
 import LoginPage from "../pages/LoginPage";
-import HomePage from "../pages/HomePage";
+import DashboardPage from "../pages/DashboardPage";
+import ProfileSetupPage from "../pages/ProfileSetupPage";
 import ProtectedRoute from "../auth/ProtectedRoute";
 
 const AppRoutes = () => {
@@ -10,8 +11,12 @@ const AppRoutes = () => {
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/login" element={<LoginPage />} />
 
-      <Route element={<ProtectedRoute />}>
-        <Route path="/" element={<HomePage />} />
+      <Route element={<ProtectedRoute requireProfile={false} />}>
+        <Route path="/profile-setup" element={<ProfileSetupPage />} />
+      </Route>
+
+      <Route element={<ProtectedRoute requireProfile={true} />}>
+        <Route path="/" element={<DashboardPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/signup" replace />} />
