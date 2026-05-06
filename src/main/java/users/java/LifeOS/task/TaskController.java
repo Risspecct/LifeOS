@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import users.java.LifeOS.user.UserService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/task")
 public class TaskController {
@@ -40,5 +42,14 @@ public class TaskController {
     @PutMapping("/{taskId}")
     public ResponseEntity<?> updateTask(@PathVariable long taskId, @Valid @RequestBody TaskUpdateDto dto) {
         return ResponseEntity.ok(taskService.updateTask(userService.getUserId(), taskId, dto));
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getTasks(
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) String label,
+            @RequestParam(required = false) String taskType
+    ) {
+        return ResponseEntity.ok(taskService.getTasks(userService.getUserId(), status, label, taskType));
     }
 }

@@ -1,5 +1,6 @@
 package users.java.LifeOS.task;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.exceptions.NotFoundException;
@@ -33,10 +34,12 @@ public class TaskService {
     }
 
     public List<TaskListView> getAll(long userId) {
-        List<TaskListView> tasks = taskRepository.findAllByUser_Id(userId);
+        List<Task> tasks = taskRepository.findAllByUser_Id(userId);
         if (tasks.isEmpty())
             throw new NotFoundException("No tasks found!");
-        return tasks;
+
+
+        return mapper.toTaskListViewList(tasks);
     }
 
     public TaskDetailView getTask(long userId, long taskId) {
@@ -67,6 +70,17 @@ public class TaskService {
         taskRepository.save(task);
 
         return getTask(userId, taskId);
+    }
+
+    public List<TaskListView> getTasks(Long userId, Status status, String label, String taskType) {
+        Specification<Task> spec = TaskSpecification.filterTasks(
+                userId,
+                status,
+                label,
+                taskType
+        );
+        List<Task> tasks = taskRepository.findAll(spec);
+        return mapper.toTaskListViewList(tasks);
     }
 
     private void verifyAccess(long userId, Task task) {
