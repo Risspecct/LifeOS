@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import SignupPage from "../pages/SignupPage";
 import LoginPage from "../pages/LoginPage";
 import DashboardPage from "../pages/DashboardPage";
+import TasksPage from "../pages/TasksPage";
 import ProfileSetupPage from "../pages/ProfileSetupPage";
 import ProfilePage from "../pages/ProfilePage";
 import ProtectedRoute from "../auth/ProtectedRoute";
@@ -17,7 +18,9 @@ const AppRoutes = () => {
       </Route>
 
       <Route element={<ProtectedRoute requireProfile={true} />}>
-        <Route path="/" element={<DashboardPage />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/tasks" element={<TasksPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
 

@@ -13,11 +13,11 @@ const DashboardSidebar = ({ onLogout, activeView = "dashboard" }) => {
       </div>
 
       <nav className="flex-1 space-y-xs">
-        <button type="button" onClick={() => navigate("/")} className={`w-full flex items-center gap-sm p-sm rounded-xl text-left ${activeView === "dashboard" ? activeClasses : inactiveClasses}`}>
+        <button type="button" onClick={() => navigate("/dashboard")} className={`w-full flex items-center gap-sm p-sm rounded-xl text-left ${activeView === "dashboard" ? activeClasses : inactiveClasses}`}>
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
           <span className="font-body-md text-body-md">Dashboard</span>
         </button>
-        <button type="button" className={`w-full flex items-center gap-sm p-sm rounded-xl text-left ${activeView === "tasks" ? activeClasses : inactiveClasses}`}>
+        <button type="button" onClick={() => navigate("/tasks")} className={`w-full flex items-center gap-sm p-sm rounded-xl text-left ${activeView === "tasks" ? activeClasses : inactiveClasses}`}>
           <span className="material-symbols-outlined">checklist</span>
           <span className="font-body-md text-body-md">Tasks</span>
         </button>

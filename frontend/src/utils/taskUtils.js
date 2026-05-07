@@ -1,3 +1,5 @@
+import { getTaskStatusLabel } from "./taskStatus";
+
 export const formatDueDate = (value) => {
   if (!value) return "No due date";
   const date = new Date(value);
@@ -16,9 +18,34 @@ export const formatDueDate = (value) => {
   return new Date(value).toLocaleDateString([], { month: "short", day: "numeric" });
 };
 
+export const getDueDateMetadata = (value) => {
+  if (!value) {
+    return { label: "No due date", tone: "text-on-surface-variant", hint: "" };
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return { label: "No due date", tone: "text-on-surface-variant", hint: "" };
+  }
+
+  const now = new Date();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const diffDays = Math.floor((date.setHours(0, 0, 0, 0) - now.setHours(0, 0, 0, 0)) / dayMs);
+
+  if (diffDays < 0) {
+    return { label: "Overdue", tone: "text-rose-300", hint: formatDueDate(value) };
+  }
+  if (diffDays === 0) {
+    return { label: "Due Today", tone: "text-amber-300", hint: formatDueDate(value) };
+  }
+  if (diffDays === 1) {
+    return { label: "Due Tomorrow", tone: "text-sky-300", hint: formatDueDate(value) };
+  }
+
+  return { label: "Upcoming", tone: "text-on-surface-variant", hint: formatDueDate(value) };
+};
+
 export const getStatusLabel = (status) => {
-  if (!status) return "Unknown";
-  return status.replaceAll("_", " ");
+  return getTaskStatusLabel(status);
 };
 
 export const getPriorityTone = (task) => {
