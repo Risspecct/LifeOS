@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar";
 import DashboardTopBar from "../components/dashboard/DashboardTopBar";
 import DashboardWelcomeHero from "../components/dashboard/DashboardWelcomeHero";
@@ -15,6 +16,7 @@ import { getApiErrorMessage } from "../utils/errorUtils";
 import { getTaskById, getTasks } from "../api/taskApi";
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   const { clearAuth, profile, refreshProfileStatus } = useAuth();
 
   const [filters, setFilters] = useState({ status: "", label: "", taskType: "" });
@@ -103,7 +105,7 @@ const DashboardPage = () => {
 
   return (
     <div className="bg-background text-on-surface">
-      <DashboardSidebar onLogout={clearAuth} />
+      <DashboardSidebar onLogout={clearAuth} activeView="dashboard" />
       <DashboardTopBar />
 
       <main className="ml-0 md:ml-64 p-md lg:p-xl min-h-screen">
@@ -143,15 +145,15 @@ const DashboardPage = () => {
       </main>
 
       <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-sm py-xs bg-surface border-t border-outline-variant md:hidden">
-        <button className="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl p-xs">
+        <button type="button" onClick={() => navigate("/")} className="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl p-xs">
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
           <span className="font-label-sm text-label-sm">Dashboard</span>
         </button>
-        <button className="flex flex-col items-center justify-center text-on-surface-variant p-xs">
+        <button type="button" className="flex flex-col items-center justify-center text-on-surface-variant p-xs">
           <span className="material-symbols-outlined">checklist</span>
           <span className="font-label-sm text-label-sm">Tasks</span>
         </button>
-        <button className="flex flex-col items-center justify-center text-on-surface-variant p-xs">
+        <button type="button" onClick={() => navigate("/profile")} className="flex flex-col items-center justify-center text-on-surface-variant p-xs">
           <span className="material-symbols-outlined">person</span>
           <span className="font-label-sm text-label-sm">Profile</span>
         </button>

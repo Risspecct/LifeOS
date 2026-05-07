@@ -1,4 +1,10 @@
-const DashboardSidebar = ({ onLogout }) => {
+import { useNavigate } from "react-router-dom";
+
+const DashboardSidebar = ({ onLogout, activeView = "dashboard" }) => {
+  const navigate = useNavigate();
+  const activeClasses = "text-primary font-bold border-r-2 border-primary bg-transparent";
+  const inactiveClasses = "text-on-surface-variant hover:bg-secondary-container/10 transition-colors bg-transparent";
+
   return (
     <aside className="h-full w-64 hidden md:flex flex-col fixed left-0 top-0 border-r border-outline-variant bg-surface p-md z-50">
       <div className="mb-xl">
@@ -7,15 +13,15 @@ const DashboardSidebar = ({ onLogout }) => {
       </div>
 
       <nav className="flex-1 space-y-xs">
-        <button className="w-full flex items-center gap-sm p-sm rounded-xl text-primary font-bold border-r-2 border-primary bg-transparent text-left">
+        <button type="button" onClick={() => navigate("/")} className={`w-full flex items-center gap-sm p-sm rounded-xl text-left ${activeView === "dashboard" ? activeClasses : inactiveClasses}`}>
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
           <span className="font-body-md text-body-md">Dashboard</span>
         </button>
-        <button className="w-full flex items-center gap-sm p-sm rounded-xl text-on-surface-variant hover:bg-secondary-container/10 transition-colors bg-transparent text-left">
+        <button type="button" className={`w-full flex items-center gap-sm p-sm rounded-xl text-left ${activeView === "tasks" ? activeClasses : inactiveClasses}`}>
           <span className="material-symbols-outlined">checklist</span>
           <span className="font-body-md text-body-md">Tasks</span>
         </button>
-        <button className="w-full flex items-center gap-sm p-sm rounded-xl text-on-surface-variant hover:bg-secondary-container/10 transition-colors bg-transparent text-left">
+        <button type="button" onClick={() => navigate("/profile")} className={`w-full flex items-center gap-sm p-sm rounded-xl text-left ${activeView === "profile" ? activeClasses : inactiveClasses}`}>
           <span className="material-symbols-outlined">person</span>
           <span className="font-body-md text-body-md">Profile</span>
         </button>

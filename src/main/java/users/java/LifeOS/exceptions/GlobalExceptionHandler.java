@@ -148,7 +148,7 @@ public class GlobalExceptionHandler {
     }
 
     // 400: Illegal arguments or state
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, DuplicateResourceException.class})
     public ResponseEntity<ApiErrorResponse> handleIllegalArgs(RuntimeException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.BAD_REQUEST, "Invalid Input", ex.getMessage(), request, ex);
     }

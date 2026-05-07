@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { createProfile, getBranches } from "../api/profileApi";
+import { createProfile } from "../api/profileApi";
+import { getBranches } from "../api/branchApi";
 import { getApiErrorMessage } from "../utils/errorUtils";
 import { useAuth } from "../hooks/useAuth";
 

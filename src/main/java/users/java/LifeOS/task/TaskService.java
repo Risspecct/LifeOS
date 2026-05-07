@@ -83,6 +83,13 @@ public class TaskService {
         return mapper.toTaskListViewList(tasks);
     }
 
+    public void delete(long userId, long taskId) {
+        Task task = getTask(taskId);
+        verifyAccess(userId, task);
+
+        taskRepository.delete(task);
+    }
+
     private void verifyAccess(long userId, Task task) {
         if (userId != task.getUser().getId())
             throw new AuthorizationDeniedException("Not allowed to access this resource");

@@ -5,5 +5,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BranchRepository extends JpaRepository<Branch, Long> {
-    Boolean existsByCode(String Code);
+    Boolean existsByNameIgnoreCase(String name);
+    Boolean existsByCodeIgnoreCase(String code);
+    Boolean existsByCode(String code);
 }

@@ -13,7 +13,12 @@ export const createProfile = async (payload) => {
   return response.data;
 };
 
-export const getBranches = async () => {
-  const response = await apiClient.get("/branch");
+export const updateProfile = async (payload) => {
+  const response = await apiClient.put("/profile", payload);
+  return response.data;
+};
+
+export const updateProfileBranch = async (branchId) => {
+  const response = await apiClient.put(`/profile/${branchId}`);
   return response.data;
 };

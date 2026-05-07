@@ -89,7 +89,7 @@ const LoginPage = () => {
 
       <main className="w-full max-w-[420px] bg-surface-container border border-outline-variant rounded-xl p-lg z-10 shadow-2xl shadow-black/40 relative">
         <header className="text-center mb-xl">
-          <h1 className="font-h1 text-h1 text-on-surface tracking-tight mb-2">CampusOS</h1>
+          <h1 className="font-h1 text-h1 text-on-surface tracking-tight mb-2">LifeOS</h1>
           <p className="font-body-md text-body-md text-on-surface-variant">Stay focused. Stay ahead.</p>
         </header>
 

@@ -3,6 +3,7 @@ import SignupPage from "../pages/SignupPage";
 import LoginPage from "../pages/LoginPage";
 import DashboardPage from "../pages/DashboardPage";
 import ProfileSetupPage from "../pages/ProfileSetupPage";
+import ProfilePage from "../pages/ProfilePage";
 import ProtectedRoute from "../auth/ProtectedRoute";
 
 const AppRoutes = () => {
@@ -17,6 +18,7 @@ const AppRoutes = () => {
 
       <Route element={<ProtectedRoute requireProfile={true} />}>
         <Route path="/" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/signup" replace />} />
