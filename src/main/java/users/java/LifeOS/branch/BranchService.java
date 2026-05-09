@@ -1,9 +1,11 @@
 package users.java.LifeOS.branch;
 
-import org.springframework.stereotype.Service;
-import users.java.LifeOS.exceptions.NotFoundException;
-
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import users.java.LifeOS.exceptions.DuplicateResourceException;
+import users.java.LifeOS.exceptions.NotFoundException;
 
 @Service
 public class BranchService {
@@ -14,6 +16,8 @@ public class BranchService {
     }
 
     public Branch create(BranchDto dto){
+        if (branchRepository.existsByNameIgnoreCase(dto.name()) || branchRepository.existsByCodeIgnoreCase(dto.code()))
+            throw new DuplicateResourceException("Branch already exists!");
         Branch branch = new Branch(dto.name(), dto.code());
         return branchRepository.save(branch);
     }

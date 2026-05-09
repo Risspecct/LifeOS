@@ -52,4 +52,10 @@ public class TaskController {
     ) {
         return ResponseEntity.ok(taskService.getTasks(userService.getUserId(), status, label, taskType));
     }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteTask( @RequestParam long taskId) {
+        taskService.delete(userService.getUserId(), taskId);
+        return ResponseEntity.ok("Task deleted successfully!");
+    }
 }
