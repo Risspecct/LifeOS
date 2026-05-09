@@ -7,6 +7,7 @@ import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,6 +28,8 @@ public class TaskService {
 
         if (dto.status() == null)
             task.setStatus(Status.TO_DO);
+        if (dto.status() == Status.COMPLETED)
+            task.setCompletedAt(LocalDateTime.now());
         task.setUser(user);
 
         taskRepository.save(task);
@@ -67,6 +70,10 @@ public class TaskService {
         Task task = getTask(taskId);
         verifyAccess(userId, task);
         task.setStatus(status);
+
+        if (status == Status.COMPLETED)
+            task.setCompletedAt(LocalDateTime.now());
+
         taskRepository.save(task);
 
         return getTask(userId, taskId);

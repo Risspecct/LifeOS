@@ -9,6 +9,7 @@ public record TaskDetailView (
     Status status,
     String taskType,
     String label,
-    LocalDateTime dueDate
+    LocalDateTime dueDate,
+    LocalDateTime completedAt
 )
 {}

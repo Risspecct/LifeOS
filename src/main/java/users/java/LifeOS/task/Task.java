@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import users.java.LifeOS.student.Student;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.util.BaseEntity;
 
@@ -34,6 +33,7 @@ public class Task extends BaseEntity {
     @Column
     String description;
 
+    @Enumerated(EnumType.STRING)
     @Column
     Status status;
 
@@ -45,4 +45,7 @@ public class Task extends BaseEntity {
 
     @Column
     LocalDateTime dueDate;
+
+    @Column
+    LocalDateTime completedAt;
 }
