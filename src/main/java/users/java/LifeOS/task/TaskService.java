@@ -3,6 +3,9 @@ package users.java.LifeOS.task;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.activity.ActivityPoints;
+import users.java.LifeOS.activity.ActivityService;
+import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
@@ -14,11 +17,13 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final UserService userService;
     private final TaskMapper mapper;
+    private final ActivityService activityService;
 
-    TaskService(TaskRepository taskRepository, UserService userService, TaskMapper mapper) {
+    TaskService(TaskRepository taskRepository, UserService userService, TaskMapper mapper, ActivityService activityService) {
         this.taskRepository = taskRepository;
         this.userService = userService;
         this.mapper = mapper;
+        this.activityService = activityService;
     }
 
     public TaskView create(long userId, TaskDto dto) {
@@ -30,6 +35,16 @@ public class TaskService {
         task.setUser(user);
 
         taskRepository.save(task);
+
+        activityService.logActivity(
+                user,
+                ActivityType.TASK_CREATED,
+                "Created a task",
+                task.getTitle(),
+                ActivityPoints.TASK_CREATED,
+                task
+        );
+
         return mapper.toTaskView(task);
     }
 
@@ -60,6 +75,16 @@ public class TaskService {
 
         taskRepository.save(updatedTask);
 
+
+        activityService.logActivity(
+                userService.getById(userId),
+                ActivityType.TASK_UPDATED,
+                "Updated task details",
+                task.getTitle(),
+                ActivityPoints.TASK_UPDATED,
+                task
+        );
+
         return getTask(userId, taskId);
     }
 
@@ -68,6 +93,21 @@ public class TaskService {
         verifyAccess(userId, task);
         task.setStatus(status);
         taskRepository.save(task);
+
+        int points;
+        if (status == Status.COMPLETED)
+            points = ActivityPoints.TASK_COMPLETED;
+        else
+            points = ActivityPoints.TASK_UPDATED;
+
+        activityService.logActivity(
+                userService.getById(userId),
+                ActivityType.TASK_UPDATED,
+                "Updated Task status",
+                task.getTitle(),
+                points,
+                task
+        );
 
         return getTask(userId, taskId);
     }

@@ -8,6 +8,5 @@ public interface ActivityMapper {
 
     @Mapping(target = "taskId", source = "task.id")
     @Mapping(target = "taskTitle", source = "task.title")
-    @Mapping(target = "createdAt", source = "createdAt")
     ActivityResponse toResponse(Activity activity);
 }
