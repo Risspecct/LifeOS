@@ -1,5 +1,6 @@
 package users.java.LifeOS.task;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
@@ -7,35 +8,35 @@ import users.java.LifeOS.activity.ActivityPoints;
 import users.java.LifeOS.activity.ActivityService;
 import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.exceptions.NotFoundException;
+import users.java.LifeOS.task.label.Label;
+import users.java.LifeOS.task.label.LabelService;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class TaskService {
     private final TaskRepository taskRepository;
     private final UserService userService;
     private final TaskMapper mapper;
     private final ActivityService activityService;
-
-    TaskService(TaskRepository taskRepository, UserService userService, TaskMapper mapper, ActivityService activityService) {
-        this.taskRepository = taskRepository;
-        this.userService = userService;
-        this.mapper = mapper;
-        this.activityService = activityService;
-    }
+    private final LabelService labelService;
 
     public TaskView create(long userId, TaskDto dto) {
         User user = userService.getById(userId);
         Task task = mapper.toEntity(dto);
+        Label label = labelService.getLabelById(userId, dto.labelId());
 
         if (dto.status() == null)
             task.setStatus(Status.TO_DO);
         if (dto.status() == Status.COMPLETED)
             task.setCompletedAt(LocalDateTime.now());
+
         task.setUser(user);
+        task.setLabel(label);
 
         taskRepository.save(task);
 
