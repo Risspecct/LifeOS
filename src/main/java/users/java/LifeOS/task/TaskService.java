@@ -96,14 +96,11 @@ public class TaskService {
         verifyAccess(userId, task);
         task.setStatus(status);
 
-        if (status == Status.COMPLETED)
-            task.setCompletedAt(LocalDateTime.now());
-
-        taskRepository.save(task);
-
         int points;
-        if (status == Status.COMPLETED)
+        if (status == Status.COMPLETED) {
             points = ActivityPoints.TASK_COMPLETED;
+            task.setCompletedAt(LocalDateTime.now());
+        }
         else
             points = ActivityPoints.TASK_UPDATED;
 
@@ -116,6 +113,7 @@ public class TaskService {
                 task
         );
 
+        taskRepository.save(task);
         return getTask(userId, taskId);
     }
 
