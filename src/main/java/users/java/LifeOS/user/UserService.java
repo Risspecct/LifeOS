@@ -7,6 +7,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.activity.ActivityPoints;
+import users.java.LifeOS.activity.ActivityService;
+import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.auth.dtos.JwtResponseDto;
 import users.java.LifeOS.auth.dtos.LoginDto;
 import users.java.LifeOS.exceptions.NotFoundException;
@@ -22,14 +25,17 @@ public class UserService {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
     private final JwtService jwtService;
     private final HttpServletRequest request;
+    private final ActivityService activityService;
 
     UserService(UserRepository userRepository, UserMapper userMapper,
-                AuthenticationManager authenticationManager, JwtService jwtService, HttpServletRequest request){
+                AuthenticationManager authenticationManager, JwtService jwtService,
+                HttpServletRequest request, ActivityService activityService){
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.request = request;
+        this.activityService = activityService;
     }
 
     public List<UserView> findAll() {
@@ -83,12 +89,26 @@ public class UserService {
         Authentication auth = this.authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(user.email(), user.password()));
         if (auth.isAuthenticated()){
+
+            activityService.logActivity(
+                    findByEmail(user.email()),
+                    ActivityType.LOGIN,
+                    "User Logged in",
+                    "User Logged in",
+                    ActivityPoints.LOGIN,
+                    null
+            );
+
             return JwtResponseDto.builder()
-                    .jwt_token(this.jwtService.generateToken(this.userRepository.findByEmail(user.email())
-                            .orElseThrow(() -> new UsernameNotFoundException("No user found with the provided email"))))
+                    .jwt_token(this.jwtService.generateToken(findByEmail(user.email())))
                     .build();
         } else {
             throw new UsernameNotFoundException("Invalid username/email provided");
         }
+    }
+
+    private User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("No user found with the provided email"));
     }
 }
