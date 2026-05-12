@@ -37,4 +37,12 @@ public class LabelController {
         labelService.deleteLabel(userService.getUserId(), labelId);
         return ResponseEntity.ok("Label deleted successfully!");
     }
+
+    @PostMapping("/defaults")
+    public ResponseEntity<String> seedDefaultLabels() {
+        labelService.seedDefaultLabels();
+        return ResponseEntity.ok(
+                "Default labels added successfully"
+        );
+    }
 }
