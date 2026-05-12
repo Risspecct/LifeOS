@@ -1,5 +1,6 @@
 package users.java.LifeOS.task;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -16,6 +17,7 @@ import users.java.LifeOS.user.UserService;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@AllArgsConstructor
 @Slf4j
 @Service
 public class TaskService {
@@ -23,6 +25,7 @@ public class TaskService {
     private final UserService userService;
     private final TaskMapper mapper;
     private final ActivityService activityService;
+
     private final LabelService labelService;
 
     public TaskView create(long userId, TaskDto dto) {

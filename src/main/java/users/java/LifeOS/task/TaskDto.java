@@ -11,5 +11,6 @@ public record TaskDto(
         Status status,
         String taskType,
         Long labelId,
-        LocalDateTime dueDate
+        LocalDateTime dueDate,
+        TaskPriority manualPriority
 ) {}

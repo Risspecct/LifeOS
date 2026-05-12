@@ -9,6 +9,7 @@ public record TaskDetailView (
     Status status,
     String taskType,
     String labelName,
+    TaskPriority manualPriority,
     LocalDateTime dueDate,
     LocalDateTime completedAt
 )

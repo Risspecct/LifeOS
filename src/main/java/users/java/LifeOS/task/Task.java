@@ -50,4 +50,7 @@ public class Task extends BaseEntity {
 
     @Column
     LocalDateTime completedAt;
+
+    @Enumerated(EnumType.STRING)
+    TaskPriority manualPriority;
 }

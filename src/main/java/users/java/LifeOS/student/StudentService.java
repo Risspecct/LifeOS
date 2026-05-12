@@ -1,5 +1,6 @@
 package users.java.LifeOS.student;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.branch.Branch;
@@ -10,6 +11,7 @@ import users.java.LifeOS.user.UserService;
 import java.util.List;
 import java.util.Optional;
 
+@AllArgsConstructor
 @Slf4j
 @Service
 public class StudentService {
@@ -17,14 +19,6 @@ public class StudentService {
     private final StudentMapper mapper;
     private final UserService userService;
     private final BranchService branchService;
-
-    StudentService(StudentRepository studentRepository, StudentMapper studentMapper,
-                   UserService userService, BranchService branchService) {
-        this.mapper = studentMapper;
-        this.studentRepository = studentRepository;
-        this.userService = userService;
-        this.branchService = branchService;
-    }
 
     public StudentProfileView create(long userId, StudentDto dto) {
         Optional<Student> existing = studentRepository.findByUser_Id(userId);

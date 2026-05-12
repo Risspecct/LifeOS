@@ -12,7 +12,7 @@ public record LabelRequest(
         String color,
 
         @Min(value = 0, message = "Priority weight cannot be negative")
-        @Max(value = 100, message = "Priority weight cannot exceed 100")
+        @Max(value = 25, message = "Priority weight cannot exceed 25")
         Integer priorityWeight
 ) {
 }

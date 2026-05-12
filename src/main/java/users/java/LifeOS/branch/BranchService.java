@@ -2,20 +2,19 @@ package users.java.LifeOS.branch;
 
 import java.util.List;
 
+
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import users.java.LifeOS.exceptions.DuplicateResourceException;
 import users.java.LifeOS.exceptions.NotFoundException;
 
+@AllArgsConstructor
 @Slf4j
 @Service
 public class BranchService {
     private final BranchRepository branchRepository;
-
-    BranchService(BranchRepository branchRepository){
-        this.branchRepository = branchRepository;
-    }
 
     public Branch create(BranchDto dto){
         if (branchRepository.existsByNameIgnoreCase(dto.name()) || branchRepository.existsByCodeIgnoreCase(dto.code()))
