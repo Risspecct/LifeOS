@@ -5,6 +5,8 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.exceptions.DuplicateResourceException;
 import users.java.LifeOS.exceptions.NotFoundException;
+import users.java.LifeOS.task.label.defaults.DefaultLabelData;
+import users.java.LifeOS.task.label.defaults.DefaultLabels;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
 
@@ -33,6 +35,31 @@ public class LabelService {
         Label savedLabel = labelRepository.save(label);
 
         return labelMapper.toResponse(savedLabel);
+    }
+
+    public void seedDefaultLabels() {
+
+        User currentUser = userService.getById(userService.getUserId());
+
+        List<DefaultLabelData> defaults =
+                DefaultLabels.getDefaults();
+
+        for (DefaultLabelData defaultLabel : defaults) {
+            boolean exists =
+                    labelRepository.existsByNameIgnoreCaseAndUser(defaultLabel.name(), currentUser);
+            if (exists) {
+                continue;
+            }
+
+            Label label = Label.builder()
+                    .name(defaultLabel.name())
+                    .color(defaultLabel.color())
+                    .priorityWeight(defaultLabel.priorityWeight())
+                    .user(currentUser)
+                    .build();
+
+            labelRepository.save(label);
+        }
     }
 
     public List<LabelResponse> getUserLabels(long userId) {
