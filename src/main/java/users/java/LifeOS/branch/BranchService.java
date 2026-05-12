@@ -2,13 +2,16 @@ package users.java.LifeOS.branch;
 
 import java.util.List;
 
+
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import users.java.LifeOS.exceptions.DuplicateResourceException;
 import users.java.LifeOS.exceptions.NotFoundException;
 
 @AllArgsConstructor
+@Slf4j
 @Service
 public class BranchService {
     private final BranchRepository branchRepository;
@@ -17,6 +20,8 @@ public class BranchService {
         if (branchRepository.existsByNameIgnoreCase(dto.name()) || branchRepository.existsByCodeIgnoreCase(dto.code()))
             throw new DuplicateResourceException("Branch already exists!");
         Branch branch = new Branch(dto.name(), dto.code());
+
+        log.info("Nww branch created with code: {}", branch.getCode());
         return branchRepository.save(branch);
     }
 
@@ -34,5 +39,7 @@ public class BranchService {
     public void delete(long id){
         Branch branch = branchRepository.findById(id).orElseThrow(() -> new NotFoundException("Branch doesn't exist"));
         branchRepository.delete(branch);
+
+        log.info("Branch with code: {} deleted", branch.getCode());
     }
 }

@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.exceptions.InvalidJwtException;
@@ -18,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
+@Slf4j
 @ConfigurationProperties(prefix = "jwt")
 @Service
 public class JwtService {
@@ -56,14 +58,17 @@ public class JwtService {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException ex){
+            log.error("JWT token expired");
             throw new JwtExpiredException("Jwt Expired");
         } catch (MalformedJwtException | SignatureException | IllegalArgumentException ex){
+            log.error("Unrecognizable JWT format");
             throw new InvalidJwtException("Jwt invalid. " + ex.getMessage());
         }
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
         final Claims claims = this.extractClaims(token);
+        log.debug("JWT claims extracted successfully");
         return claimsResolver.apply(claims);
     }
 

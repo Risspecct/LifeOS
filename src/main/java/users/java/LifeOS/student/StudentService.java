@@ -1,6 +1,7 @@
 package users.java.LifeOS.student;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.branch.Branch;
 import users.java.LifeOS.branch.BranchService;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @AllArgsConstructor
+@Slf4j
 @Service
 public class StudentService {
     private final StudentRepository studentRepository;
@@ -31,6 +33,7 @@ public class StudentService {
 
         studentRepository.save(student);
 
+        log.info("User profile created for user id: {}", userId);
         return getStudentProfile(userId);
     }
 
