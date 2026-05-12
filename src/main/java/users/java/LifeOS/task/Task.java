@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.util.BaseEntity;
 
@@ -40,8 +41,9 @@ public class Task extends BaseEntity {
     @Column
     String taskType;
 
-    @Column
-    String label;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "label_id")
+    private Label label;
 
     @Column
     LocalDateTime dueDate;
