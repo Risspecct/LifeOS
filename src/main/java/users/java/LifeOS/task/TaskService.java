@@ -1,5 +1,6 @@
 package users.java.LifeOS.task;
 
+import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
@@ -13,19 +14,13 @@ import users.java.LifeOS.user.UserService;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class TaskService {
     private final TaskRepository taskRepository;
     private final UserService userService;
     private final TaskMapper mapper;
     private final ActivityService activityService;
-
-    TaskService(TaskRepository taskRepository, UserService userService, TaskMapper mapper, ActivityService activityService) {
-        this.taskRepository = taskRepository;
-        this.userService = userService;
-        this.mapper = mapper;
-        this.activityService = activityService;
-    }
 
     public TaskView create(long userId, TaskDto dto) {
         User user = userService.getById(userId);

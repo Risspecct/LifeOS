@@ -1,6 +1,7 @@
 package users.java.LifeOS.task;
 
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,16 +9,12 @@ import users.java.LifeOS.user.UserService;
 
 import java.util.List;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/task")
 public class TaskController {
     private final TaskService taskService;
     private final UserService userService;
-
-    TaskController(TaskService taskService, UserService userService) {
-        this.taskService = taskService;
-        this.userService = userService;
-    }
 
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody TaskDto dto) {

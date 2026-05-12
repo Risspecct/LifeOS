@@ -1,18 +1,16 @@
 package users.java.LifeOS.branch;
 
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/branch")
 public class BranchController {
     private final BranchService branchService;
-
-    BranchController(BranchService branchService){
-        this.branchService = branchService;
-    }
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody @Valid BranchDto dto) {

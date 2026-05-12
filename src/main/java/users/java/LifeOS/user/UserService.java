@@ -1,6 +1,7 @@
 package users.java.LifeOS.user;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ import users.java.LifeOS.auth.services.JwtService;
 
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -27,16 +29,6 @@ public class UserService {
     private final HttpServletRequest request;
     private final ActivityService activityService;
 
-    UserService(UserRepository userRepository, UserMapper userMapper,
-                AuthenticationManager authenticationManager, JwtService jwtService,
-                HttpServletRequest request, ActivityService activityService){
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
-        this.request = request;
-        this.activityService = activityService;
-    }
 
     public List<UserView> findAll() {
         return userRepository.findALlBy();
