@@ -1,6 +1,7 @@
 package users.java.LifeOS.user;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ import users.java.LifeOS.auth.services.JwtService;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -57,6 +59,8 @@ public class UserService {
         user.setRole("USER");
         user.setPassword(encoder.encode(user.getPassword()));
         userRepository.save(user);
+
+        log.info("Creating a user with id: {}", user.getId());
         return findById(user.getId());
     }
 
@@ -71,7 +75,9 @@ public class UserService {
 
     public void delete(long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("No user found"));
+
         userRepository.delete(user);
+        log.info("Deleted a user with id: {}", id);
     }
 
     public long getUserId() {
@@ -99,10 +105,12 @@ public class UserService {
                     null
             );
 
+            log.info("Generated jwt token for the user: {}", user.email());
             return JwtResponseDto.builder()
                     .jwt_token(this.jwtService.generateToken(findByEmail(user.email())))
                     .build();
         } else {
+            log.error("Couldn't return the jwt to the user");
             throw new UsernameNotFoundException("Invalid username/email provided");
         }
     }

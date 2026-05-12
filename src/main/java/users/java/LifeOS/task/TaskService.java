@@ -1,5 +1,6 @@
 package users.java.LifeOS.task;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import users.java.LifeOS.user.UserService;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class TaskService {
     private final TaskRepository taskRepository;
@@ -136,7 +138,9 @@ public class TaskService {
     }
 
     private void verifyAccess(long userId, Task task) {
-        if (userId != task.getUser().getId())
+        if (userId != task.getUser().getId()) {
+            log.error("Unauthorized access to the task with id: {}", task.getId());
             throw new AuthorizationDeniedException("Not allowed to access this resource");
+        }
     }
 }
