@@ -149,6 +149,37 @@ public class TaskService {
                 .toList();
     }
 
+    public Long getTotalTaskCount() {
+        return taskRepository.countByUser(userService.getAuthenticatedUser());
+    }
+
+    public Long getCompletedTaskCount(User user) {
+        return taskRepository.countByUserAndStatus(
+                user,
+                Status.COMPLETED
+        );
+    }
+
+    public Long getPendingTaskCount(User user) {
+        return taskRepository.countByUserAndStatusNotIn(
+                user,
+                List.of(
+                        Status.COMPLETED,
+                        Status.CANCELLED
+                )
+        );
+    }
+
+    public Long getOverdueTaskCount(User user) {
+        return taskRepository.countOverdueTasks(
+                user,
+                List.of(
+                        Status.COMPLETED,
+                        Status.CANCELLED
+                )
+        );
+    }
+
     public void delete(long userId, long taskId) {
         Task task = getTask(taskId);
         verifyAccess(userId, task);
