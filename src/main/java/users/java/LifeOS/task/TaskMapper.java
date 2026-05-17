@@ -31,4 +31,8 @@ public interface TaskMapper {
     TaskListView toTaskListView(Task task);
 
     List<TaskListView> toTaskListViewList(List<Task> tasks);
+
+        @Mapping(target = "labelName", source = "label.name")
+        @Mapping(target = "labelColor", source = "label.color")
+        UpcomingTaskDto toDto(Task task);
 }

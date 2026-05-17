@@ -132,6 +132,23 @@ public class TaskService {
         return mapper.toTaskListViewList(tasks);
     }
 
+    public List<UpcomingTaskDto> getUpcomingTasks(Long userId) {
+        User currentUser =
+                userService.getById(userId);
+
+        return taskRepository
+                .findTop5ByUserAndStatusNotInAndDueDateIsNotNullOrderByDueDateAsc(
+                        currentUser,
+                        List.of(
+                                Status.COMPLETED,
+                                Status.PAUSED
+                        )
+                )
+                .stream()
+                .map(mapper::toDto)
+                .toList();
+    }
+
     public void delete(long userId, long taskId) {
         Task task = getTask(taskId);
         verifyAccess(userId, task);
