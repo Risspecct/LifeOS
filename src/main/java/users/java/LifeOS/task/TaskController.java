@@ -56,6 +56,11 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getUpcomingTasks(userService.getUserId()));
     }
 
+    @GetMapping("/stats")
+    public ResponseEntity<?> getTaskStats() {
+        return ResponseEntity.ok(taskService.getTaskStats(userService.getAuthenticatedUser()));
+    }
+
     @DeleteMapping
     public ResponseEntity<?> deleteTask( @RequestParam long taskId) {
         taskService.delete(userService.getUserId(), taskId);
