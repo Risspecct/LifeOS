@@ -33,7 +33,7 @@ const ActivityPage = () => {
                     ) : data ? (
                         <>
                             <ActivityHero summary={data.summary} />
-                            <ProductivityHeatmap heatmapData={data.heatmap} />
+                            <ProductivityHeatmap heatmapData={data.heatmap} summary={data.summary} />
                             
                             <div className="grid lg:grid-cols-2 gap-lg">
                                 <WeeklyTrendChart trendData={data.weeklyTrend} />
