@@ -70,6 +70,13 @@ const TaskWorkspaceToolbar = ({
         </select>
         <button
           type="button"
+          onClick={() => onChangeFilters({ search: '', status: '', labelId: '', taskType: '' })}
+          className="bg-surface border border-outline-variant rounded-full px-sm py-xs text-label-sm hover:bg-surface-variant transition-colors"
+        >
+          Clear Filters
+        </button>
+        <button
+          type="button"
           onClick={onOpenLabelManager}
           className="bg-surface border border-outline-variant rounded-full px-sm py-xs text-label-sm text-primary hover:border-primary/40"
         >
