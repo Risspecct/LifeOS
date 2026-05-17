@@ -6,7 +6,7 @@ const DashboardSidebar = ({ onLogout, activeView = "dashboard" }) => {
     { key: "dashboard", label: "Dashboard", icon: "dashboard", route: "/dashboard", available: true },
     { key: "tasks", label: "Tasks", icon: "checklist", route: "/tasks", available: true },
     { key: "profile", label: "Profile", icon: "person", route: "/profile", available: true },
-    { key: "activity", label: "Activity", icon: "local_activity", route: null, available: false },
+    { key: "activity", label: "Activity", icon: "timeline", route: "/activity", available: true },
     { key: "leaderboard", label: "Leaderboard", icon: "leaderboard", route: null, available: false },
     { key: "notes", label: "Notes", icon: "notes", route: null, available: false },
     { key: "settings", label: "Settings", icon: "settings", route: null, available: false }
