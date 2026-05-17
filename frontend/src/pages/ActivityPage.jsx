@@ -16,13 +16,12 @@ const ActivityPage = () => {
     const { data, loading, error } = useActivityInsights();
 
     return (
-        <div className="bg-background text-on-surface min-h-screen flex">
+        <div className="bg-background text-on-surface">
             <DashboardSidebar onLogout={clearAuth} activeView="activity" />
+            <DashboardTopBar />
             
-            <main className="ml-0 md:ml-64 flex-1 flex flex-col min-h-screen relative">
-                <DashboardTopBar />
-
-                <div className="p-md lg:p-lg space-y-lg flex-1">
+            <main className="ml-0 md:ml-64 p-md lg:p-xl min-h-screen">
+                <div className="max-w-container-max mx-auto space-y-lg">
                     {loading ? (
                         <div className="flex items-center justify-center h-64">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

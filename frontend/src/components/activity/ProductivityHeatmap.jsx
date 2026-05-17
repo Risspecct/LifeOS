@@ -2,30 +2,35 @@ import React from 'react';
 
 const ProductivityHeatmap = ({ heatmapData = [] }) => {
     // Elegant, muted color palette for the heatmap
-    // 0: dark muted slate (no activity)
-    // 1: soft desaturated teal (low)
-    // 2: muted cyan-green (medium)
-    // 3: slightly brighter teal (high)
-    // 4: elegant accent highlight (peak)
     const colors = [
         'bg-[#1a211f]',      // No activity - muted slate
         'bg-[#23423f]',      // Low - soft desaturated teal
-        'bg-[#2d7367]',      // Medium - muted cyan-green
+        'bg-[#2d7367]',      // Medium - muted cyan-teal
         'bg-[#37a694]',      // High - slightly brighter teal
-        'bg-[#57f1db]'       // Peak - accent highlight (used sparingly)
+        'bg-[#3da594]'       // Peak - strongest but still restrained accent
     ];
     
     // Create weeks (26 columns x 7 days)
     const weeks = [];
+    const maxScore = heatmapData && heatmapData.length > 0 
+        ? Math.max(...heatmapData.map(d => d.score)) 
+        : 1; // avoid division by zero
+        
     for (let i = 0; i < 26; i++) {
         const days = [];
         for (let j = 0; j < 7; j++) {
-            // Pick data or a mock pattern if no data
             let level = 0;
             if (heatmapData && heatmapData.length > 0) {
                 const dataIndex = (i * 7 + j) % heatmapData.length;
                 const score = heatmapData[dataIndex]?.score || 0;
-                level = score > 80 ? 4 : score > 50 ? 3 : score > 20 ? 2 : score > 0 ? 1 : 0;
+                
+                if (score > 0) {
+                    const normalized = score / maxScore;
+                    if (normalized <= 0.25) level = 1;
+                    else if (normalized <= 0.5) level = 2;
+                    else if (normalized <= 0.75) level = 3;
+                    else level = 4;
+                }
             } else {
                 // Mock patterns from original HTML
                 const patterns = [
@@ -34,9 +39,8 @@ const ProductivityHeatmap = ({ heatmapData = [] }) => {
                 ];
                 const pattern = patterns[i % patterns.length];
                 level = pattern[j];
+                if (level === 4 && Math.random() > 0.3) level = 3;
             }
-            // Mute the overall level slightly to prevent too much "peak" neon
-            if (level === 4 && Math.random() > 0.3) level = 3;
             days.push(level);
         }
         weeks.push(days);
@@ -59,7 +63,7 @@ const ProductivityHeatmap = ({ heatmapData = [] }) => {
                         <div className="w-[12px] h-[12px] rounded-[3px] bg-[#23423f]"></div>
                         <div className="w-[12px] h-[12px] rounded-[3px] bg-[#2d7367]"></div>
                         <div className="w-[12px] h-[12px] rounded-[3px] bg-[#37a694]"></div>
-                        <div className="w-[12px] h-[12px] rounded-[3px] bg-[#57f1db]"></div>
+                        <div className="w-[12px] h-[12px] rounded-[3px] bg-[#3da594]"></div>
                     </div>
                     <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">High Impact</span>
                 </div>
@@ -75,10 +79,7 @@ const ProductivityHeatmap = ({ heatmapData = [] }) => {
                             {week.map((level, j) => (
                                 <div 
                                     key={j} 
-                                    className={`w-[12px] h-[12px] rounded-[3px] transition-all duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${colors[level]}`}
-                                    style={{ 
-                                        opacity: level === 0 ? 0.7 : 1
-                                    }}
+                                    className={`w-[12px] h-[12px] rounded-[3px] transition-all duration-200 cursor-pointer hover:-translate-y-[1px] hover:shadow-sm hover:ring-1 hover:ring-on-surface/30 ${colors[level]}`}
                                     title={`Activity Level ${level}`}
                                 ></div>
                             ))}
