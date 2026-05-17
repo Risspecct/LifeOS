@@ -111,4 +111,8 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("No user found with the provided email"));
     }
+
+    public User getAuthenticatedUser() {
+        return getById(getUserId());
+    }
 }
