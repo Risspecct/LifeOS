@@ -1,6 +1,18 @@
 package users.java.LifeOS.task.prioritization;
 
+import users.java.LifeOS.task.TaskPriority;
+
 public final class PriorityWeights {
+
+    public static int getPriorityWeight(TaskPriority taskPriority) {
+        return switch (taskPriority) {
+            case TaskPriority.URGENT ->  PRIORITY_URGENT;
+            case TaskPriority.HIGH -> PRIORITY_HIGH;
+            case TaskPriority.MEDIUM -> PRIORITY_MEDIUM;
+            case TaskPriority.LOW -> PRIORITY_LOW;
+            default -> 0;
+        };
+    }
 
     private PriorityWeights() {
     }

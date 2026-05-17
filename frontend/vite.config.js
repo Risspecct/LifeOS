@@ -40,6 +40,10 @@ export default defineConfig({
       "/labels": {
         target: "http://localhost:8080",
         changeOrigin: true
+      },
+      "/insights": {
+        target: "http://localhost:8080",
+        changeOrigin: true
       }
     }
   }

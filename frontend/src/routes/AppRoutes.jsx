@@ -5,6 +5,7 @@ import DashboardPage from "../pages/DashboardPage";
 import TasksPage from "../pages/TasksPage";
 import ProfileSetupPage from "../pages/ProfileSetupPage";
 import ProfilePage from "../pages/ProfilePage";
+import ActivityPage from "../pages/ActivityPage";
 import ProtectedRoute from "../auth/ProtectedRoute";
 
 const AppRoutes = () => {
@@ -23,6 +24,7 @@ const AppRoutes = () => {
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/tasks/:taskId" element={<TasksPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/activity" element={<ActivityPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/signup" replace />} />

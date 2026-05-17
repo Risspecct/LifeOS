@@ -11,6 +11,7 @@ import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.task.label.LabelService;
+import users.java.LifeOS.task.prioritization.TaskStats;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
 
@@ -178,6 +179,15 @@ public class TaskService {
                         Status.CANCELLED
                 )
         );
+    }
+
+    public TaskStats getTaskStats(User user) {
+        Long totalTask = getTotalTaskCount();
+        Long completedTasks = getCompletedTaskCount(user);
+        Long overdueTasks = getOverdueTaskCount(user);
+        Long pendingTasks = getPendingTaskCount(user);
+
+        return new TaskStats(completedTasks, pendingTasks, overdueTasks, totalTask);
     }
 
     public void delete(long userId, long taskId) {
