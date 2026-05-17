@@ -2,6 +2,7 @@ package users.java.LifeOS.task;
 
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
+import users.java.LifeOS.task.label.Label;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ public class TaskSpecification {
     public static Specification<Task> filterTasks(
             Long userId,
             Status status,
-            String label,
+            Long labelId,
             String taskType
     ) {
 
@@ -27,8 +28,8 @@ public class TaskSpecification {
                 predicates.add(cb.equal(root.get("status"), status));
             }
 
-            if (label != null && !label.isBlank()) {
-                predicates.add(cb.equal(root.get("label"), label));
+            if (labelId != null) {
+                predicates.add(cb.equal(root.get("label").get("id"),labelId));
             }
 
             if (taskType != null && !taskType.isBlank()) {

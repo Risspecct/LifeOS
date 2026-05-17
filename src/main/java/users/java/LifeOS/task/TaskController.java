@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.user.UserService;
 
 import java.util.List;
@@ -44,10 +45,10 @@ public class TaskController {
     @GetMapping
     public ResponseEntity<?> getTasks(
             @RequestParam(required = false) Status status,
-            @RequestParam(required = false) String label,
+            @RequestParam(required = false) Long labelId,
             @RequestParam(required = false) String taskType
     ) {
-        return ResponseEntity.ok(taskService.getTasks(userService.getUserId(), status, label, taskType));
+        return ResponseEntity.ok(taskService.getTasks(userService.getUserId(), status, labelId, taskType));
     }
 
     @GetMapping("/upcoming")

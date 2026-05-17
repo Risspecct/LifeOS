@@ -121,11 +121,11 @@ public class TaskService {
         return getTask(userId, taskId);
     }
 
-    public List<TaskListView> getTasks(Long userId, Status status, String label, String taskType) {
+    public List<TaskListView> getTasks(Long userId, Status status, Long labelId, String taskType) {
         Specification<Task> spec = TaskSpecification.filterTasks(
                 userId,
                 status,
-                label,
+                labelId,
                 taskType
         );
         List<Task> tasks = taskRepository.findAll(spec);
