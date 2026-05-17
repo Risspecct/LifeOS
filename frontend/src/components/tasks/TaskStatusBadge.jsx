@@ -3,7 +3,7 @@ import { getTaskStatusStyle } from "../../utils/statusConfig";
 
 const TaskStatusBadge = ({ status }) => {
   return (
-    <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${getTaskStatusStyle(status)}`}>
+    <span className={`px-3 py-1 rounded-full text-label-xs font-semibold tracking-wide ${getTaskStatusStyle(status)}`}>
       {getStatusLabel(status)}
     </span>
   );

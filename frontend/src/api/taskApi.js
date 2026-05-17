@@ -13,8 +13,10 @@ export const createTask = async (payload) => {
 export const getTasks = async (filters = {}) => {
   const params = {};
 
-  if (filters.status) params.status = filters.status;
-  if (filters.label) params.label = filters.label;
+  if (filters.status) params.status = String(filters.status).toUpperCase();
+  if (filters.labelId !== undefined && filters.labelId !== null && filters.labelId !== "") {
+    params.labelId = Number(filters.labelId);
+  }
   if (filters.taskType) params.taskType = filters.taskType;
 
   const response = await apiClient.get("/task", { params });
@@ -38,5 +40,10 @@ export const updateTaskStatus = async (taskId, status) => {
 
 export const deleteTask = async (taskId) => {
   const response = await apiClient.delete("/task", { params: { taskId } });
+  return response.data;
+};
+
+export const getPrioritizedTasks = async () => {
+  const response = await apiClient.get("/tasks/prioritized");
   return response.data;
 };

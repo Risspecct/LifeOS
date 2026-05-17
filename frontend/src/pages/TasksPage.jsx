@@ -1,31 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar";
 import DashboardTopBar from "../components/dashboard/DashboardTopBar";
-import TaskFiltersBar from "../components/tasks/TaskFiltersBar";
 import TaskBoard from "../components/tasks/TaskBoard";
-import TaskDetailsSidebar from "../components/tasks/TaskDetailsSidebar";
 import TaskEditDrawer from "../components/tasks/TaskEditDrawer";
 import CreateTaskDrawer from "../components/tasks/CreateTaskDrawer";
-import TaskWorkspaceHeader from "../components/tasks/TaskWorkspaceHeader";
+import TaskPriorityFocusStrip from "../components/tasks/TaskPriorityFocusStrip";
+import TaskSlideOverPanel from "../components/tasks/TaskSlideOverPanel";
+import TaskFullscreenDetail from "../components/tasks/TaskFullscreenDetail";
+import TaskWorkspaceToolbar from "../components/tasks/TaskWorkspaceToolbar";
+import LabelManagerDrawer from "../components/tasks/LabelManagerDrawer";
 import { useAuth } from "../hooks/useAuth";
+import { useLabels } from "../hooks/useLabels";
 import { getApiErrorMessage } from "../utils/errorUtils";
-import { createTask, deleteTask, getTaskById, getTasks, updateTask, updateTaskStatus } from "../api/taskApi";
+import {
+  createTask,
+  deleteTask,
+  getPrioritizedTasks,
+  getTaskById,
+  getTasks,
+  updateTask,
+  updateTaskStatus
+} from "../api/taskApi";
 import { buildTaskStatusOptions, normalizeTaskStatus } from "../utils/taskStatus";
-
-const matchesTaskFilters = (task, filters) => {
-  const matchesStatus = !filters.status || normalizeTaskStatus(task?.status) === normalizeTaskStatus(filters.status);
-  const matchesLabel = !filters.label || String(task?.label ?? "").toLowerCase().includes(filters.label.toLowerCase());
-  const matchesType = !filters.taskType || String(task?.taskType ?? "").toLowerCase().includes(filters.taskType.toLowerCase());
-  return matchesStatus && matchesLabel && matchesType;
-};
-
-const sortTasksByDueDate = (items) =>
-  [...items].sort((a, b) => {
-    if (!a?.dueDate) return 1;
-    if (!b?.dueDate) return -1;
-    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-  });
 
 const TASKS_VIEW_MODE_KEY = "campusos_tasks_view_mode";
 const readInitialViewMode = () => {
@@ -33,14 +30,66 @@ const readInitialViewMode = () => {
   return stored === "grid" ? "grid" : "list";
 };
 
+const sortTasks = (items, sortBy) => {
+  const list = [...items];
+  if (sortBy === "titleAsc") return list.sort((a, b) => String(a?.title || "").localeCompare(String(b?.title || "")));
+  if (sortBy === "titleDesc") return list.sort((a, b) => String(b?.title || "").localeCompare(String(a?.title || "")));
+  if (sortBy === "dueDesc") {
+    return list.sort((a, b) => new Date(b?.dueDate || 0).getTime() - new Date(a?.dueDate || 0).getTime());
+  }
+  return list.sort((a, b) => new Date(a?.dueDate || "9999-12-31").getTime() - new Date(b?.dueDate || "9999-12-31").getTime());
+};
+
+const matchesSearch = (task, search) => {
+  if (!search) return true;
+  const keyword = search.toLowerCase();
+  return [task?.title, task?.description, task?.label, task?.labelName, task?.taskType]
+    .filter(Boolean)
+    .some((value) => String(value).toLowerCase().includes(keyword));
+};
+
+const normalizeTaskDetail = (task, labels = []) => {
+  if (!task) return null;
+  const resolvedById = labels.find((label) => String(label.id) === String(task.labelId));
+  const resolvedByName = labels.find(
+    (label) => String(label.name).toLowerCase() === String(task.labelName || task.label || "").toLowerCase()
+  );
+  const resolvedLabel = resolvedById || resolvedByName || null;
+
+  return {
+    ...task,
+    label: task.label ?? task.labelName ?? resolvedLabel?.name ?? "",
+    labelId: task.labelId ?? resolvedLabel?.id ?? null,
+    labelColor: task.labelColor ?? resolvedLabel?.color ?? null
+  };
+};
+
 const TasksPage = () => {
   const navigate = useNavigate();
-  const { clearAuth } = useAuth();
+  const location = useLocation();
+  const params = useParams();
+  const detailRouteTaskId = params.taskId ? Number(params.taskId) : null;
+  const isFullscreen = Boolean(detailRouteTaskId);
 
-  const [filters, setFilters] = useState({ status: "", label: "", taskType: "" });
+  const { clearAuth } = useAuth();
+  const {
+    labels,
+    loading: loadingLabels,
+    saving: savingLabels,
+    error: labelsError,
+    createLabel,
+    updateLabel: updateLabelMeta,
+    deleteLabel: deleteLabelMeta,
+    addDefaults
+  } = useLabels();
+
+  const [filters, setFilters] = useState({ status: "", labelId: "", taskType: "", search: "" });
   const [tasks, setTasks] = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [tasksError, setTasksError] = useState("");
+  const [sortBy, setSortBy] = useState("dueAsc");
+  const [priorityFocus, setPriorityFocus] = useState([]);
+  const [loadingPriorityFocus, setLoadingPriorityFocus] = useState(false);
 
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [selectedTaskDetail, setSelectedTaskDetail] = useState(null);
@@ -55,27 +104,48 @@ const TasksPage = () => {
   const [creatingTask, setCreatingTask] = useState(false);
   const [createTaskError, setCreateTaskError] = useState("");
   const [viewMode, setViewMode] = useState(readInitialViewMode);
+  const [isLabelManagerOpen, setIsLabelManagerOpen] = useState(false);
+  const [labelInfoMessage, setLabelInfoMessage] = useState("");
 
   useEffect(() => {
     localStorage.setItem(TASKS_VIEW_MODE_KEY, viewMode);
   }, [viewMode]);
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const intent = new URLSearchParams(location.search).get("intent");
+    if (intent === "create") {
+      setIsCreateOpen(true);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    const fetchPriorityTasks = async () => {
+      setLoadingPriorityFocus(true);
+      try {
+        const data = await getPrioritizedTasks();
+        setPriorityFocus(Array.isArray(data) ? data : []);
+      } catch {
+        setPriorityFocus([]);
+      } finally {
+        setLoadingPriorityFocus(false);
+      }
+    };
+    fetchPriorityTasks();
+  }, []);
+
+  useEffect(() => {
+    const fetchTasksList = async () => {
       setLoadingTasks(true);
       setTasksError("");
       setTaskActionError("");
       try {
-        const data = await getTasks(filters);
+        const data = await getTasks({
+          status: filters.status,
+          labelId: filters.labelId,
+          taskType: filters.taskType
+        });
         const normalized = Array.isArray(data) ? data : [];
-        const sorted = sortTasksByDueDate(normalized);
-        setTasks(sorted);
-        if (sorted.length > 0) {
-          setSelectedTaskId((prev) => (sorted.some((task) => task.id === prev) ? prev : sorted[0].id));
-        } else {
-          setSelectedTaskId(null);
-          setSelectedTaskDetail(null);
-        }
+        setTasks(sortTasks(normalized, sortBy));
       } catch (error) {
         setTasksError(getApiErrorMessage(error, "Unable to load tasks."));
         setTasks([]);
@@ -83,20 +153,20 @@ const TasksPage = () => {
         setLoadingTasks(false);
       }
     };
-
-    fetchTasks();
-  }, [filters]);
+    fetchTasksList();
+  }, [filters.status, filters.labelId, filters.taskType, sortBy]);
 
   useEffect(() => {
+    const activeTaskId = isFullscreen ? detailRouteTaskId : selectedTaskId;
+    if (!activeTaskId) {
+      setSelectedTaskDetail(null);
+      return;
+    }
     const fetchTaskDetail = async () => {
-      if (!selectedTaskId) {
-        setSelectedTaskDetail(null);
-        return;
-      }
       setLoadingDetail(true);
       try {
-        const detail = await getTaskById(selectedTaskId);
-        setSelectedTaskDetail(detail);
+        const detail = await getTaskById(activeTaskId);
+        setSelectedTaskDetail(normalizeTaskDetail(detail, labels));
       } catch {
         setSelectedTaskDetail(null);
       } finally {
@@ -104,21 +174,27 @@ const TasksPage = () => {
       }
     };
     fetchTaskDetail();
-  }, [selectedTaskId]);
+  }, [detailRouteTaskId, selectedTaskId, isFullscreen, labels]);
+
+  const visibleTasks = useMemo(
+    () => tasks.filter((task) => matchesSearch(task, filters.search)),
+    [tasks, filters.search]
+  );
 
   const applyTaskUpdate = (updatedTask) => {
     if (!updatedTask?.id) return;
-    const shouldRemainVisible = matchesTaskFilters(updatedTask, filters);
-    setTasks((prev) => {
-      const withoutCurrent = prev.filter((task) => task.id !== updatedTask.id);
-      return shouldRemainVisible ? sortTasksByDueDate([...withoutCurrent, { ...updatedTask }]) : withoutCurrent;
-    });
-    if (shouldRemainVisible) {
-      setSelectedTaskDetail((prev) => (prev?.id === updatedTask.id ? { ...prev, ...updatedTask } : prev));
-    } else {
-      setSelectedTaskId((prev) => (prev === updatedTask.id ? null : prev));
-      setSelectedTaskDetail((prev) => (prev?.id === updatedTask.id ? null : prev));
-    }
+    const normalized = normalizeTaskDetail(updatedTask, labels);
+    setTasks((prev) =>
+      sortTasks(
+        prev.map((task) =>
+          task.id === normalized.id
+            ? { ...task, ...normalized, label: normalized.label || task.label || task.labelName }
+            : task
+        ),
+        sortBy
+      )
+    );
+    setSelectedTaskDetail((prev) => (prev?.id === normalized.id ? { ...prev, ...normalized } : prev));
   };
 
   const handleCreateTask = async (payload) => {
@@ -126,12 +202,15 @@ const TasksPage = () => {
     setCreateTaskError("");
     try {
       const createdTask = await createTask(payload);
-      const shouldAppearInBoard = matchesTaskFilters(createdTask, filters);
-      if (shouldAppearInBoard) {
-        setTasks((prev) => sortTasksByDueDate([{ ...createdTask }, ...prev.filter((task) => task.id !== createdTask.id)]));
-      }
-      setSelectedTaskId(createdTask.id);
-      setSelectedTaskDetail(createdTask);
+      const normalizedCreatedTask = normalizeTaskDetail(createdTask, labels);
+      setTasks((prev) =>
+        sortTasks(
+          [{ ...normalizedCreatedTask }, ...prev.filter((task) => task.id !== normalizedCreatedTask.id)],
+          sortBy
+        )
+      );
+      setSelectedTaskId(normalizedCreatedTask.id);
+      setSelectedTaskDetail(normalizedCreatedTask);
       setIsCreateOpen(false);
     } catch (error) {
       setCreateTaskError(getApiErrorMessage(error, "Unable to create task."));
@@ -141,17 +220,17 @@ const TasksPage = () => {
   };
 
   const handleSaveTask = async (payload) => {
-    if (!selectedTaskId) return;
+    if (!selectedTaskDetail?.id) return;
     setSavingTask(true);
     setTaskActionError("");
     try {
       const { status, ...taskPayload } = payload;
-      const updated = await updateTask(selectedTaskId, taskPayload);
+      const updated = await updateTask(selectedTaskDetail.id, taskPayload);
       const normalizedStatus = normalizeTaskStatus(status);
       const currentStatus = normalizeTaskStatus(updated?.status);
       const finalTask =
         normalizedStatus && normalizedStatus !== currentStatus
-          ? await updateTaskStatus(selectedTaskId, normalizedStatus)
+          ? await updateTaskStatus(selectedTaskDetail.id, normalizedStatus)
           : updated;
       applyTaskUpdate(finalTask);
       setIsEditOpen(false);
@@ -163,14 +242,14 @@ const TasksPage = () => {
   };
 
   const handleStatusChange = async (nextStatus) => {
-    if (!selectedTaskId) return;
+    if (!selectedTaskDetail?.id) return;
     const normalizedStatus = normalizeTaskStatus(nextStatus);
     if (!normalizedStatus) return;
 
     setStatusUpdatingTask(true);
     setTaskActionError("");
     try {
-      const updated = await updateTaskStatus(selectedTaskId, normalizedStatus);
+      const updated = await updateTaskStatus(selectedTaskDetail.id, normalizedStatus);
       applyTaskUpdate(updated);
     } catch (error) {
       setTaskActionError(getApiErrorMessage(error, "Unable to update task status."));
@@ -180,33 +259,54 @@ const TasksPage = () => {
   };
 
   const handleDeleteTask = async () => {
-    if (!selectedTaskId) return;
-    const deletingId = selectedTaskId;
+    if (!selectedTaskDetail?.id) return;
+    const deletingId = selectedTaskDetail.id;
     const previousTasks = tasks;
     setDeletingTask(true);
     setTaskActionError("");
     setTasks((prev) => prev.filter((task) => task.id !== deletingId));
-    setSelectedTaskId(null);
     setSelectedTaskDetail(null);
     setIsEditOpen(false);
+    if (isFullscreen) {
+      navigate("/tasks");
+    } else {
+      setSelectedTaskId(null);
+    }
     try {
       await deleteTask(deletingId);
     } catch (error) {
       setTasks(previousTasks);
-      setSelectedTaskId(deletingId);
       setTaskActionError(getApiErrorMessage(error, "Unable to delete task."));
+      if (!isFullscreen) {
+        setSelectedTaskId(deletingId);
+      }
     } finally {
       setDeletingTask(false);
     }
   };
 
-  const taskCountLabel = useMemo(() => `${tasks.length} active results`, [tasks.length]);
+  const handleLabelChange = async (nextLabelId) => {
+    if (!selectedTaskDetail?.id) return;
+    setStatusUpdatingTask(true);
+    setTaskActionError("");
+    try {
+      const updated = await updateTask(selectedTaskDetail.id, {
+        title: selectedTaskDetail.title ?? "",
+        description: selectedTaskDetail.description ?? "",
+        taskType: selectedTaskDetail.taskType ?? "",
+        dueDate: selectedTaskDetail.dueDate ?? null,
+        labelId: nextLabelId ? Number(nextLabelId) : null
+      });
+      applyTaskUpdate(updated);
+    } catch (error) {
+      setTaskActionError(getApiErrorMessage(error, "Unable to update label."));
+    } finally {
+      setStatusUpdatingTask(false);
+    }
+  };
+
   const statusOptions = useMemo(
-    () =>
-      buildTaskStatusOptions(
-        tasks.map((task) => task.status),
-        selectedTaskDetail?.status
-      ),
+    () => buildTaskStatusOptions(tasks.map((task) => task.status), selectedTaskDetail?.status),
     [tasks, selectedTaskDetail]
   );
 
@@ -216,66 +316,67 @@ const TasksPage = () => {
       <DashboardTopBar />
 
       <main className="ml-0 md:ml-64 p-md lg:p-xl min-h-screen">
-        <div className="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-10 gap-xl">
-          <section className="lg:col-span-6 space-y-md">
-            <TaskWorkspaceHeader
-              taskCountLabel={taskCountLabel}
-              onCreateTask={() => setIsCreateOpen(true)}
+        {!isFullscreen ? (
+          <div className="max-w-container-max mx-auto space-y-md">
+            <TaskWorkspaceToolbar
+              filters={filters}
+              onChangeFilters={setFilters}
+              sortBy={sortBy}
+              onChangeSortBy={setSortBy}
               viewMode={viewMode}
               onChangeViewMode={setViewMode}
+              onCreateTask={() => setIsCreateOpen(true)}
+              statusOptions={statusOptions}
+              labels={labels}
+              onOpenLabelManager={() => setIsLabelManagerOpen(true)}
             />
-            <TaskFiltersBar filters={filters} onChangeFilters={setFilters} statusOptions={statusOptions} />
+            <TaskPriorityFocusStrip
+              tasks={priorityFocus}
+              loading={loadingPriorityFocus}
+              onOpenTask={(taskId) => navigate(`/tasks/${taskId}`)}
+            />
             {taskActionError ? <p className="text-error text-label-sm">{taskActionError}</p> : null}
             <TaskBoard
-              tasks={tasks}
+              tasks={visibleTasks}
               selectedTaskId={selectedTaskId}
               onSelectTask={setSelectedTaskId}
               loading={loadingTasks}
               error={tasksError}
               viewMode={viewMode}
             />
-          </section>
-
-          <aside className="lg:col-span-4">
-            <div className="hidden lg:block">
-              <TaskDetailsSidebar
-                task={selectedTaskDetail}
-                loading={loadingDetail}
-                deleting={deletingTask}
-                statusUpdating={statusUpdatingTask}
-                statusOptions={statusOptions}
-                onEdit={() => setIsEditOpen(true)}
-                onDelete={handleDeleteTask}
-                onStatusChange={handleStatusChange}
-                onClose={() => {
-                  setSelectedTaskId(null);
-                  setSelectedTaskDetail(null);
-                }}
-              />
-            </div>
-          </aside>
-        </div>
+          </div>
+        ) : (
+          <TaskFullscreenDetail
+            task={selectedTaskDetail}
+            loading={loadingDetail}
+            onBack={() => navigate("/tasks")}
+            onEdit={() => setIsEditOpen(true)}
+            onDelete={handleDeleteTask}
+            deleting={deletingTask}
+            onStatusChange={handleStatusChange}
+            statusUpdating={statusUpdatingTask}
+            labels={labels}
+            statusOptions={statusOptions}
+            onLabelChange={handleLabelChange}
+          />
+        )}
       </main>
 
-      {selectedTaskDetail ? (
-        <div className="lg:hidden fixed inset-0 z-50 p-md bg-black/60">
-          <div className="max-h-full overflow-auto">
-            <TaskDetailsSidebar
-              task={selectedTaskDetail}
-              loading={loadingDetail}
-              deleting={deletingTask}
-              statusUpdating={statusUpdatingTask}
-              statusOptions={statusOptions}
-              onEdit={() => setIsEditOpen(true)}
-              onDelete={handleDeleteTask}
-              onStatusChange={handleStatusChange}
-              onClose={() => {
-                setSelectedTaskId(null);
-                setSelectedTaskDetail(null);
-              }}
-            />
-          </div>
-        </div>
+      {!isFullscreen && selectedTaskId ? (
+        <TaskSlideOverPanel
+          task={selectedTaskDetail}
+          loading={loadingDetail}
+          onClose={() => setSelectedTaskId(null)}
+          onExpand={(taskId) => navigate(`/tasks/${taskId}`)}
+          onEdit={() => setIsEditOpen(true)}
+          onDelete={handleDeleteTask}
+          deleting={deletingTask}
+          onStatusChange={handleStatusChange}
+          statusUpdating={statusUpdatingTask}
+          labels={labels}
+          statusOptions={statusOptions}
+          onLabelChange={handleLabelChange}
+        />
       ) : null}
 
       <TaskEditDrawer
@@ -284,6 +385,7 @@ const TasksPage = () => {
         isSaving={savingTask}
         error={taskActionError}
         statusOptions={statusOptions}
+        labels={labels}
         onClose={() => setIsEditOpen(false)}
         onSave={handleSaveTask}
       />
@@ -293,12 +395,46 @@ const TasksPage = () => {
         isCreating={creatingTask}
         error={createTaskError}
         statusOptions={statusOptions}
+        labels={labels}
         onClose={() => {
           if (creatingTask) return;
           setIsCreateOpen(false);
           setCreateTaskError("");
         }}
         onCreateTask={handleCreateTask}
+      />
+
+      <LabelManagerDrawer
+        isOpen={isLabelManagerOpen}
+        labels={labels}
+        loading={loadingLabels}
+        saving={savingLabels}
+        error={labelsError}
+        infoMessage={labelInfoMessage}
+        onClose={() => {
+          setIsLabelManagerOpen(false);
+          setLabelInfoMessage("");
+        }}
+        onCreateLabel={async (payload) => {
+          setLabelInfoMessage("");
+          await createLabel(payload);
+        }}
+        onUpdateLabel={async (labelId, payload) => {
+          setLabelInfoMessage("");
+          await updateLabelMeta(labelId, payload);
+        }}
+        onDeleteLabel={async (labelId) => {
+          setLabelInfoMessage("");
+          await deleteLabelMeta(labelId);
+        }}
+        onSeedDefaults={async () => {
+          try {
+            await addDefaults();
+            setLabelInfoMessage("Recommended labels added successfully.");
+          } catch {
+            setLabelInfoMessage("Recommended labels are already available.");
+          }
+        }}
       />
 
       <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-sm py-xs bg-surface border-t border-outline-variant md:hidden">

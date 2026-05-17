@@ -6,11 +6,11 @@ const initialForm = {
   description: "",
   status: "TO_DO",
   taskType: "",
-  label: "",
+  labelId: "",
   dueDate: ""
 };
 
-const CreateTaskDrawer = ({ isOpen, isCreating, error, statusOptions, onClose, onCreateTask }) => {
+const CreateTaskDrawer = ({ isOpen, isCreating, error, statusOptions, labels = [], onClose, onCreateTask }) => {
   const [formData, setFormData] = useState(initialForm);
   const [fieldErrors, setFieldErrors] = useState({});
 
@@ -48,7 +48,7 @@ const CreateTaskDrawer = ({ isOpen, isCreating, error, statusOptions, onClose, o
       description: formData.description.trim(),
       status: formData.status,
       taskType: formData.taskType.trim(),
-      label: formData.label.trim(),
+      labelId: formData.labelId ? Number(formData.labelId) : null,
       dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null
     });
   };
@@ -97,7 +97,18 @@ const CreateTaskDrawer = ({ isOpen, isCreating, error, statusOptions, onClose, o
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-sm">
             <div className="space-y-xs">
               <label className="font-label-sm text-on-surface-variant" htmlFor="create-label">Label</label>
-              <input id="create-label" name="label" value={formData.label} onChange={handleChange} placeholder="e.g. PHYSICS" className="w-full rounded-lg px-sm py-xs bg-surface-container border border-outline-variant" />
+              <select
+                id="create-label"
+                name="labelId"
+                value={formData.labelId}
+                onChange={handleChange}
+                className="w-full rounded-lg px-sm py-xs bg-surface-container border border-outline-variant"
+              >
+                <option value="">No label</option>
+                {labels.map((label) => (
+                  <option key={label.id} value={label.id}>{label.name}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-xs">
               <label className="font-label-sm text-on-surface-variant" htmlFor="create-dueDate">Due Date</label>

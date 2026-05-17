@@ -1,43 +1,40 @@
-const ProductivityStatsGrid = ({ pendingCount, completedCount, totalCount }) => {
-  const completedRatio = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+const ProductivityStatsGrid = ({ pendingCount, completedCount, overdueCount }) => {
+  const items = [
+    {
+      label: "Pending Tasks",
+      value: pendingCount,
+      icon: "schedule",
+      tone: "text-amber-300 border-amber-300/30 bg-amber-400/10"
+    },
+    {
+      label: "Completed Tasks",
+      value: completedCount,
+      icon: "task_alt",
+      tone: "text-primary border-primary/30 bg-primary/10"
+    },
+    {
+      label: "Overdue Tasks",
+      value: overdueCount,
+      icon: "warning",
+      tone: "text-rose-300 border-rose-300/30 bg-rose-400/10"
+    }
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
-      <div className="bg-surface-container border border-outline-variant rounded-xl p-md">
-        <div className="flex justify-between items-start mb-md">
-          <div>
-            <p className="text-on-surface-variant font-label-sm">Total Tasks Pending</p>
-            <p className="text-h1 font-h1 font-bold">{pendingCount}</p>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
+      {items.map((item) => (
+        <div key={item.label} className="bg-surface-container border border-outline-variant rounded-xl p-md">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-on-surface-variant font-label-sm">{item.label}</p>
+              <p className="text-h2 font-h2 mt-1">{item.value}</p>
+            </div>
+            <span className={`material-symbols-outlined text-[18px] px-2 py-1 rounded-lg border ${item.tone}`}>
+              {item.icon}
+            </span>
           </div>
-          <span className="material-symbols-outlined text-primary">stacks</span>
         </div>
-        <div className="h-1 bg-outline-variant rounded-full overflow-hidden">
-          <div className="h-full bg-primary" style={{ width: `${Math.max(8, 100 - completedRatio)}%` }} />
-        </div>
-        <p className="text-[10px] mt-xs text-on-surface-variant font-medium">
-          {completedCount} OF {totalCount} COMPLETED
-        </p>
-      </div>
-
-      <div className="bg-surface-container border border-outline-variant rounded-xl p-md">
-        <div className="flex justify-between items-start mb-sm">
-          <p className="text-on-surface-variant font-label-sm">Workload Intensity</p>
-          <span className="material-symbols-outlined text-primary">monitoring</span>
-        </div>
-        <div className="flex items-end gap-1 h-12">
-          {[30, 50, 80, 60, 90, 40, 20].map((height, index) => (
-            <div
-              key={index}
-              className={`flex-1 rounded-t-sm ${height >= 60 ? "bg-primary" : "bg-primary-container/20"}`}
-              style={{ height: `${height}%` }}
-            />
-          ))}
-        </div>
-        <div className="flex justify-between mt-1 text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">
-          <span>Mon</span>
-          <span>Sun</span>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };

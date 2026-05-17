@@ -4,9 +4,9 @@ const QuickActionsSection = () => {
   const navigate = useNavigate();
 
   const actions = [
-    { label: "Add Task", icon: "add_circle", onClick: () => navigate("/tasks") },
-    { label: "View Tasks", icon: "view_list", onClick: () => navigate("/tasks") },
-    { label: "Update Profile", icon: "account_circle", onClick: () => navigate("/profile?mode=edit") }
+    { label: "Create Task", icon: "add_circle", onClick: () => navigate("/tasks?intent=create") },
+    { label: "Quick Note", icon: "edit_note", onClick: () => navigate("/tasks?intent=quick-note") },
+    { label: "Add Label", icon: "label", onClick: () => navigate("/tasks?intent=add-label") }
   ];
 
   return (

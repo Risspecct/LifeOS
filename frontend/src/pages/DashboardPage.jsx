@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar";
 import DashboardTopBar from "../components/dashboard/DashboardTopBar";
@@ -10,56 +10,25 @@ import StudyStreakWidget from "../components/dashboard/StudyStreakWidget";
 import AchievementWidget from "../components/dashboard/AchievementWidget";
 import UpcomingTasksSidebar from "../components/dashboard/UpcomingTasksSidebar";
 import SocialPresenceWidget from "../components/dashboard/SocialPresenceWidget";
+import RecentActivityWidget from "../components/dashboard/RecentActivityWidget";
 import { useAuth } from "../hooks/useAuth";
-import { getApiErrorMessage } from "../utils/errorUtils";
-import { getTasks } from "../api/taskApi";
+import { useDashboard } from "../hooks/useDashboard";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const { clearAuth, profile, refreshProfileStatus } = useAuth();
-  const [tasks, setTasks] = useState([]);
-  const [loadingTasks, setLoadingTasks] = useState(true);
-  const [tasksError, setTasksError] = useState("");
+  const { clearAuth } = useAuth();
+  const { dashboard, loading, refreshing, error, refresh } = useDashboard();
 
-  useEffect(() => {
-    refreshProfileStatus().catch(() => {});
-  }, [refreshProfileStatus]);
-
-  useEffect(() => {
-    const fetchTasks = async () => {
-      setLoadingTasks(true);
-      setTasksError("");
-      try {
-        const data = await getTasks({});
-        const normalized = Array.isArray(data) ? data : [];
-        const sorted = [...normalized].sort((a, b) => {
-          if (!a?.dueDate) return 1;
-          if (!b?.dueDate) return -1;
-          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-        });
-        setTasks(sorted);
-      } catch (error) {
-        setTasksError(getApiErrorMessage(error, "Unable to load tasks."));
-        setTasks([]);
-      } finally {
-        setLoadingTasks(false);
-      }
-    };
-    fetchTasks();
-  }, []);
-
-  const prioritizedTasks = useMemo(
-    () => tasks.filter((task) => task.status !== "COMPLETED").slice(0, 4),
-    [tasks]
+  const { prioritizedTasks, upcomingTasks, recentActivities, profile, summary } = dashboard;
+  const urgentCount = useMemo(
+    () => prioritizedTasks.filter((task) => task.priority === "CRITICAL" || task.priority === "HIGH").length,
+    [prioritizedTasks]
   );
-  const upcomingTasks = useMemo(() => tasks.filter((task) => task.dueDate).slice(0, 3), [tasks]);
-  const completedCount = useMemo(
-    () => tasks.filter((task) => task.status === "COMPLETED").length,
-    [tasks]
+  const totalCount = summary.pendingTasks + summary.completedTasks;
+  const focusScore = Math.max(
+    40,
+    Math.min(95, 60 + summary.completedTasks * 8 - summary.pendingTasks - summary.overdueTasks * 2)
   );
-  const pendingCount = tasks.length - completedCount;
-  const highPriorityCount = prioritizedTasks.filter((task) => task.status === "IN_PROGRESS").length;
-  const focusScore = Math.max(40, Math.min(95, 60 + completedCount * 8 - pendingCount));
 
   return (
     <div className="bg-background text-on-surface">
@@ -70,30 +39,62 @@ const DashboardPage = () => {
         <div className="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-10 gap-xl">
           <section className="lg:col-span-7 space-y-xl">
             <DashboardWelcomeHero
-              username={profile?.username}
               profile={profile}
               focusScore={focusScore}
-              highPriorityCount={highPriorityCount}
+              urgentCount={urgentCount}
+              pendingCount={summary.pendingTasks}
             />
             <QuickActionsSection />
             <DashboardTaskPreview
               tasks={prioritizedTasks}
-              loading={loadingTasks}
-              error={tasksError}
+              loading={loading}
+              error={error}
               onOpenTasks={() => navigate("/tasks")}
+              onOpenTask={(taskId) => navigate(`/tasks/${taskId}`)}
             />
             <ProductivityStatsGrid
-              pendingCount={pendingCount}
-              completedCount={completedCount}
-              totalCount={tasks.length}
+              pendingCount={summary.pendingTasks}
+              completedCount={summary.completedTasks}
+              overdueCount={summary.overdueTasks}
             />
+
+            <div className="flex items-center justify-between">
+              {!loading && !error && totalCount === 0 ? (
+                <p className="text-label-sm text-on-surface-variant">
+                  Start by creating your first task to activate dashboard insights.
+                </p>
+              ) : (
+                <span />
+              )}
+              <button
+                type="button"
+                onClick={refresh}
+                disabled={refreshing}
+                className="text-label-sm text-primary hover:underline disabled:opacity-60 disabled:no-underline"
+              >
+                {refreshing ? "Refreshing..." : "Refresh"}
+              </button>
+            </div>
           </section>
 
           <aside className="lg:col-span-3 space-y-xl">
-            <StudyStreakWidget />
-            <AchievementWidget />
-            <UpcomingTasksSidebar tasks={upcomingTasks} loading={loadingTasks} />
-            <SocialPresenceWidget />
+            <div className="space-y-md">
+              <StudyStreakWidget />
+              <AchievementWidget />
+              <SocialPresenceWidget />
+            </div>
+            <div className="space-y-md">
+              <UpcomingTasksSidebar
+                tasks={upcomingTasks}
+                loading={loading}
+                onOpenTask={(taskId) => navigate(`/tasks/${taskId}`)}
+              />
+              <RecentActivityWidget
+                activities={recentActivities}
+                loading={loading}
+                onOpenTask={(taskId) => navigate(`/tasks/${taskId}`)}
+              />
+            </div>
           </aside>
         </div>
       </main>

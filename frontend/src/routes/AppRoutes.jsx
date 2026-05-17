@@ -21,6 +21,7 @@ const AppRoutes = () => {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/tasks" element={<TasksPage />} />
+        <Route path="/tasks/:taskId" element={<TasksPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
 

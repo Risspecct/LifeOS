@@ -14,11 +14,12 @@ const getInputDateTime = (value) => {
   return `${year}-${month}-${day}T${hour}:${minute}`;
 };
 
-const TaskEditDrawer = ({ task, isOpen, isSaving, error, statusOptions, onClose, onSave }) => {
+const TaskEditDrawer = ({ task, isOpen, isSaving, error, statusOptions, labels = [], onClose, onSave }) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     taskType: "",
+    labelId: "",
     status: "",
     dueDate: ""
   });
@@ -30,6 +31,7 @@ const TaskEditDrawer = ({ task, isOpen, isSaving, error, statusOptions, onClose,
       title: task.title ?? "",
       description: task.description ?? "",
       taskType: task.taskType ?? "",
+      labelId: task.labelId ?? "",
       status: task.status ?? "",
       dueDate: getInputDateTime(task.dueDate)
     });
@@ -58,6 +60,7 @@ const TaskEditDrawer = ({ task, isOpen, isSaving, error, statusOptions, onClose,
       title: formData.title.trim(),
       description: formData.description.trim(),
       taskType: formData.taskType.trim(),
+      labelId: formData.labelId ? Number(formData.labelId) : null,
       status: formData.status,
       dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null
     });
@@ -106,6 +109,21 @@ const TaskEditDrawer = ({ task, isOpen, isSaving, error, statusOptions, onClose,
               onChange={handleChange}
               className="w-full rounded-lg px-sm py-xs bg-surface-container border border-outline-variant"
             />
+          </div>
+          <div className="space-y-xs">
+            <label className="font-label-sm text-on-surface-variant" htmlFor="task-label">Label</label>
+            <select
+              id="task-label"
+              name="labelId"
+              value={formData.labelId}
+              onChange={handleChange}
+              className="w-full rounded-lg px-sm py-xs bg-surface-container border border-outline-variant"
+            >
+              <option value="">No label</option>
+              {labels.map((label) => (
+                <option key={label.id} value={label.id}>{label.name}</option>
+              ))}
+            </select>
           </div>
           <div className="space-y-xs">
             <label className="font-label-sm text-on-surface-variant" htmlFor="task-status">Status</label>
