@@ -9,6 +9,7 @@ import AddBranchModal from "../components/profile/AddBranchModal";
 import { updateProfile, updateProfileBranch } from "../api/profileApi";
 import { createBranch, getBranches } from "../api/branchApi";
 import { useAuth } from "../hooks/useAuth";
+import { useSidebar } from "../hooks/useSidebar";
 import { getApiErrorMessage } from "../utils/errorUtils";
 
 const buildEditForm = (profile, branches) => {
@@ -24,6 +25,7 @@ const buildEditForm = (profile, branches) => {
 };
 
 const ProfilePage = () => {
+  const isCollapsed = useSidebar();
   const [searchParams, setSearchParams] = useSearchParams();
   const { clearAuth, profile, refreshProfileStatus, markProfileCompleted } = useAuth();
 
@@ -222,7 +224,7 @@ const ProfilePage = () => {
       <DashboardSidebar onLogout={clearAuth} activeView="profile" />
       <DashboardTopBar />
 
-      <main className="ml-0 md:ml-64 p-md lg:p-xl min-h-screen">
+      <main className={`ml-0 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} p-md lg:p-xl min-h-screen transition-all duration-300 ease-in-out`}>
         <div className="max-w-container-max mx-auto space-y-lg">
           <ProfileHeader isEditing={isEditing} onEdit={openEditMode} onCancel={openViewMode} isSaving={isSaving} />
 

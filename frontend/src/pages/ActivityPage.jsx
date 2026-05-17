@@ -3,6 +3,7 @@ import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import DashboardTopBar from '../components/dashboard/DashboardTopBar';
 import { useAuth } from '../hooks/useAuth';
 import { useActivityInsights } from '../hooks/useActivityInsights';
+import { useSidebar } from '../hooks/useSidebar';
 
 import ActivityHero from '../components/activity/ActivityHero';
 import ProductivityHeatmap from '../components/activity/ProductivityHeatmap';
@@ -12,16 +13,17 @@ import ProductivityInsights from '../components/activity/ProductivityInsights';
 import ActivityTimeline from '../components/activity/ActivityTimeline';
 
 const ActivityPage = () => {
+    const isCollapsed = useSidebar();
     const { clearAuth } = useAuth();
     const { data, loading, error } = useActivityInsights();
 
     return (
-        <div className="bg-background text-on-surface">
+        <div className="bg-background min-h-screen text-on-surface">
             <DashboardSidebar onLogout={clearAuth} activeView="activity" />
             <DashboardTopBar />
             
-            <main className="ml-0 md:ml-64 p-md lg:p-xl min-h-screen">
-                <div className="max-w-container-max mx-auto space-y-lg">
+            <main className={`ml-0 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} p-md lg:p-xl transition-all duration-300 ease-in-out`}>
+                <div className="max-w-5xl mx-auto space-y-xl">
                     {loading ? (
                         <div className="flex items-center justify-center h-64">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

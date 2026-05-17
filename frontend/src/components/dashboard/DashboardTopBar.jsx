@@ -1,6 +1,10 @@
+import { useSidebar } from "../../hooks/useSidebar";
+
 const DashboardTopBar = () => {
+  const isCollapsed = useSidebar();
+
   return (
-    <header className="flex justify-between items-center px-md h-16 sticky top-0 z-40 bg-surface border-b border-outline-variant ml-0 md:ml-64 md:w-[calc(100%-16rem)]">
+    <header className={`flex justify-between items-center px-md h-16 sticky top-0 z-40 bg-surface border-b border-outline-variant ml-0 ${isCollapsed ? 'md:ml-20 md:w-[calc(100%-5rem)]' : 'md:ml-64 md:w-[calc(100%-16rem)]'} transition-all duration-300 ease-in-out`}>
       <div className="flex items-center gap-md">
         <div className="relative focus-within:ring-2 focus-within:ring-primary rounded-xl">
           <span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>

@@ -13,8 +13,10 @@ import SocialPresenceWidget from "../components/dashboard/SocialPresenceWidget";
 import RecentActivityWidget from "../components/dashboard/RecentActivityWidget";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
+import { useSidebar } from "../hooks/useSidebar";
 
 const DashboardPage = () => {
+  const isCollapsed = useSidebar();
   const navigate = useNavigate();
   const { clearAuth } = useAuth();
   const { dashboard, loading, refreshing, error, refresh } = useDashboard();
@@ -35,7 +37,7 @@ const DashboardPage = () => {
       <DashboardSidebar onLogout={clearAuth} activeView="dashboard" />
       <DashboardTopBar />
 
-      <main className="ml-0 md:ml-64 p-md lg:p-xl min-h-screen">
+      <main className={`ml-0 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} p-md lg:p-xl min-h-screen transition-all duration-300 ease-in-out`}>
         <div className="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-10 gap-xl">
           <section className="lg:col-span-7 space-y-xl">
             <DashboardWelcomeHero

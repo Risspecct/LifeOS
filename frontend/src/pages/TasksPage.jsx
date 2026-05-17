@@ -12,6 +12,7 @@ import TaskWorkspaceToolbar from "../components/tasks/TaskWorkspaceToolbar";
 import LabelManagerDrawer from "../components/tasks/LabelManagerDrawer";
 import { useAuth } from "../hooks/useAuth";
 import { useLabels } from "../hooks/useLabels";
+import { useSidebar } from "../hooks/useSidebar";
 import { getApiErrorMessage } from "../utils/errorUtils";
 import {
   createTask,
@@ -65,6 +66,7 @@ const normalizeTaskDetail = (task, labels = []) => {
 };
 
 const TasksPage = () => {
+  const isCollapsed = useSidebar();
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
@@ -315,7 +317,7 @@ const TasksPage = () => {
       <DashboardSidebar onLogout={clearAuth} activeView="tasks" />
       <DashboardTopBar />
 
-      <main className="ml-0 md:ml-64 p-md lg:p-xl min-h-screen">
+      <main className={`ml-0 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} p-md lg:p-xl min-h-screen transition-all duration-300 ease-in-out`}>
         {!isFullscreen ? (
           <div className="max-w-container-max mx-auto space-y-md">
             <TaskWorkspaceToolbar
