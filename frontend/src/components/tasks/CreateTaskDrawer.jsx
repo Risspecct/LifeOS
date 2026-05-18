@@ -7,7 +7,8 @@ const initialForm = {
   status: "TO_DO",
   taskType: "",
   labelId: "",
-  dueDate: ""
+  dueDate: "",
+  dueTime: ""
 };
 
 const CreateTaskDrawer = ({ isOpen, isCreating, error, statusOptions, labels = [], onClose, onCreateTask }) => {
@@ -33,7 +34,7 @@ const CreateTaskDrawer = ({ isOpen, isCreating, error, statusOptions, labels = [
     const nextErrors = {};
     if (!formData.title.trim()) nextErrors.title = "Title is required.";
     if (!formData.status) nextErrors.status = "Status is required.";
-    if (formData.dueDate && Number.isNaN(new Date(formData.dueDate).getTime())) {
+    if (formData.dueDate && Number.isNaN(new Date(`${formData.dueDate}T00:00:00`).getTime())) {
       nextErrors.dueDate = "Enter a valid due date.";
     }
     setFieldErrors(nextErrors);
@@ -43,13 +44,22 @@ const CreateTaskDrawer = ({ isOpen, isCreating, error, statusOptions, labels = [
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!validate()) return;
+    let finalDueDate = null;
+    if (formData.dueDate) {
+      if (formData.dueTime) {
+        finalDueDate = `${formData.dueDate}T${formData.dueTime}:00`;
+      } else {
+        finalDueDate = `${formData.dueDate}T23:59:59`;
+      }
+    }
+
     await onCreateTask({
       title: formData.title.trim(),
       description: formData.description.trim(),
       status: formData.status,
       taskType: formData.taskType.trim(),
       labelId: formData.labelId ? Number(formData.labelId) : null,
-      dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null
+      dueDate: finalDueDate
     });
   };
 
@@ -110,10 +120,16 @@ const CreateTaskDrawer = ({ isOpen, isCreating, error, statusOptions, labels = [
                 ))}
               </select>
             </div>
-            <div className="space-y-xs">
-              <label className="font-label-sm text-on-surface-variant" htmlFor="create-dueDate">Due Date</label>
-              <input id="create-dueDate" name="dueDate" type="datetime-local" value={formData.dueDate} onChange={handleChange} className={`w-full rounded-lg px-sm py-xs bg-surface-container border ${fieldErrors.dueDate ? "border-error" : "border-outline-variant"}`} />
-              {fieldErrors.dueDate ? <p className="text-error text-label-xs">{fieldErrors.dueDate}</p> : null}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+              <div className="space-y-xs">
+                <label className="font-label-sm text-on-surface-variant" htmlFor="create-dueDate">Due Date</label>
+                <input id="create-dueDate" name="dueDate" type="date" value={formData.dueDate} onChange={handleChange} className={`w-full rounded-lg px-sm py-xs bg-surface-container border ${fieldErrors.dueDate ? "border-error" : "border-outline-variant"}`} />
+                {fieldErrors.dueDate ? <p className="text-error text-label-xs">{fieldErrors.dueDate}</p> : null}
+              </div>
+              <div className="space-y-xs">
+                <label className="font-label-sm text-on-surface-variant" htmlFor="create-dueTime">Time (Optional)</label>
+                <input id="create-dueTime" name="dueTime" type="time" value={formData.dueTime} onChange={handleChange} className="w-full rounded-lg px-sm py-xs bg-surface-container border border-outline-variant" />
+              </div>
             </div>
           </div>
 

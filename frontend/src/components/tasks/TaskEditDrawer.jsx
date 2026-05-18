@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import TaskStatusSelector from "./TaskStatusSelector";
 
-const getInputDateTime = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const pad = (n) => String(n).padStart(2, "0");
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hour = pad(date.getHours());
-  const minute = pad(date.getMinutes());
-  return `${year}-${month}-${day}T${hour}:${minute}`;
+const parseDateString = (value) => {
+  if (!value) return { date: "", time: "" };
+  const withoutZ = String(value).replace("Z", "").replace(/\+.*$/, "");
+  const [datePart, timePart] = withoutZ.split("T");
+  
+  if (!timePart) return { date: datePart || "", time: "" };
+  
+  const timeStr = timePart.substring(0, 5);
+  if (timePart.startsWith("23:59:59")) {
+    return { date: datePart, time: "" };
+  }
+  return { date: datePart, time: timeStr };
 };
 
 const TaskEditDrawer = ({ task, isOpen, isSaving, error, statusOptions, labels = [], onClose, onSave }) => {
@@ -21,7 +22,8 @@ const TaskEditDrawer = ({ task, isOpen, isSaving, error, statusOptions, labels =
     taskType: "",
     labelId: "",
     status: "",
-    dueDate: ""
+    dueDate: "",
+    dueTime: ""
   });
   const [fieldErrors, setFieldErrors] = useState({});
 
@@ -33,7 +35,8 @@ const TaskEditDrawer = ({ task, isOpen, isSaving, error, statusOptions, labels =
       taskType: task.taskType ?? "",
       labelId: task.labelId ?? "",
       status: task.status ?? "",
-      dueDate: getInputDateTime(task.dueDate)
+      dueDate: parseDateString(task.dueDate).date,
+      dueTime: parseDateString(task.dueDate).time
     });
     setFieldErrors({});
   }, [task, isOpen]);
@@ -56,13 +59,22 @@ const TaskEditDrawer = ({ task, isOpen, isSaving, error, statusOptions, labels =
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!validate()) return;
+    let finalDueDate = null;
+    if (formData.dueDate) {
+      if (formData.dueTime) {
+        finalDueDate = `${formData.dueDate}T${formData.dueTime}:00`;
+      } else {
+        finalDueDate = `${formData.dueDate}T23:59:59`;
+      }
+    }
+
     onSave({
       title: formData.title.trim(),
       description: formData.description.trim(),
       taskType: formData.taskType.trim(),
       labelId: formData.labelId ? Number(formData.labelId) : null,
       status: formData.status,
-      dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null
+      dueDate: finalDueDate
     });
   };
 
@@ -135,16 +147,29 @@ const TaskEditDrawer = ({ task, isOpen, isSaving, error, statusOptions, labels =
               onChange={(value) => handleChange({ target: { name: "status", value } })}
             />
           </div>
-          <div className="space-y-xs">
-            <label className="font-label-sm text-on-surface-variant" htmlFor="task-dueDate">Due Date</label>
-            <input
-              id="task-dueDate"
-              name="dueDate"
-              type="datetime-local"
-              value={formData.dueDate}
-              onChange={handleChange}
-              className="w-full rounded-lg px-sm py-xs bg-surface-container border border-outline-variant"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+            <div className="space-y-xs">
+              <label className="font-label-sm text-on-surface-variant" htmlFor="task-dueDate">Due Date</label>
+              <input
+                id="task-dueDate"
+                name="dueDate"
+                type="date"
+                value={formData.dueDate}
+                onChange={handleChange}
+                className="w-full rounded-lg px-sm py-xs bg-surface-container border border-outline-variant"
+              />
+            </div>
+            <div className="space-y-xs">
+              <label className="font-label-sm text-on-surface-variant" htmlFor="task-dueTime">Due Time</label>
+              <input
+                id="task-dueTime"
+                name="dueTime"
+                type="time"
+                value={formData.dueTime}
+                onChange={handleChange}
+                className="w-full rounded-lg px-sm py-xs bg-surface-container border border-outline-variant"
+              />
+            </div>
           </div>
           {error ? <p className="text-error text-label-sm">{error}</p> : null}
           <div className="flex justify-end gap-sm pt-sm">
