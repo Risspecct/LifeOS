@@ -63,8 +63,9 @@ const TaskWorkspaceToolbar = ({
           className="bg-surface border border-outline-variant rounded-full px-sm py-xs text-label-sm"
         >
           <option value="dueAsc">Sort</option>
-          <option value="dueAsc">Due: Soonest</option>
-          <option value="dueDesc">Due: Latest</option>
+          <option value="dueAsc">Due: Upcoming</option>
+          <option value="dueDesc">Due: Farthest</option>
+          <option value="addedDesc">Recently Added</option>
           <option value="titleAsc">Title: A-Z</option>
           <option value="titleDesc">Title: Z-A</option>
         </select>
