@@ -33,12 +33,25 @@ const readInitialViewMode = () => {
 
 const sortTasks = (items, sortBy) => {
   const list = [...items];
-  if (sortBy === "titleAsc") return list.sort((a, b) => String(a?.title || "").localeCompare(String(b?.title || "")));
-  if (sortBy === "titleDesc") return list.sort((a, b) => String(b?.title || "").localeCompare(String(a?.title || "")));
-  if (sortBy === "dueDesc") {
-    return list.sort((a, b) => new Date(b?.dueDate || 0).getTime() - new Date(a?.dueDate || 0).getTime());
-  }
-  return list.sort((a, b) => new Date(a?.dueDate || "9999-12-31").getTime() - new Date(b?.dueDate || "9999-12-31").getTime());
+  list.sort((a, b) => {
+    const aCompleted = a?.status === "COMPLETED";
+    const bCompleted = b?.status === "COMPLETED";
+    
+    if (aCompleted !== bCompleted) {
+      return aCompleted ? 1 : -1;
+    }
+    
+    if (sortBy === "titleAsc") return String(a?.title || "").localeCompare(String(b?.title || ""));
+    if (sortBy === "titleDesc") return String(b?.title || "").localeCompare(String(a?.title || ""));
+    if (sortBy === "dueDesc") {
+      return new Date(b?.dueDate || 0).getTime() - new Date(a?.dueDate || 0).getTime();
+    }
+    if (sortBy === "addedDesc") {
+      return (b?.id || 0) - (a?.id || 0);
+    }
+    return new Date(a?.dueDate || "9999-12-31").getTime() - new Date(b?.dueDate || "9999-12-31").getTime();
+  });
+  return list;
 };
 
 const matchesSearch = (task, search) => {
@@ -120,18 +133,19 @@ const TasksPage = () => {
     }
   }, [location.search]);
 
+  const fetchPriorityTasks = async () => {
+    setLoadingPriorityFocus(true);
+    try {
+      const data = await getPrioritizedTasks();
+      setPriorityFocus(Array.isArray(data) ? data : []);
+    } catch {
+      setPriorityFocus([]);
+    } finally {
+      setLoadingPriorityFocus(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchPriorityTasks = async () => {
-      setLoadingPriorityFocus(true);
-      try {
-        const data = await getPrioritizedTasks();
-        setPriorityFocus(Array.isArray(data) ? data : []);
-      } catch {
-        setPriorityFocus([]);
-      } finally {
-        setLoadingPriorityFocus(false);
-      }
-    };
     fetchPriorityTasks();
   }, []);
 
@@ -197,6 +211,7 @@ const TasksPage = () => {
       )
     );
     setSelectedTaskDetail((prev) => (prev?.id === normalized.id ? { ...prev, ...normalized } : prev));
+    fetchPriorityTasks();
   };
 
   const handleCreateTask = async (payload) => {
@@ -214,6 +229,7 @@ const TasksPage = () => {
       setSelectedTaskId(normalizedCreatedTask.id);
       setSelectedTaskDetail(normalizedCreatedTask);
       setIsCreateOpen(false);
+      fetchPriorityTasks();
     } catch (error) {
       setCreateTaskError(getApiErrorMessage(error, "Unable to create task."));
     } finally {
@@ -276,6 +292,7 @@ const TasksPage = () => {
     }
     try {
       await deleteTask(deletingId);
+      fetchPriorityTasks();
     } catch (error) {
       setTasks(previousTasks);
       setTaskActionError(getApiErrorMessage(error, "Unable to delete task."));
