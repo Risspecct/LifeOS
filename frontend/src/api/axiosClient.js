@@ -15,7 +15,11 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem(AUTH_TOKEN_KEY);
 
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      if (config.headers && config.headers.set) {
+        config.headers.set('Authorization', `Bearer ${token}`);
+      } else {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
     }
 
     if (import.meta.env.DEV) {
@@ -44,6 +48,11 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      window.location.href = "/login";
+    }
+
     if (import.meta.env.DEV) {
       console.error("[API][error]", {
         message: error.message,

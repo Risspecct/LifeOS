@@ -1,4 +1,4 @@
-import { createContext, useCallback, useMemo, useState } from "react";
+import { createContext, useCallback, useMemo, useState, useEffect } from "react";
 import { AUTH_TOKEN_KEY } from "../utils/constants";
 import { getCurrentProfile } from "../api/profileApi";
 
@@ -12,15 +12,25 @@ export const AuthContext = createContext({
   setAuthFromToken: () => {},
   clearAuth: () => {},
   refreshProfileStatus: async () => {},
-  markProfileCompleted: () => {}
+  markProfileCompleted: () => {},
+  isInitialized: false
 });
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => localStorage.getItem(AUTH_TOKEN_KEY));
+  const [token, setToken] = useState(null);
   const [profile, setProfile] = useState(null);
   const [hasProfile, setHasProfile] = useState(false);
   const [profileChecked, setProfileChecked] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (storedToken) {
+      setToken(storedToken);
+    }
+    setIsInitialized(true);
+  }, []);
 
   const setAuthFromToken = useCallback((jwtToken) => {
     if (!jwtToken) return;
@@ -93,7 +103,8 @@ export const AuthProvider = ({ children }) => {
       setAuthFromToken,
       clearAuth,
       refreshProfileStatus,
-      markProfileCompleted
+      markProfileCompleted,
+      isInitialized
     }),
     [
       token,
@@ -104,7 +115,8 @@ export const AuthProvider = ({ children }) => {
       setAuthFromToken,
       clearAuth,
       refreshProfileStatus,
-      markProfileCompleted
+      markProfileCompleted,
+      isInitialized
     ]
   );
 

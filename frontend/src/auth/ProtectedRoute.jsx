@@ -15,19 +15,24 @@ const ProtectedRoute = ({ requireProfile = true }) => {
     profileChecked,
     profileLoading,
     refreshProfileStatus,
-    clearAuth
+    clearAuth,
+    isInitialized
   } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
-    if (isAuthenticated && !profileChecked && !profileLoading) {
+    if (isInitialized && isAuthenticated && !profileChecked && !profileLoading) {
       refreshProfileStatus().catch((error) => {
         if (error?.response?.status === 401 || error?.response?.status === 403) {
           clearAuth();
         }
       });
     }
-  }, [isAuthenticated, profileChecked, profileLoading, refreshProfileStatus, clearAuth]);
+  }, [isInitialized, isAuthenticated, profileChecked, profileLoading, refreshProfileStatus, clearAuth]);
+
+  if (!isInitialized) {
+    return <AuthLoadingScreen />;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;

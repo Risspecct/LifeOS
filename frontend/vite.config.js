@@ -11,7 +11,10 @@ export default defineConfig({
       },
       "/login": {
         target: "http://localhost:8080",
-        changeOrigin: true
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) return "/index.html";
+        }
       },
       "/api": {
         target: "http://localhost:8080",
@@ -19,7 +22,10 @@ export default defineConfig({
       },
       "/profile": {
         target: "http://localhost:8080",
-        changeOrigin: true
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) return "/index.html";
+        }
       },
       "/branch": {
         target: "http://localhost:8080",
@@ -27,15 +33,24 @@ export default defineConfig({
       },
       "/task": {
         target: "http://localhost:8080",
-        changeOrigin: true
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) return "/index.html";
+        }
       },
       "/tasks": {
         target: "http://localhost:8080",
-        changeOrigin: true
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) return "/index.html";
+        }
       },
       "/dashboard": {
         target: "http://localhost:8080",
-        changeOrigin: true
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) return "/index.html";
+        }
       },
       "/labels": {
         target: "http://localhost:8080",
