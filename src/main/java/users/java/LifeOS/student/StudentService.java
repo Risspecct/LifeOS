@@ -3,6 +3,9 @@ package users.java.LifeOS.student;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.activity.ActivityPoints;
+import users.java.LifeOS.activity.ActivityService;
+import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.branch.Branch;
 import users.java.LifeOS.branch.BranchService;
 import users.java.LifeOS.exceptions.NotFoundException;
@@ -19,6 +22,7 @@ public class StudentService {
     private final StudentMapper mapper;
     private final UserService userService;
     private final BranchService branchService;
+    private final ActivityService activityService;
 
     public StudentProfileView create(long userId, StudentDto dto) {
         Optional<Student> existing = studentRepository.findByUser_Id(userId);
@@ -42,6 +46,13 @@ public class StudentService {
                 .orElseThrow(() -> new NotFoundException("No Student profile found associated with this user"));
         mapper.updateStudent(dto, student);
         studentRepository.save(student);
+
+        activityService.logActivity(student.getUser(),
+                ActivityType.PROFILE_UPDATED,
+                "Profile",
+                "User Profile updated",
+                ActivityPoints.PROFILE_UPDATED,
+                null);
 
         return getStudentProfile(userId);
     }
