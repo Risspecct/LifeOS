@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "friend_requests", uniqueConstraints = {@UniqueConstraint(columnNames = {"sender_id", "receiver_id"})})
+@Table(name = "friend_requests")
 public class FriendRequest {
 
     @Id
@@ -33,6 +33,9 @@ public class FriendRequest {
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column
+    private LocalDateTime resolvedAt;
 
     public FriendRequest(User sender, User receiver) {
         this.sender = sender;

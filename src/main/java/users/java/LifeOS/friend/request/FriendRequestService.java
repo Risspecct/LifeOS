@@ -10,6 +10,7 @@ import users.java.LifeOS.friend.FriendshipService;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -19,6 +20,7 @@ public class FriendRequestService {
     private final UserRepository userRepository;
     private final FriendshipService friendshipService;
     private final FriendRequestMapper mapper;
+    private final FriendRequestValidationService validationService;
 
     @Transactional
     public void sendRequest(User sender, Long receiverId) {
@@ -31,9 +33,7 @@ public class FriendRequestService {
         if(friendshipService.isFriends(sender, receiver)) {
             throw new InvalidRequestException("Users are already friends");
         }
-        if(friendRequestRepository.existsBySenderAndReceiver(sender,receiver)) {
-            throw new ConflictException("Friend request already exists");
-        }
+        validationService.validateRequestEligibility(sender, receiver);
 
         friendRequestRepository.save(new FriendRequest(sender, receiver));
     }
@@ -48,6 +48,7 @@ public class FriendRequestService {
             throw new RuntimeException("Unauthorized action");
         }
         request.setStatus(FriendRequestStatus.ACCEPTED);
+        request.setResolvedAt(LocalDateTime.now());
         friendshipService.createFriendship(request.getSender(),request.getReceiver());
     }
 
@@ -60,6 +61,7 @@ public class FriendRequestService {
             throw new RuntimeException("Unauthorized action");
         }
         request.setStatus(FriendRequestStatus.REJECTED);
+        request.setResolvedAt(LocalDateTime.now());
     }
 
     public List<FriendRequestDto> getIncomingRequests(User user) {
