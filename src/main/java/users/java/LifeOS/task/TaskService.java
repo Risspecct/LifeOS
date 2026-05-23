@@ -9,6 +9,7 @@ import users.java.LifeOS.activity.ActivityPoints;
 import users.java.LifeOS.activity.ActivityService;
 import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.exceptions.NotFoundException;
+import users.java.LifeOS.rewards.RewardService;
 import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.task.label.LabelService;
 import users.java.LifeOS.task.prioritization.TaskStats;
@@ -26,8 +27,8 @@ public class TaskService {
     private final UserService userService;
     private final TaskMapper mapper;
     private final ActivityService activityService;
-
     private final LabelService labelService;
+    private final RewardService rewardService;
 
     public TaskView create(long userId, TaskDto dto) {
         User user = userService.getById(userId);
@@ -105,6 +106,7 @@ public class TaskService {
         if (status == Status.COMPLETED) {
             points = ActivityPoints.TASK_COMPLETED;
             task.setCompletedAt(LocalDateTime.now());
+            rewardService.rewardTaskCompletion(userService.getAuthenticatedUser(), task);
         }
         else
             points = ActivityPoints.TASK_UPDATED;
