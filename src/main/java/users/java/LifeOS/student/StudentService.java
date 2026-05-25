@@ -9,6 +9,7 @@ import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.branch.Branch;
 import users.java.LifeOS.branch.BranchService;
 import users.java.LifeOS.exceptions.NotFoundException;
+import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
 
 import java.util.List;
@@ -68,10 +69,21 @@ public class StudentService {
     }
 
     public StudentProfileView getStudentProfile(long userId) {
-        Student student = studentRepository.findByUser_Id(userId)
-                .orElseThrow(() -> new NotFoundException("No Student profile found associated with this user"));
-
+        Student student = getStudent(userId);
         return mapper.toProfileView(student);
+    }
+
+    public Student getStudent(long userId) {
+        return studentRepository.findByUser_Id(userId)
+                .orElseThrow(() -> new NotFoundException("No Student profile found associated with this user"));
+    }
+
+    public List<User> getUsersByCollege(String college) {
+        return studentRepository
+                .findByCollegeIgnoreCase(college)
+                .stream()
+                .map(Student::getUser)
+                .toList();
     }
 
     public List<StudentListView> getProfileList() {
