@@ -86,6 +86,11 @@ public class StudentService {
                 .toList();
     }
 
+    public List<StudentDiscoveryDto>
+    searchUsers(String query) {
+        return studentRepository.searchUsers(query, userService.getUserId());
+    }
+
     public List<StudentListView> getProfileList() {
         return studentRepository.findALlBy();
     }

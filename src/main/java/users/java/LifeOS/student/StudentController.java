@@ -46,4 +46,9 @@ public class StudentController {
     public ResponseEntity<?> updateBranch(@PathVariable long branchId) {
         return new ResponseEntity<>(studentService.updateBranch(userService.getUserId(), branchId), HttpStatus.ACCEPTED);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUsers(@RequestParam String q) {
+        return ResponseEntity.ok(studentService.searchUsers(q));
+    }
 }
