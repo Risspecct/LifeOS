@@ -13,8 +13,13 @@ public class LeaderboardController {
 
     private final LeaderboardService leaderboardService;
 
-    @GetMapping
-    public ResponseEntity<?> getLeaderboard() {
+    @GetMapping("/global")
+    public ResponseEntity<?> getGlobalLeaderboard() {
         return ResponseEntity.ok(leaderboardService.getLeaderboard());
+    }
+
+    @GetMapping("/friends")
+    public ResponseEntity<?> getFriendLeaderboard() {
+        return ResponseEntity.ok(leaderboardService.getFriendLeaderboard());
     }
 }

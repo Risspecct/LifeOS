@@ -7,7 +7,9 @@ import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserRepository;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +43,16 @@ public class FriendshipService {
         User second = user1.getId() < user2.getId() ? user2 : user1;
 
         friendshipRepository.save(new Friendship(first, second));
+    }
+
+    public Set<User> getFriendUsers(User currentUser) {
+        List<Friendship> friendships = friendshipRepository.findByUserOneOrUserTwo(currentUser, currentUser);
+        Set<User> users = new HashSet<>();
+        for(Friendship friendship : friendships) {
+            User friend = friendship.getUserOne().equals(currentUser) ? friendship.getUserTwo(): friendship.getUserOne();
+            users.add(friend);
+        }
+        return users;
     }
 
     @Transactional
