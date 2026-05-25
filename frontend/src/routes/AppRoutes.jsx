@@ -7,7 +7,7 @@ import ProfileSetupPage from "../pages/ProfileSetupPage";
 import ProfilePage from "../pages/ProfilePage";
 import ActivityPage from "../pages/ActivityPage";
 import LeaderboardPage from "../pages/Leaderboard/LeaderboardPage";
-import ConnectionsPage from "../pages/ConnectionsPage";
+import ConnectionsPage from "../pages/Connections/ConnectionsPage";
 import SettingsPage from "../pages/SettingsPage";
 import ProtectedRoute from "../auth/ProtectedRoute";
 

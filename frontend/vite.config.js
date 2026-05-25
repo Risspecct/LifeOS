@@ -59,6 +59,13 @@ export default defineConfig({
           if (req.headers.accept?.includes("text/html")) return "/index.html";
         }
       },
+      "/friends": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.headers.accept?.includes("text/html")) return "/index.html";
+        }
+      },
       "/labels": {
         target: "http://localhost:8080",
         changeOrigin: true
