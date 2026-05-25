@@ -6,6 +6,9 @@ import TasksPage from "../pages/TasksPage";
 import ProfileSetupPage from "../pages/ProfileSetupPage";
 import ProfilePage from "../pages/ProfilePage";
 import ActivityPage from "../pages/ActivityPage";
+import LeaderboardPage from "../pages/Leaderboard/LeaderboardPage";
+import ConnectionsPage from "../pages/ConnectionsPage";
+import SettingsPage from "../pages/SettingsPage";
 import ProtectedRoute from "../auth/ProtectedRoute";
 
 const AppRoutes = () => {
@@ -25,6 +28,9 @@ const AppRoutes = () => {
         <Route path="/tasks/:taskId" element={<TasksPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/activity" element={<ActivityPage />} />
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/connections" element={<ConnectionsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/signup" replace />} />

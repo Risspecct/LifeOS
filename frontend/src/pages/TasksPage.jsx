@@ -10,6 +10,7 @@ import TaskSlideOverPanel from "../components/tasks/TaskSlideOverPanel";
 import TaskFullscreenDetail from "../components/tasks/TaskFullscreenDetail";
 import TaskWorkspaceToolbar from "../components/tasks/TaskWorkspaceToolbar";
 import LabelManagerDrawer from "../components/tasks/LabelManagerDrawer";
+import MobileBottomNav from "../components/navigation/MobileBottomNav";
 import { useAuth } from "../hooks/useAuth";
 import { useLabels } from "../hooks/useLabels";
 import { useSidebar } from "../hooks/useSidebar";
@@ -334,7 +335,7 @@ const TasksPage = () => {
       <DashboardSidebar onLogout={clearAuth} activeView="tasks" />
       <DashboardTopBar />
 
-      <main className={`ml-0 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} p-md lg:p-xl min-h-screen transition-all duration-300 ease-in-out`}>
+      <main className={`ml-0 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} p-md lg:p-xl pb-[84px] md:pb-xl min-h-screen transition-all duration-300 ease-in-out`}>
         {!isFullscreen ? (
           <div className="max-w-container-max mx-auto space-y-md">
             <TaskWorkspaceToolbar
@@ -456,20 +457,7 @@ const TasksPage = () => {
         }}
       />
 
-      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-sm py-xs bg-surface border-t border-outline-variant md:hidden">
-        <button type="button" onClick={() => navigate("/dashboard")} className="flex flex-col items-center justify-center text-on-surface-variant p-xs">
-          <span className="material-symbols-outlined">dashboard</span>
-          <span className="font-label-sm text-label-sm">Dashboard</span>
-        </button>
-        <button type="button" onClick={() => navigate("/tasks")} className="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl p-xs">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>checklist</span>
-          <span className="font-label-sm text-label-sm">Tasks</span>
-        </button>
-        <button type="button" onClick={() => navigate("/profile")} className="flex flex-col items-center justify-center text-on-surface-variant p-xs">
-          <span className="material-symbols-outlined">person</span>
-          <span className="font-label-sm text-label-sm">Profile</span>
-        </button>
-      </nav>
+      {!isFullscreen ? <MobileBottomNav activeView="tasks" /> : null}
     </div>
   );
 };

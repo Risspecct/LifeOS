@@ -6,6 +6,7 @@ import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileViewSection from "../components/profile/ProfileViewSection";
 import ProfileEditForm from "../components/profile/ProfileEditForm";
 import AddBranchModal from "../components/profile/AddBranchModal";
+import MobileBottomNav from "../components/navigation/MobileBottomNav";
 import { updateProfile, updateProfileBranch } from "../api/profileApi";
 import { createBranch, getBranches } from "../api/branchApi";
 import { useAuth } from "../hooks/useAuth";
@@ -224,7 +225,7 @@ const ProfilePage = () => {
       <DashboardSidebar onLogout={clearAuth} activeView="profile" />
       <DashboardTopBar />
 
-      <main className={`ml-0 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} p-md lg:p-xl min-h-screen transition-all duration-300 ease-in-out`}>
+      <main className={`ml-0 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} p-md lg:p-xl pb-[84px] md:pb-xl min-h-screen transition-all duration-300 ease-in-out`}>
         <div className="max-w-container-max mx-auto space-y-lg">
           <ProfileHeader isEditing={isEditing} onEdit={openEditMode} onCancel={openViewMode} isSaving={isSaving} />
 
@@ -275,6 +276,8 @@ const ProfilePage = () => {
         onClose={closeAddBranchModal}
         onCreate={handleCreateBranch}
       />
+
+      <MobileBottomNav activeView="profile" />
     </div>
   );
 };
