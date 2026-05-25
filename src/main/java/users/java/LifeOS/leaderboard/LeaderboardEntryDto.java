@@ -1,4 +1,4 @@
-package users.java.LifeOS.learderboard;
+package users.java.LifeOS.leaderboard;
 
 public record LeaderboardEntryDto(
         Long userId,

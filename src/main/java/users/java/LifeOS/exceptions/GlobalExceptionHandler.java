@@ -142,13 +142,20 @@ public class GlobalExceptionHandler {
 
 
     // 409: DB conflicts (e.g., duplicate email)
-    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ExceptionHandler({DataIntegrityViolationException.class})
     public ResponseEntity<ApiErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.CONFLICT, "Data Conflict", "Database constraint violation.", request, ex);
     }
 
+    // 409: Business Conflict
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiErrorResponse>
+    handleConflict(ConflictException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT,"Conflict", ex.getMessage(), request, ex);
+    }
+
     // 400: Illegal arguments or state
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, DuplicateResourceException.class})
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, DuplicateResourceException.class, InvalidRequestException.class})
     public ResponseEntity<ApiErrorResponse> handleIllegalArgs(RuntimeException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.BAD_REQUEST, "Invalid Input", ex.getMessage(), request, ex);
     }
