@@ -14,7 +14,7 @@ const FriendCard = ({ friend, onRemove, removing }) => {
         </div>
         <div className="min-w-0">
           <p className="text-body-md text-on-surface truncate">{friend.username}</p>
-          <p className="text-label-sm text-on-surface-variant truncate">{friend.college || "CampusOS member"}</p>
+          <p className="text-label-sm text-on-surface-variant truncate">{friend.college || "LifeOS member"}</p>
         </div>
       </div>
       <button

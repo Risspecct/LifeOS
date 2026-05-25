@@ -14,7 +14,7 @@ const DiscoverUserCard = ({ user, onSendRequest, actionState }) => {
         </div>
         <div className="min-w-0">
           <p className="text-body-md text-on-surface truncate">{user.username}</p>
-          <p className="text-label-sm text-on-surface-variant truncate">{user.college || "CampusOS member"}</p>
+          <p className="text-label-sm text-on-surface-variant truncate">{user.college || "LifeOS member"}</p>
         </div>
       </div>
       <button

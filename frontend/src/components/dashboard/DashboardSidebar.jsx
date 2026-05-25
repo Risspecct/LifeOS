@@ -3,12 +3,12 @@ import { useState } from "react";
 
 const DashboardSidebar = ({ onLogout, activeView = "dashboard" }) => {
   const navigate = useNavigate();
-  const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem("campusos_sidebar_collapsed") === "true");
+  const [isCollapsed, setIsCollapsed] = useState(() => localStorage.getItem("lifeos_sidebar_collapsed") === "true");
 
   const toggleCollapse = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
-    localStorage.setItem("campusos_sidebar_collapsed", newState);
+    localStorage.setItem("lifeos_sidebar_collapsed", newState);
     window.dispatchEvent(new CustomEvent("sidebarStateChange", { detail: newState }));
   };
 
@@ -26,7 +26,7 @@ const DashboardSidebar = ({ onLogout, activeView = "dashboard" }) => {
       <div className={`flex w-full mb-lg ${isCollapsed ? 'flex-col items-center gap-md mt-xs' : 'justify-between items-start'}`}>
         {!isCollapsed ? (
           <div className="overflow-hidden whitespace-nowrap transition-opacity duration-300">
-            <h1 className="font-h3 text-h3 font-bold text-primary">CampusOS</h1>
+            <h1 className="font-h3 text-h3 font-bold text-primary">LifeOS</h1>
             <p className="font-label-sm text-label-sm text-on-surface-variant">Deep Work Mode</p>
           </div>
         ) : (

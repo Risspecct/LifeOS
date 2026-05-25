@@ -48,7 +48,7 @@ const AddBranchModal = ({ isOpen, isSubmitting, error, onClose, onCreate }) => {
       />
       <div className="relative w-full max-w-md bg-surface border border-outline-variant rounded-xl p-md shadow-2xl transition-all duration-200">
         <h3 className="font-h3 text-h3 text-on-surface">Add New Branch</h3>
-        <p className="text-on-surface-variant mt-1">Create your branch once and use it across CampusOS forms.</p>
+        <p className="text-on-surface-variant mt-1">Create your branch once and use it across LifeOS forms.</p>
 
         <form className="mt-md space-y-sm" onSubmit={handleSubmit} noValidate>
           <div className="space-y-xs">

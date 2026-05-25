@@ -6,7 +6,7 @@ const FriendRequestCard = ({ request, type, onAccept, onReject, loading, college
       <div className="min-w-0">
         <p className="text-body-md text-on-surface truncate">{username}</p>
         <p className="text-label-sm text-on-surface-variant">
-          {college || "CampusOS member"} • Request ID #{request.requestId}
+          {college || "LifeOS member"} • Request ID #{request.requestId}
         </p>
       </div>
 

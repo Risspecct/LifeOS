@@ -26,7 +26,7 @@ import {
 } from "../api/taskApi";
 import { buildTaskStatusOptions, normalizeTaskStatus } from "../utils/taskStatus";
 
-const TASKS_VIEW_MODE_KEY = "campusos_tasks_view_mode";
+const TASKS_VIEW_MODE_KEY = "lifeos_tasks_view_mode";
 const readInitialViewMode = () => {
   const stored = localStorage.getItem(TASKS_VIEW_MODE_KEY);
   return stored === "grid" ? "grid" : "list";
