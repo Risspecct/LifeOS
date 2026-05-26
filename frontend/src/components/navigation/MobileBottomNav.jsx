@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 const NAV_ITEMS = [
   { key: "dashboard", label: "Dashboard", icon: "dashboard", route: "/dashboard", available: true },
   { key: "tasks", label: "Tasks", icon: "checklist", route: "/tasks", available: true },
+  { key: "activity", label: "Activity", icon: "monitoring", route: "/activity", available: true },
   { key: "leaderboard", label: "Leaderboard", icon: "leaderboard", route: "/leaderboard", available: true },
   { key: "connections", label: "Connections", icon: "group", route: "/connections", available: true },
   { key: "profile", label: "Profile", icon: "person", route: "/profile", available: true },
