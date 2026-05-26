@@ -67,6 +67,9 @@ Implemented capabilities:
 - branch association
 - college-aware discovery/search
 - profile-based UI context for dashboard and connections
+  <p align="center">
+  <img src="Assets/profile_alex.jpeg" width="80%" />
+</p>
 
 ### 3) Task Management
 Tasks are the main unit of work inside LifeOS.
@@ -160,10 +163,7 @@ Implemented capabilities:
 - recent activity
 - aggregated response from a single endpoint
   <br />
-<p align="center">
-  <img src="Assets/profile_alex.jpeg" width="80%" />
-</p>
-
+  
 ### 9) Connections and Social Accountability
 LifeOS includes a lightweight social layer for peer motivation.
 
