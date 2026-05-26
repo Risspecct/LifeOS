@@ -125,6 +125,9 @@ Implemented capabilities:
 - activity timeline support
 - social activity
 - heatmap and insight generation from activity signals
+<p align="center">
+  <img src="Assets/activity.jpeg" width="70%" />
+</p>
 
 ### 7) Stats, Rewards, and Streaks
 Progress is tracked as a real signal, not just a visual gimmick.
