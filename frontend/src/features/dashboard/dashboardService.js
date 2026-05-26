@@ -2,7 +2,7 @@ import { getDashboard, getLabels } from "../../api/dashboardApi";
 
 const EMPTY_DASHBOARD = {
   profile: { name: "", username: "", branch: "", year: null },
-  summary: { pendingTasks: 0, completedTasks: 0, overdueTasks: 0 },
+  summary: { pendingTasks: 0, completedTasks: 0, overdueTasks: 0, currentStreak: null },
   prioritizedTasks: [],
   upcomingTasks: [],
   recentActivities: []
@@ -67,7 +67,11 @@ const normalizeDashboardResponse = (rawDashboard, labelMap) => {
     summary: {
       pendingTasks: Number(summary?.pendingTasks ?? 0),
       completedTasks: Number(summary?.completedTasks ?? 0),
-      overdueTasks: Number(summary?.overdueTasks ?? 0)
+      overdueTasks: Number(summary?.overdueTasks ?? 0),
+      currentStreak:
+        summary?.currentStreak === null || summary?.currentStreak === undefined
+          ? null
+          : Number(summary.currentStreak)
     },
     prioritizedTasks: prioritized.slice(0, 5).map((task, index) => {
       const displayLabel = String(task?.labelName || task?.label || task?.taskType || "General");

@@ -1,7 +1,7 @@
 import AcademicInfoCard from "./AcademicInfoCard";
 import ProfileStatsCard from "./ProfileStatsCard";
 
-const ProfileViewSection = ({ profile }) => {
+const ProfileViewSection = ({ profile, stats, statsLoading, statsError, onRetryStats }) => {
   return (
     <div className="space-y-md">
       <section className="bg-surface-container border border-outline-variant rounded-xl p-lg">
@@ -23,7 +23,7 @@ const ProfileViewSection = ({ profile }) => {
         year={profile?.year}
       />
 
-      <ProfileStatsCard />
+      <ProfileStatsCard stats={stats} loading={statsLoading} error={statsError} onRetry={onRetryStats} />
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-md">
         <article className="bg-surface-container border border-outline-variant rounded-xl p-md">

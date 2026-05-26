@@ -9,6 +9,7 @@ import AddBranchModal from "../components/profile/AddBranchModal";
 import MobileBottomNav from "../components/navigation/MobileBottomNav";
 import { updateProfile, updateProfileBranch } from "../api/profileApi";
 import { createBranch, getBranches } from "../api/branchApi";
+import { getMyStats } from "../api/statsApi";
 import { useAuth } from "../hooks/useAuth";
 import { useSidebar } from "../hooks/useSidebar";
 import { getApiErrorMessage } from "../utils/errorUtils";
@@ -33,6 +34,10 @@ const ProfilePage = () => {
   const [profileData, setProfileData] = useState(profile);
   const [isLoadingProfile, setIsLoadingProfile] = useState(!profile);
   const [profileError, setProfileError] = useState("");
+
+  const [stats, setStats] = useState(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState("");
 
   const [branches, setBranches] = useState([]);
   const [branchesLoading, setBranchesLoading] = useState(false);
@@ -76,6 +81,25 @@ const ProfilePage = () => {
 
     loadProfile();
   }, [profile, refreshProfileStatus]);
+
+  const loadStats = async () => {
+    setIsLoadingStats(true);
+    setStatsError("");
+    try {
+      const response = await getMyStats();
+      setStats(response ?? null);
+    } catch (error) {
+      setStats(null);
+      setStatsError(getApiErrorMessage(error, "Unable to load performance signals."));
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadBranches = async () => {
     setBranchesLoading(true);
@@ -263,7 +287,13 @@ const ProfilePage = () => {
                 onSubmit={handleSubmit}
               />
             ) : (
-              <ProfileViewSection profile={profileData} />
+              <ProfileViewSection
+                profile={profileData}
+                stats={stats}
+                statsLoading={isLoadingStats}
+                statsError={statsError}
+                onRetryStats={loadStats}
+              />
             )
           ) : null}
         </div>

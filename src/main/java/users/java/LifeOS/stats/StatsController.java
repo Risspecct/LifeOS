@@ -17,6 +17,6 @@ public class StatsController {
     @GetMapping("/me")
     public UserStatsDto getMyStats() {
 
-        return statsService.getUserStats(userService.getAuthenticatedUser());
+    return statsService.getUserStats(userService.getAuthenticatedUser());
     }
 }

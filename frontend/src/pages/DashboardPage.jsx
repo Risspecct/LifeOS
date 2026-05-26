@@ -82,7 +82,11 @@ const DashboardPage = () => {
 
           <aside className="lg:col-span-3 space-y-xl">
             <div className="space-y-md">
-              <StudyStreakWidget />
+              <StudyStreakWidget
+                streakDays={summary.currentStreak}
+                loading={loading}
+                error={error}
+              />
               <AchievementWidget />
               <SocialPresenceWidget />
             </div>

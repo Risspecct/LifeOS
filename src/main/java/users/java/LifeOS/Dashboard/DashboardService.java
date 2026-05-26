@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.activity.ActivityResponse;
 import users.java.LifeOS.activity.ActivityService;
+import users.java.LifeOS.stats.StatsService;
 import users.java.LifeOS.student.StudentProfileView;
 import users.java.LifeOS.student.StudentService;
 import users.java.LifeOS.task.TaskService;
@@ -24,29 +25,22 @@ public class DashboardService {
     private final ActivityService activityService;
     private final PrioritizationService prioritizationService;
     private final StudentService studentService;
+    private final StatsService statsService;
 
     public DashboardResponse getDashboardData() {
-        User currentUser =
-                userService.getAuthenticatedUser();
+        User currentUser = userService.getAuthenticatedUser();
+        Long totalTasks = taskService.getTotalTaskCount();
+        Long completedTasks = taskService.getCompletedTaskCount(currentUser);
+        Long pendingTasks = taskService.getPendingTaskCount(currentUser);
+        Long overdueTasks = taskService.getOverdueTaskCount(currentUser);
+        Integer currentStreak = statsService.getCurrentStreak(currentUser);
 
-        Long totalTasks =
-                taskService.getTotalTaskCount();
-
-        Long completedTasks =
-                taskService.getCompletedTaskCount(currentUser);
-
-        Long pendingTasks =
-                taskService.getPendingTaskCount(currentUser);
-
-        Long overdueTasks =
-                taskService.getOverdueTaskCount(currentUser);
-
-        DashboardSummary summary =
-                new DashboardSummary(
+        DashboardSummary summary = new DashboardSummary(
                         totalTasks,
                         completedTasks,
                         pendingTasks,
-                        overdueTasks
+                        overdueTasks,
+                        currentStreak
                 );
 
 
