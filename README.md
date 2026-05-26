@@ -10,8 +10,9 @@ LifeOS is a student productivity platform built to make academic work feel struc
 The goal is not to become another noisy social app or a generic todo list. LifeOS is designed around a simple loop:
 
 **capture work → rank what matters most → show progress clearly → reinforce consistency**
-
----
+<p align="center">
+  <img src="Assets/dashboard.jpeg" width="100%" />
+</p>
 
 ## What LifeOS is trying to solve
 
@@ -69,6 +70,20 @@ Implemented capabilities:
 - upcoming task view
 - task statistics summary
 - support for task types, labels, due dates, and priorities
+<table>
+  <tr>
+    <td align="center">
+      <img src="Assets/task_board.jpeg" width="100%" />
+      <br />
+      <strong>Task Board</strong>
+    </td>
+    <td align="center">
+      <img src="Assets/task_detail.jpeg" width="100%" />
+      <br />
+      <strong>Task Details</strong>
+    </td>
+  </tr>
+</table>
 
 ### 4) Smart Prioritization
 LifeOS does not just show tasks; it explains what should be worked on first.
@@ -84,6 +99,9 @@ Each prioritized task returns:
 - computed score
 - priority level
 - human-readable reasons
+<p align="center">
+  <img src="Assets/priority.png" width="60%" />
+</p>
 
 ### 5) Labels and Focus Categories
 Labels help the app understand what kind of work a task represents.
@@ -93,6 +111,9 @@ Implemented capabilities:
 - priority weight per label
 - default label seeding
 - label-driven prioritization and insights
+<p align="center">
+  <img src="Assets/label.png" width="50%" />
+</p>
 
 ### 6) Activity Tracking
 LifeOS records meaningful user events so the app can visualize behavior over time.
@@ -127,6 +148,10 @@ Implemented capabilities:
 - upcoming tasks
 - recent activity
 - aggregated response from a single endpoint
+  <br />
+<p align="center">
+  <img src="Assets/profile_alex.jpeg" width="90%" />
+</p>
 
 ### 9) Connections and Social Accountability
 LifeOS includes a lightweight social layer for peer motivation.
@@ -137,6 +162,25 @@ Implemented capabilities:
 - friend list management
 - incoming / outgoing request views
 - discovery/search for connectable users
+<table>
+  <tr>
+    <td align="center">
+      <img src="Assets/connections_friends.jpeg" width="100%" />
+      <br />
+      <strong>Friends</strong>
+    </td>
+    <td align="center">
+      <img src="Assets/connections_request.jpeg" width="100%" />
+      <br />
+      <strong>Requests</strong>
+    </td>
+    <td align="center">
+      <img src="Assets/connections_discover.jpeg" width="100%" />
+      <br />
+      <strong>Discover</strong>
+    </td>
+  </tr>
+</table>
 
 ### 10) Leaderboards
 Leaderboards are used as a structured motivation system, not a social feed.
@@ -147,6 +191,25 @@ Implemented capabilities:
 - college leaderboard
 - rank calculation from stored user stats
 - points + streak based ordering
+<table>
+  <tr>
+    <td align="center">
+      <img src="Assets/leaderboard_alex.jpeg" width="100%" />
+      <br />
+      <strong>Global</strong>
+    </td>
+    <td align="center">
+      <img src="Assets/leaderboard_friends.jpeg" width="100%" />
+      <br />
+      <strong>Friends</strong>
+    </td>
+    <td align="center">
+      <img src="Assets/leaderboard_college.jpeg" width="100%" />
+      <br />
+      <strong>College</strong>
+    </td>
+  </tr>
+</table>
 
 ### 11) Insights and Productivity Signals
 LifeOS includes activity-driven insight surfaces that make progress easier to understand.
@@ -158,6 +221,9 @@ Implemented capabilities:
 - focus distribution
 - activity timeline
 
+<p align="center">
+  <img src="Assets/activity.jpeg" width="90%" />
+</p>
 ---
 
 ## How the App Fits Together
@@ -419,4 +485,4 @@ npm run build
 
 ## License
 
-No license has been added yet.
+This project is licensed under the MIT License.
