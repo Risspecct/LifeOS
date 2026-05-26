@@ -150,7 +150,7 @@ Implemented capabilities:
 - aggregated response from a single endpoint
   <br />
 <p align="center">
-  <img src="Assets/profile_alex.jpeg" width="90%" />
+  <img src="Assets/profile_alex.jpeg" width="80%" />
 </p>
 
 ### 9) Connections and Social Accountability
@@ -222,7 +222,7 @@ Implemented capabilities:
 - activity timeline
 
 <p align="center">
-  <img src="Assets/activity.jpeg" width="90%" />
+  <img src="Assets/activity.jpeg" width="80%" />
 </p>
 ---
 
