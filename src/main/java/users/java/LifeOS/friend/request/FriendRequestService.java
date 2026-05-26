@@ -3,6 +3,7 @@ package users.java.LifeOS.friend.request;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.activity.ActivityService;
 import users.java.LifeOS.exceptions.ConflictException;
 import users.java.LifeOS.exceptions.InvalidRequestException;
 import users.java.LifeOS.exceptions.NotFoundException;
@@ -21,6 +22,7 @@ public class FriendRequestService {
     private final FriendshipService friendshipService;
     private final FriendRequestMapper mapper;
     private final FriendRequestValidationService validationService;
+    private final ActivityService activityService;
 
     @Transactional
     public void sendRequest(User sender, Long receiverId) {
@@ -50,6 +52,9 @@ public class FriendRequestService {
         request.setStatus(FriendRequestStatus.ACCEPTED);
         request.setResolvedAt(LocalDateTime.now());
         friendshipService.createFriendship(request.getSender(),request.getReceiver());
+
+        activityService.logFriendAdded(currentUser, request.getSender());
+        activityService.logFriendAdded(request.getSender(), currentUser);
     }
 
     @Transactional

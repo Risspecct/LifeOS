@@ -43,4 +43,15 @@ public class ActivityService {
                 .map(activityMapper::toResponse)
                 .toList();
     }
+
+    public void logFriendAdded(User user, User friend) {
+        logActivity(
+                user,
+                ActivityType.FRIEND_ADDED,
+                "New Connection",
+                "Connected with " + friend.getUsername(),
+                ActivityPoints.FRIEND_ADDED,
+                null
+        );
+    }
 }

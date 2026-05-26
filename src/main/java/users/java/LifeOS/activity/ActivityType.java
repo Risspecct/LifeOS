@@ -10,5 +10,7 @@ public enum ActivityType {
 
     LOGIN,
 
-    STREAK_REACHED
+    STREAK_REACHED,
+
+    FRIEND_ADDED
 }

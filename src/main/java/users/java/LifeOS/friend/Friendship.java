@@ -28,8 +28,7 @@ public class Friendship {
     private User userTwo;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt =
-            LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public Friendship(User userOne, User userTwo) {
         this.userOne = userOne;
