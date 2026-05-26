@@ -30,13 +30,21 @@ LifeOS sits in the middle. It is built for students who need:
 
 ---
 
-## Core Product Principles
+## Design Principles
 
-- **Backend-first**: the backend owns scoring, aggregation, and productivity logic.
-- **Explainable prioritization**: task ranking always shows why a task is important.
-- **Minimal social layer**: friends and leaderboards exist for accountability, not feeds.
-- **Calm UI**: the interface should feel focused, not distracting.
-- **Finishability over feature bloat**: every feature should support actual student workflow.
+The project was built around a few consistent architectural and product decisions that shaped both the backend and frontend.
+- **Backend-driven logic**  
+  Prioritization, scoring, aggregation, rewards, streaks, insights, and leaderboard computation are handled server-side instead of being duplicated across the client.
+- **Explainable prioritization**  
+  Tasks should not feel randomly ordered. The system exposes why a task is being prioritized through weighted scoring and readable priority reasons.
+- **Feature-oriented architecture**  
+  The backend is organized around domains such as tasks, activity, leaderboard, insights, and friendships rather than generic layered packages.
+- **Lightweight accountability**  
+  Social features are intentionally scoped around motivation and consistency tracking instead of content feeds or engagement mechanics.
+- **Focused interface design**  
+  The UI is designed to surface workload, progress, and priorities clearly without overwhelming the user with unnecessary complexity.
+- **Systems over isolated features**  
+  Most features are connected through shared productivity signals. Task completions feed into rewards, streaks, activity history, insights, and leaderboards rather than existing independently.
 
 ---
 
@@ -229,18 +237,20 @@ Implemented capabilities:
 </p>
 ---
 
-## How the App Fits Together
+## Core Workflow
 
-A typical LifeOS flow looks like this:
+LifeOS is built around a simple productivity loop where different backend systems continuously feed into each other instead of existing as isolated features.
 
-1. A student creates tasks for assignments, study work, and other responsibilities.
-2. The prioritization engine scores each task using due dates, labels, and urgency.
-3. The dashboard surfaces what matters most first.
-4. Completion events update activity history, points, and streaks.
-5. Stats and insights summarize consistency over time.
-6. Friends and leaderboards turn that progress into accountability and motivation.
+A typical flow inside the app looks like this:
 
-That flow keeps the app centered on action, not just storage.
+1. A user creates tasks for assignments, exams, projects, placement preparation, or personal work.
+2. Labels, deadlines, manual priority, and task state feed into the prioritization engine.
+3. The backend computes which tasks need the most attention and surfaces them through the dashboard.
+4. Completing tasks updates rewards, streaks, stats, activity history, and leaderboard rankings.
+5. Activity data is then reused for insights, trends, consistency tracking, and productivity visualization.
+6. Connections and scoped leaderboards add lightweight accountability without turning the platform into a social feed.
+
+Most of the important behavior in the system is intentionally backend-driven. The frontend primarily focuses on presenting aggregated productivity data clearly rather than duplicating application logic on the client.
 
 ---
 
@@ -287,7 +297,6 @@ The frontend is organized around page-level routes and reusable feature componen
 
 The UI is designed to be:
 - responsive
-- calm
 - modular
 - productivity-oriented
 
@@ -315,69 +324,12 @@ Current domains in the codebase include:
 
 ---
 
-## API Highlights
+## API Documentation
+Swagger/OpenAPI integration is included for interactive API exploration and testing.
 
-Representative endpoints from the current build:
-
-### Authentication
-- `POST /register`
-- `POST /login`
-
-### Profile
-- `GET /profile`
-- `POST /profile`
-- `PUT /profile`
-- `PUT /profile/{branchId}`
-- `GET /profile/all`
-- `GET /profile/search?q=...`
-
-### Tasks
-- `POST /task`
-- `GET /task/all`
-- `GET /task/{taskId}`
-- `PUT /task/{taskId}`
-- `PUT /task/{taskId}/{status}`
-- `GET /task`
-- `GET /task/upcoming`
-- `GET /task/stats`
-
-### Prioritization
-- `GET /tasks/prioritized`
-
-### Labels
-- `GET /labels`
-- `POST /labels`
-- `PUT /labels/{labelId}`
-- `DELETE /labels/{labelId}`
-- `POST /labels/defaults`
-
-### Activity
-- `GET /activities`
-
-### Stats
-- `GET /stats/me`
-
-### Dashboard
-- `GET /dashboard`
-
-### Connections
-- `POST /friends/request/{receiverId}`
-- `POST /friends/request/{requestId}/accept`
-- `POST /friends/request/{requestId}/reject`
-- `GET /friends`
-- `DELETE /friends/{friendId}`
-- `GET /friends/requests/incoming`
-- `GET /friends/requests/outgoing`
-
-### Leaderboard
-- `GET /leaderboard?scope=GLOBAL|FRIENDS|COLLEGE`
-
-### Insights
-- `GET /insights`
-
-### API Docs
-- `GET /swagger-ui/**`
-- `GET /v3/api-docs/**`
+Available endpoints:
+- `/swagger-ui`
+- `/v3/api-docs`
 
 ---
 
@@ -400,12 +352,23 @@ The database is designed to support both current app behavior and future expansi
 
 ## Current Product Direction
 
-The current direction is:
-- structured productivity
+LifeOS is currently focused on building a structured productivity system around real student workflows rather than generic task tracking.
+
+The project is centered around:
+- workload visibility
 - explainable prioritization
+- consistency tracking
 - lightweight accountability
-- calm analytics
-- a modular backend that can grow without becoming messy
+- backend-driven productivity logic
+
+A major focus of the system is keeping meaningful logic on the backend instead of reducing the application to basic CRUD operations. Features like prioritization, dashboard aggregation, leaderboard ranking, streak tracking, and insights are all designed as connected backend systems rather than isolated pages.
+
+The current direction is to continue expanding the platform without losing clarity or focus. New additions should strengthen:
+- organization
+- visibility
+- consistency
+- accountability
+without turning the app into a noisy social platform.
 
 ---
 
@@ -433,6 +396,15 @@ The current roadmap builds outward from the systems already in place.
 - consistency-based achievements and milestones
 
 The intent is to expand the system without turning it into a noisy engagement product.
+
+### Technical Direction
+From an engineering perspective, the project is also being used to explore:
+- scalable backend design
+- modular monolith architecture
+- realtime communication patterns
+- aggregation-heavy backend systems
+- cleaner domain separation
+- backend-driven application logic
 
 ---
 
