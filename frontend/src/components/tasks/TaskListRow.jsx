@@ -1,10 +1,11 @@
+import { useState } from "react";
 import { getDueDateMetadata } from "../../utils/taskUtils";
 import TaskStatusBadge from "./TaskStatusBadge";
 import TaskTypeChip from "./TaskTypeChip";
-import { useState } from "react";
 
 const TaskListRow = ({ task, isActive, onSelectTask, priorityView = false }) => {
   const dueDateMeta = getDueDateMetadata(task.dueDate);
+  const isCompleted = task?.status === "COMPLETED";
   const reasons = Array.isArray(task?.reasons) ? task.reasons.filter(Boolean) : [];
   const [showReasons, setShowReasons] = useState(false);
 
@@ -31,10 +32,16 @@ const TaskListRow = ({ task, isActive, onSelectTask, priorityView = false }) => 
                 {task.label}
               </span>
             ) : null}
-            <span className={`text-label-xs ${dueDateMeta.tone}`}>
-              {dueDateMeta.label}
-              {dueDateMeta.hint ? ` · ${dueDateMeta.hint}` : ""}
-            </span>
+            {isCompleted ? (
+              <span className="text-label-xs text-on-surface-variant/50 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+              </span>
+            ) : (
+              <span className={`text-label-xs ${dueDateMeta.tone}`}>
+                {dueDateMeta.label}
+                {dueDateMeta.hint ? ` · ${dueDateMeta.hint}` : ""}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-xs shrink-0">
