@@ -24,6 +24,7 @@ import {
   updateTaskStatus
 } from "../api/taskApi";
 import { buildTaskStatusOptions, normalizeTaskStatus } from "../utils/taskStatus";
+import { useToast } from "../components/ui/ToastProvider";
 
 const TASKS_VIEW_MODE_KEY = "lifeos_tasks_view_mode";
 const TASKS_WORKSPACE_MODE_KEY = "lifeos_tasks_workspace_mode";
@@ -97,6 +98,7 @@ const TasksPage = () => {
   const params = useParams();
   const detailRouteTaskId = params.taskId ? Number(params.taskId) : null;
   const isFullscreen = Boolean(detailRouteTaskId);
+  const { showToast } = useToast();
 
   const { clearAuth } = useAuth();
   const {
@@ -257,47 +259,74 @@ const TasksPage = () => {
   };
 
   const handleCreateTask = async (payload) => {
-    setCreatingTask(true);
+    setIsCreateOpen(false);
     setCreateTaskError("");
+    
+    const tempId = `temp-${Date.now()}`;
+    const optimisticTask = normalizeTaskDetail({
+      id: tempId,
+      ...payload,
+      status: payload.status || "TO_DO",
+      priority: "NORMAL",
+      createdAt: new Date().toISOString()
+    }, labels);
+
+    setTasks((prev) => sortTasks([optimisticTask, ...prev], sortBy));
+    
     try {
       const createdTask = await createTask(payload);
       const normalizedCreatedTask = normalizeTaskDetail(createdTask, labels);
       setTasks((prev) =>
         sortTasks(
-          [{ ...normalizedCreatedTask }, ...prev.filter((task) => task.id !== normalizedCreatedTask.id)],
+          [{ ...normalizedCreatedTask }, ...prev.filter((task) => task.id !== tempId && task.id !== normalizedCreatedTask.id)],
           sortBy
         )
       );
-      setSelectedTaskId(normalizedCreatedTask.id);
-      setSelectedTaskDetail(normalizedCreatedTask);
-      setIsCreateOpen(false);
+      if (selectedTaskId === tempId || !selectedTaskId) {
+        setSelectedTaskId(normalizedCreatedTask.id);
+        setSelectedTaskDetail(normalizedCreatedTask);
+      }
       fetchPriorityTasks();
+      showToast("Task created");
     } catch (error) {
+      setTasks((prev) => prev.filter((t) => t.id !== tempId));
       setCreateTaskError(getApiErrorMessage(error, "Unable to create task."));
-    } finally {
-      setCreatingTask(false);
+      showToast("Unable to create task", "error");
+      setIsCreateOpen(true);
     }
   };
 
   const handleSaveTask = async (payload) => {
     if (!selectedTaskDetail?.id) return;
-    setSavingTask(true);
     setTaskActionError("");
+    setIsEditOpen(false);
+    
+    const previousTask = selectedTaskDetail;
+    const { status, ...taskPayload } = payload;
+    const normalizedStatus = normalizeTaskStatus(status);
+    
+    const optimisticTask = normalizeTaskDetail({
+      ...selectedTaskDetail,
+      ...taskPayload,
+      status: normalizedStatus || selectedTaskDetail.status
+    }, labels);
+    
+    applyTaskUpdate(optimisticTask);
+
     try {
-      const { status, ...taskPayload } = payload;
       const updated = await updateTask(selectedTaskDetail.id, taskPayload);
-      const normalizedStatus = normalizeTaskStatus(status);
       const currentStatus = normalizeTaskStatus(updated?.status);
       const finalTask =
         normalizedStatus && normalizedStatus !== currentStatus
           ? await updateTaskStatus(selectedTaskDetail.id, normalizedStatus)
           : updated;
       applyTaskUpdate(finalTask);
-      setIsEditOpen(false);
+      showToast("Task updated");
     } catch (error) {
+      applyTaskUpdate(previousTask);
       setTaskActionError(getApiErrorMessage(error, "Unable to update task."));
-    } finally {
-      setSavingTask(false);
+      showToast("Unable to update task", "error");
+      setIsEditOpen(true);
     }
   };
 
@@ -306,15 +335,20 @@ const TasksPage = () => {
     const normalizedStatus = normalizeTaskStatus(nextStatus);
     if (!normalizedStatus) return;
 
-    setStatusUpdatingTask(true);
     setTaskActionError("");
+    const previousTask = selectedTaskDetail;
+    
+    const optimisticTask = { ...selectedTaskDetail, status: normalizedStatus };
+    applyTaskUpdate(optimisticTask);
+
     try {
       const updated = await updateTaskStatus(selectedTaskDetail.id, normalizedStatus);
       applyTaskUpdate(updated);
+      showToast("Status updated");
     } catch (error) {
+      applyTaskUpdate(previousTask);
       setTaskActionError(getApiErrorMessage(error, "Unable to update task status."));
-    } finally {
-      setStatusUpdatingTask(false);
+      showToast("Unable to update task status", "error");
     }
   };
 
@@ -322,7 +356,6 @@ const TasksPage = () => {
     if (!selectedTaskDetail?.id) return;
     const deletingId = selectedTaskDetail.id;
     const previousTasks = tasks;
-    setDeletingTask(true);
     setTaskActionError("");
     setTasks((prev) => prev.filter((task) => task.id !== deletingId));
     setSelectedTaskDetail(null);
@@ -335,21 +368,28 @@ const TasksPage = () => {
     try {
       await deleteTask(deletingId);
       fetchPriorityTasks();
+      showToast("Task deleted");
     } catch (error) {
       setTasks(previousTasks);
       setTaskActionError(getApiErrorMessage(error, "Unable to delete task."));
+      showToast("Unable to delete task", "error");
       if (!isFullscreen) {
         setSelectedTaskId(deletingId);
       }
-    } finally {
-      setDeletingTask(false);
     }
   };
 
   const handleLabelChange = async (nextLabelId) => {
     if (!selectedTaskDetail?.id) return;
-    setStatusUpdatingTask(true);
     setTaskActionError("");
+    
+    const previousTask = selectedTaskDetail;
+    const optimisticTask = normalizeTaskDetail({
+      ...selectedTaskDetail,
+      labelId: nextLabelId ? Number(nextLabelId) : null
+    }, labels);
+    applyTaskUpdate(optimisticTask);
+
     try {
       const updated = await updateTask(selectedTaskDetail.id, {
         title: selectedTaskDetail.title ?? "",
@@ -359,10 +399,11 @@ const TasksPage = () => {
         labelId: nextLabelId ? Number(nextLabelId) : null
       });
       applyTaskUpdate(updated);
+      showToast("Label updated");
     } catch (error) {
+      applyTaskUpdate(previousTask);
       setTaskActionError(getApiErrorMessage(error, "Unable to update label."));
-    } finally {
-      setStatusUpdatingTask(false);
+      showToast("Unable to update label", "error");
     }
   };
 

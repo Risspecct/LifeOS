@@ -1,11 +1,14 @@
-﻿import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
+import { ToastProvider } from "./components/ui/ToastProvider";
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </ToastProvider>
   );
 };
 

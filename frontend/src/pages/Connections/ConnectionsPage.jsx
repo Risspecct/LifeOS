@@ -13,6 +13,7 @@ import ConnectionsSkeleton from "../../components/connections/ConnectionsSkeleto
 import { useAuth } from "../../hooks/useAuth";
 import { useSidebar } from "../../hooks/useSidebar";
 import { getApiErrorMessage } from "../../utils/errorUtils";
+import { useToast } from "../../components/ui/ToastProvider";
 import {
   acceptFriendRequest,
   getDiscoverUsers,
@@ -25,9 +26,23 @@ import {
   sendFriendRequest
 } from "../../services/connectionsApi";
 
+const RELATIONSHIP = {
+  SELF: "SELF",
+  FRIEND: "FRIEND",
+  REQUEST_SENT: "REQUEST_SENT",
+  REQUEST_RECEIVED: "REQUEST_RECEIVED",
+  DISCOVERABLE: "DISCOVERABLE"
+};
+
+const normalizeId = (value) => {
+  const id = Number(value);
+  return Number.isFinite(id) && id > 0 ? id : null;
+};
+
 const ConnectionsPage = () => {
   const isCollapsed = useSidebar();
-  const { clearAuth } = useAuth();
+  const { clearAuth, profile } = useAuth();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState("friends");
   const [activeRequestTab, setActiveRequestTab] = useState("incoming");
   const [search, setSearch] = useState("");
@@ -37,13 +52,18 @@ const ConnectionsPage = () => {
   const [outgoingRequests, setOutgoingRequests] = useState([]);
   const [discoverUsers, setDiscoverUsers] = useState([]);
   const [profilesById, setProfilesById] = useState({});
+  const [searchResults, setSearchResults] = useState([]);
 
   const [loadingSection, setLoadingSection] = useState(false);
+  const [loadingSearchResults, setLoadingSearchResults] = useState(false);
   const [error, setError] = useState("");
   const [removingId, setRemovingId] = useState(null);
   const [processingRequestId, setProcessingRequestId] = useState(null);
   const [sendingStates, setSendingStates] = useState({});
   const [comingSoonMessage, setComingSoonMessage] = useState("");
+
+  const currentUserId = normalizeId(profile?.userId);
+  const hasActiveSearch = Boolean(search.trim());
 
   const loadFriends = async () => {
     const data = await getFriends();
@@ -66,7 +86,8 @@ const ConnectionsPage = () => {
       try {
         const discover = await getDiscoverUsers();
         const map = (Array.isArray(discover) ? discover : []).reduce((acc, item) => {
-          acc[item.id] = item;
+          const id = normalizeId(item.id);
+          if (id) acc[id] = item;
           return acc;
         }, {});
         setProfilesById(map);
@@ -100,42 +121,96 @@ const ConnectionsPage = () => {
   }, [activeTab]);
 
   useEffect(() => {
+    if (!hasActiveSearch) {
+      setSearchResults([]);
+      setLoadingSearchResults(false);
+      return;
+    }
+
     const timer = setTimeout(async () => {
-      if (activeTab !== "discover") return;
-      setLoadingSection(true);
+      setLoadingSearchResults(true);
       setError("");
       try {
-        const data = search.trim() ? await searchDiscoverUsers(search.trim()) : await getDiscoverUsers();
-        setDiscoverUsers(Array.isArray(data) ? data : []);
+        const data = await searchDiscoverUsers(search.trim());
+        setSearchResults(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(getApiErrorMessage(err, "Unable to search users."));
+        setSearchResults([]);
       } finally {
-        setLoadingSection(false);
+        setLoadingSearchResults(false);
       }
-    }, 350);
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [search, activeTab]);
+  }, [search, hasActiveSearch]);
 
-  const blockedUserIds = useMemo(() => {
-    const friendIds = friends.map((friend) => Number(friend.id));
-    const pendingOutgoingIds = outgoingRequests.map((request) => Number(request.receiverId));
-    return new Set([...friendIds, ...pendingOutgoingIds]);
-  }, [friends, outgoingRequests]);
+  const friendIdSet = useMemo(
+    () => new Set(friends.map((friend) => normalizeId(friend.id)).filter(Boolean)),
+    [friends]
+  );
+  const outgoingRequestByReceiverId = useMemo(
+    () =>
+      outgoingRequests.reduce((acc, request) => {
+        const receiverId = normalizeId(request.receiverId);
+        if (receiverId) acc[receiverId] = request;
+        return acc;
+      }, {}),
+    [outgoingRequests]
+  );
+  const incomingRequestBySenderId = useMemo(
+    () =>
+      incomingRequests.reduce((acc, request) => {
+        const senderId = normalizeId(request.senderId);
+        if (senderId) acc[senderId] = request;
+        return acc;
+      }, {}),
+    [incomingRequests]
+  );
+
+  const blockedUserIds = useMemo(
+    () => new Set([...friendIdSet, ...Object.keys(outgoingRequestByReceiverId).map(Number)].filter(Boolean)),
+    [friendIdSet, outgoingRequestByReceiverId]
+  );
 
   const discoverVisibleUsers = useMemo(
-    () => discoverUsers.filter((user) => !blockedUserIds.has(Number(user.id))),
+    () => discoverUsers.filter((user) => !blockedUserIds.has(normalizeId(user.id))),
     [discoverUsers, blockedUserIds]
+  );
+
+  const resolveRelationshipType = (userId) => {
+    const id = normalizeId(userId);
+    if (!id) return RELATIONSHIP.DISCOVERABLE;
+    if (currentUserId && id === currentUserId) return RELATIONSHIP.SELF;
+    if (friendIdSet.has(id)) return RELATIONSHIP.FRIEND;
+    if (outgoingRequestByReceiverId[id]) return RELATIONSHIP.REQUEST_SENT;
+    if (incomingRequestBySenderId[id]) return RELATIONSHIP.REQUEST_RECEIVED;
+    return RELATIONSHIP.DISCOVERABLE;
+  };
+
+  const relationshipAwareSearchResults = useMemo(
+    () =>
+      searchResults.map((user) => ({
+        ...user,
+        relationshipType: resolveRelationshipType(user.id)
+      })),
+    [searchResults, currentUserId, friendIdSet, outgoingRequestByReceiverId, incomingRequestBySenderId]
   );
 
   const handleRemoveFriend = async (friendId) => {
     setRemovingId(friendId);
     setError("");
+    const previousFriends = friends;
+    
+    // Optimistic UI
+    setFriends((prev) => prev.filter((friend) => normalizeId(friend.id) !== normalizeId(friendId)));
+    
     try {
       await removeFriend(friendId);
-      setFriends((prev) => prev.filter((friend) => Number(friend.id) !== Number(friendId)));
+      showToast("Friend removed");
     } catch (err) {
+      setFriends(previousFriends);
       setError(getApiErrorMessage(err, "Unable to remove friend."));
+      showToast("Unable to remove friend", "error");
     } finally {
       setRemovingId(null);
     }
@@ -144,15 +219,25 @@ const ConnectionsPage = () => {
   const handleAccept = async (requestId) => {
     setProcessingRequestId(requestId);
     setError("");
+    
+    const previousIncoming = incomingRequests;
+    const previousFriends = friends;
+    
+    // Optimistic UI
+    const accepted = incomingRequests.find((request) => normalizeId(request.requestId) === normalizeId(requestId));
+    setIncomingRequests((prev) => prev.filter((request) => normalizeId(request.requestId) !== normalizeId(requestId)));
+    if (accepted) {
+      setFriends((prev) => [...prev, { id: accepted.senderId, username: accepted.senderUsername, college: "" }]);
+    }
+
     try {
       await acceptFriendRequest(requestId);
-      const accepted = incomingRequests.find((request) => Number(request.requestId) === Number(requestId));
-      setIncomingRequests((prev) => prev.filter((request) => Number(request.requestId) !== Number(requestId)));
-      if (accepted) {
-        setFriends((prev) => [...prev, { id: accepted.senderId, username: accepted.senderUsername, college: "" }]);
-      }
+      showToast("Request accepted");
     } catch (err) {
+      setIncomingRequests(previousIncoming);
+      setFriends(previousFriends);
       setError(getApiErrorMessage(err, "Unable to accept request."));
+      showToast("Unable to accept request", "error");
     } finally {
       setProcessingRequestId(null);
     }
@@ -161,34 +246,55 @@ const ConnectionsPage = () => {
   const handleReject = async (requestId) => {
     setProcessingRequestId(requestId);
     setError("");
+    
+    const previousIncoming = incomingRequests;
+    
+    // Optimistic UI
+    setIncomingRequests((prev) => prev.filter((request) => normalizeId(request.requestId) !== normalizeId(requestId)));
+
     try {
       await rejectFriendRequest(requestId);
-      setIncomingRequests((prev) => prev.filter((request) => Number(request.requestId) !== Number(requestId)));
+      showToast("Request rejected");
     } catch (err) {
+      setIncomingRequests(previousIncoming);
       setError(getApiErrorMessage(err, "Unable to reject request."));
+      showToast("Unable to reject request", "error");
     } finally {
       setProcessingRequestId(null);
     }
   };
 
   const handleSendRequest = async (receiverId) => {
-    const normalizedReceiverId = Number(receiverId);
-    if (!Number.isFinite(normalizedReceiverId) || normalizedReceiverId <= 0) {
+    const normalizedReceiverId = normalizeId(receiverId);
+    if (!normalizedReceiverId) {
       setError("Unable to send friend request: invalid user id.");
       return;
     }
 
     setSendingStates((prev) => ({ ...prev, [normalizedReceiverId]: "loading" }));
     setError("");
+    
+    const tempRequest = {
+      requestId: "temp-" + Date.now(),
+      receiverId: normalizedReceiverId,
+      status: "PENDING"
+    };
+    
+    // Optimistic UI
+    setOutgoingRequests((prev) => [...prev, tempRequest]);
+
     try {
       await sendFriendRequest(normalizedReceiverId);
       setSendingStates((prev) => ({ ...prev, [normalizedReceiverId]: "success" }));
+      showToast("Friend request sent");
       setTimeout(() => {
         setSendingStates((prev) => ({ ...prev, [normalizedReceiverId]: "idle" }));
       }, 1200);
     } catch (err) {
+      setOutgoingRequests((prev) => prev.filter((r) => r.requestId !== tempRequest.requestId));
       setSendingStates((prev) => ({ ...prev, [normalizedReceiverId]: "idle" }));
       setError(getApiErrorMessage(err, "Unable to send friend request."));
+      showToast("Unable to send friend request", "error");
     }
   };
 
@@ -238,84 +344,191 @@ const ConnectionsPage = () => {
               {comingSoonMessage}
             </p>
           ) : null}
-          {loadingSection ? <ConnectionsSkeleton rows={5} /> : null}
 
-          {!loadingSection && activeTab === "friends" ? (
-            friends.length ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-sm">
-                {friends.map((friend) => (
-                  <FriendCard
-                    key={friend.id}
-                    friend={{ ...friend, college: profilesById[friend.id]?.college || "" }}
-                    removing={Number(removingId) === Number(friend.id)}
-                    onRemove={handleRemoveFriend}
-                    onViewProfile={(selectedFriend) =>
-                      showComingSoon(`Profile view for ${selectedFriend.username} is coming soon.`)
-                    }
-                    onCompare={(selectedFriend) =>
-                      showComingSoon(`Compare view with ${selectedFriend.username} is coming soon.`)
-                    }
-                  />
-                ))}
+          {hasActiveSearch ? (
+            <section className="space-y-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="font-label-sm uppercase tracking-wider text-on-surface-variant">Search Results</h2>
+                <p className="text-label-xs text-on-surface-variant">Relationship-aware</p>
               </div>
-            ) : (
-              <EmptyConnectionsState
-                title="No connections yet."
-                description="Build your accountability circle through Discover."
-              />
-            )
-          ) : null}
 
-          {!loadingSection && activeTab === "requests" ? (
-            (activeRequestTab === "incoming" ? incomingRequests : outgoingRequests).length ? (
-              <div className="space-y-sm">
-                {(activeRequestTab === "incoming" ? incomingRequests : outgoingRequests).map((request) => (
-                  <FriendRequestCard
-                    key={request.requestId}
-                    request={request}
-                    type={activeRequestTab}
-                    college={
+              {loadingSearchResults ? <ConnectionsSkeleton rows={4} /> : null}
+
+              {!loadingSearchResults && relationshipAwareSearchResults.length === 0 ? (
+                <EmptyConnectionsState
+                  title={`No users found for "${search.trim()}"`}
+                  description="Try another name or keyword."
+                />
+              ) : null}
+
+              {!loadingSearchResults && relationshipAwareSearchResults.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-sm">
+                  {relationshipAwareSearchResults.map((user) => {
+                    const userId = normalizeId(user.id);
+                    const relationshipType = user.relationshipType;
+
+                    if (relationshipType === RELATIONSHIP.FRIEND) {
+                      return (
+                        <FriendCard
+                          key={`search-${userId}`}
+                          friend={{ id: userId, username: user.username, college: user.college || "" }}
+                          removing={Number(removingId) === Number(userId)}
+                          onRemove={handleRemoveFriend}
+                          onViewProfile={(selectedFriend) =>
+                            showComingSoon(`Profile view for ${selectedFriend.username} is coming soon.`)
+                          }
+                          onCompare={(selectedFriend) =>
+                            showComingSoon(`Compare view with ${selectedFriend.username} is coming soon.`)
+                          }
+                        />
+                      );
+                    }
+
+                    if (relationshipType === RELATIONSHIP.REQUEST_RECEIVED) {
+                      const request = incomingRequestBySenderId[userId];
+                      return (
+                        <FriendRequestCard
+                          key={`search-received-${userId}`}
+                          request={request}
+                          type="incoming"
+                          college={user.college}
+                          loading={Number(processingRequestId) === Number(request?.requestId)}
+                          onAccept={handleAccept}
+                          onReject={handleReject}
+                        />
+                      );
+                    }
+
+                    if (relationshipType === RELATIONSHIP.REQUEST_SENT) {
+                      return (
+                        <article key={`search-sent-${userId}`} className="rounded-xl border border-outline-variant bg-surface-container p-md space-y-sm">
+                          <DiscoverUserCard
+                            user={user}
+                            onSendRequest={handleSendRequest}
+                            actionState="success"
+                          />
+                          <div className="flex items-center justify-between gap-sm">
+                            <span className="px-sm py-xs rounded-full bg-surface-variant text-on-surface-variant text-label-sm">Request sent</span>
+                            <button
+                              type="button"
+                              onClick={() => showComingSoon("Cancel request will be available soon.")}
+                              className="px-sm py-xs rounded-lg border border-outline-variant text-label-sm text-on-surface-variant hover:text-on-surface"
+                            >
+                              Cancel Request
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    }
+
+                    if (relationshipType === RELATIONSHIP.SELF) {
+                      return (
+                        <article key={`search-self-${userId || user.username}`} className="rounded-xl border border-outline-variant bg-surface-container p-md">
+                          <div className="flex items-center justify-between gap-sm">
+                            <div className="min-w-0">
+                              <p className="text-body-md text-on-surface truncate">{user.username}</p>
+                              <p className="text-label-sm text-on-surface-variant truncate">{user.college || "LifeOS member"}</p>
+                            </div>
+                            <span className="px-sm py-xs rounded-full bg-primary-container/40 text-on-primary-container text-label-sm">You</span>
+                          </div>
+                        </article>
+                      );
+                    }
+
+                    return (
+                      <DiscoverUserCard
+                        key={`search-discover-${userId || user.username}`}
+                        user={user}
+                        onSendRequest={handleSendRequest}
+                        actionState={sendingStates[userId] || "idle"}
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
+            </section>
+          ) : (
+            <>
+              {loadingSection ? <ConnectionsSkeleton rows={5} /> : null}
+
+              {!loadingSection && activeTab === "friends" ? (
+                friends.length ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-sm">
+                    {friends.map((friend) => (
+                      <FriendCard
+                        key={friend.id}
+                        friend={{ ...friend, college: profilesById[friend.id]?.college || "" }}
+                        removing={Number(removingId) === Number(friend.id)}
+                        onRemove={handleRemoveFriend}
+                        onViewProfile={(selectedFriend) =>
+                          showComingSoon(`Profile view for ${selectedFriend.username} is coming soon.`)
+                        }
+                        onCompare={(selectedFriend) =>
+                          showComingSoon(`Compare view with ${selectedFriend.username} is coming soon.`)
+                        }
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyConnectionsState
+                    title="No connections yet."
+                    description="Build your accountability circle through Discover."
+                  />
+                )
+              ) : null}
+
+              {!loadingSection && activeTab === "requests" ? (
+                (activeRequestTab === "incoming" ? incomingRequests : outgoingRequests).length ? (
+                  <div className="space-y-sm">
+                    {(activeRequestTab === "incoming" ? incomingRequests : outgoingRequests).map((request) => (
+                      <FriendRequestCard
+                        key={request.requestId}
+                        request={request}
+                        type={activeRequestTab}
+                        college={
+                          activeRequestTab === "incoming"
+                            ? profilesById[request.senderId]?.college
+                            : profilesById[request.receiverId]?.college
+                        }
+                        loading={Number(processingRequestId) === Number(request.requestId)}
+                        onAccept={handleAccept}
+                        onReject={handleReject}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyConnectionsState
+                    title={activeRequestTab === "incoming" ? "No incoming requests" : "No outgoing requests"}
+                    description={
                       activeRequestTab === "incoming"
-                        ? profilesById[request.senderId]?.college
-                        : profilesById[request.receiverId]?.college
+                        ? "You are all caught up. New accountability invites will appear here."
+                        : "Requests you send will stay here until accepted or rejected."
                     }
-                    loading={Number(processingRequestId) === Number(request.requestId)}
-                    onAccept={handleAccept}
-                    onReject={handleReject}
                   />
-                ))}
-              </div>
-            ) : (
-              <EmptyConnectionsState
-                title={activeRequestTab === "incoming" ? "No incoming requests" : "No outgoing requests"}
-                description={
-                  activeRequestTab === "incoming"
-                    ? "You are all caught up. New accountability invites will appear here."
-                    : "Requests you send will stay here until accepted or rejected."
-                }
-              />
-            )
-          ) : null}
+                )
+              ) : null}
 
-          {!loadingSection && activeTab === "discover" ? (
-            discoverVisibleUsers.length ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-sm">
-                {discoverVisibleUsers.map((user) => (
-                  <DiscoverUserCard
-                    key={user.id}
-                    user={user}
-                    onSendRequest={handleSendRequest}
-                    actionState={sendingStates[user.id] || "idle"}
+              {!loadingSection && activeTab === "discover" ? (
+                discoverVisibleUsers.length ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-sm">
+                    {discoverVisibleUsers.map((user) => (
+                      <DiscoverUserCard
+                        key={user.id}
+                        user={user}
+                        onSendRequest={handleSendRequest}
+                        actionState={sendingStates[user.id] || "idle"}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyConnectionsState
+                    title={search ? "No users found" : "No users to discover"}
+                    description={search ? "Try a different name or keyword." : "Explore later to discover more peers in your network."}
                   />
-                ))}
-              </div>
-            ) : (
-              <EmptyConnectionsState
-                title={search ? "No users found" : "No users to discover"}
-                description={search ? "Try a different name or keyword." : "Explore later to discover more peers in your network."}
-              />
-            )
-          ) : null}
+                )
+              ) : null}
+            </>
+          )}
         </section>
       </main>
       <MobileBottomNav activeView="connections" />

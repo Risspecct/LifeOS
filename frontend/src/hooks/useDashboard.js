@@ -33,8 +33,12 @@ export const useDashboard = () => {
 
   const refresh = useCallback(() => loadDashboard({ force: true }), [loadDashboard]);
 
+  const updateOptimistically = useCallback((updater) => {
+    setDashboard((prev) => updater(prev));
+  }, []);
+
   return useMemo(
-    () => ({ dashboard, loading, refreshing, error, refresh }),
-    [dashboard, loading, refreshing, error, refresh]
+    () => ({ dashboard, loading, refreshing, error, refresh, updateOptimistically }),
+    [dashboard, loading, refreshing, error, refresh, updateOptimistically]
   );
 };
