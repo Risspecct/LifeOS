@@ -1,12 +1,8 @@
-import { useNavigate } from "react-router-dom";
-
-const QuickActionsSection = () => {
-  const navigate = useNavigate();
-
+const QuickActionsSection = ({ onOpenTaskModal, onOpenNoteModal, onOpenLabelModal }) => {
   const actions = [
-    { label: "Create Task", icon: "add_circle", onClick: () => navigate("/tasks?intent=create") },
-    { label: "Quick Note", icon: "edit_note", onClick: () => navigate("/tasks?intent=quick-note") },
-    { label: "Add Label", icon: "label", onClick: () => navigate("/tasks?intent=add-label") }
+    { label: "Create Task", icon: "add_circle", onClick: onOpenTaskModal },
+    { label: "Quick Note", icon: "edit_note", onClick: onOpenNoteModal },
+    { label: "Add Label", icon: "label", onClick: onOpenLabelModal }
   ];
 
   return (
