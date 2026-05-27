@@ -22,6 +22,7 @@ public class TaskPriorityCalculator {
         if(task.getStatus() == Status.COMPLETED) {
             reasons.add("Task already completed");
             level = SmartPriorityLevel.LOW;
+            score = 0;
         }
         return new PriorityResult(
                 score,
