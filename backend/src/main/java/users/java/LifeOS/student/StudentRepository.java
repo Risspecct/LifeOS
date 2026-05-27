@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
     Optional<Student> findByUser_Id(long userId);
+
     @Query("""
     SELECT new users.java.LifeOS.student.StudentListView(
         s.user.id,
@@ -19,8 +20,19 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
         s.college
     )
     FROM Student s
+    WHERE s.user.id != :currentUserId
+    AND NOT EXISTS (
+        SELECT fr.id
+        FROM FriendRequest fr
+        WHERE (
+            (fr.sender.id = :currentUserId AND fr.receiver.id = s.user.id)
+            OR
+            (fr.receiver.id = :currentUserId AND fr.sender.id = s.user.id)
+        )
+        AND fr.status IN ('PENDING', 'ACCEPTED')
+    )
     """)
-    List<StudentListView> findALlBy();
+    List<StudentListView> findALlBy(@Param("currentUserId") Long currentUserId);
 
     List<Student> findByCollegeIgnoreCase(String College);
 

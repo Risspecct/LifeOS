@@ -92,6 +92,6 @@ public class StudentService {
     }
 
     public List<StudentListView> getProfileList() {
-        return studentRepository.findALlBy();
+        return studentRepository.findALlBy(userService.getUserId());
     }
 }
