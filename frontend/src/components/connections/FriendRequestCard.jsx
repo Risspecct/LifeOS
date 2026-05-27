@@ -1,13 +1,18 @@
+import ConnectionAvatar from "./ConnectionAvatar";
+
 const FriendRequestCard = ({ request, type, onAccept, onReject, loading, college }) => {
   const username = type === "incoming" ? request.senderUsername : request.receiverUsername;
 
   return (
     <article className="rounded-xl border border-outline-variant bg-surface-container p-md flex items-center justify-between gap-sm">
-      <div className="min-w-0">
-        <p className="text-body-md text-on-surface truncate">{username}</p>
-        <p className="text-label-sm text-on-surface-variant">
-          {college || "LifeOS member"} • Request ID #{request.requestId}
-        </p>
+      <div className="flex items-center gap-sm min-w-0">
+        <ConnectionAvatar name={username} />
+        <div className="min-w-0">
+          <p className="text-body-md text-on-surface truncate">{username}</p>
+          <p className="text-label-sm text-on-surface-variant">
+            {college || "LifeOS member"} · Request ID #{request.requestId}
+          </p>
+        </div>
       </div>
 
       {type === "incoming" ? (

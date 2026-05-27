@@ -43,6 +43,7 @@ const ConnectionsPage = () => {
   const [removingId, setRemovingId] = useState(null);
   const [processingRequestId, setProcessingRequestId] = useState(null);
   const [sendingStates, setSendingStates] = useState({});
+  const [comingSoonMessage, setComingSoonMessage] = useState("");
 
   const loadFriends = async () => {
     const data = await getFriends();
@@ -191,6 +192,21 @@ const ConnectionsPage = () => {
     }
   };
 
+  const showComingSoon = (message) => {
+    setComingSoonMessage(message);
+    setTimeout(() => setComingSoonMessage(""), 2000);
+  };
+
+  const tabContext = useMemo(() => {
+    if (activeTab === "friends") {
+      return "Your accountability circle for consistency and momentum.";
+    }
+    if (activeTab === "requests") {
+      return "Review pending connection actions and keep your network intentional.";
+    }
+    return "Discover peers to build a focused productivity support network.";
+  }, [activeTab]);
+
   return (
     <div className="bg-background min-h-screen text-on-surface">
       <DashboardSidebar onLogout={clearAuth} activeView="connections" />
@@ -204,6 +220,7 @@ const ConnectionsPage = () => {
             </p>
           </header>
 
+          <p className="text-label-sm text-on-surface-variant">{tabContext}</p>
           <SearchBar value={search} onChange={setSearch} />
           <ConnectionsTabs activeTab={activeTab} onChangeTab={setActiveTab} />
 
@@ -216,6 +233,11 @@ const ConnectionsPage = () => {
           ) : null}
 
           {error ? <p className="text-error text-label-sm">{error}</p> : null}
+          {comingSoonMessage ? (
+            <p className="text-label-sm text-primary bg-primary-container/20 border border-primary/20 rounded-lg px-sm py-xs">
+              {comingSoonMessage}
+            </p>
+          ) : null}
           {loadingSection ? <ConnectionsSkeleton rows={5} /> : null}
 
           {!loadingSection && activeTab === "friends" ? (
@@ -227,13 +249,19 @@ const ConnectionsPage = () => {
                     friend={{ ...friend, college: profilesById[friend.id]?.college || "" }}
                     removing={Number(removingId) === Number(friend.id)}
                     onRemove={handleRemoveFriend}
+                    onViewProfile={(selectedFriend) =>
+                      showComingSoon(`Profile view for ${selectedFriend.username} is coming soon.`)
+                    }
+                    onCompare={(selectedFriend) =>
+                      showComingSoon(`Compare view with ${selectedFriend.username} is coming soon.`)
+                    }
                   />
                 ))}
               </div>
             ) : (
               <EmptyConnectionsState
-                title="No friends connected yet"
-                description="Send your first request in Discover to create a lightweight accountability circle."
+                title="No connections yet."
+                description="Build your accountability circle through Discover."
               />
             )
           ) : null}
@@ -262,8 +290,8 @@ const ConnectionsPage = () => {
                 title={activeRequestTab === "incoming" ? "No incoming requests" : "No outgoing requests"}
                 description={
                   activeRequestTab === "incoming"
-                    ? "You are all caught up. New requests will appear here."
-                    : "Requests you send will appear here while pending."
+                    ? "You are all caught up. New accountability invites will appear here."
+                    : "Requests you send will stay here until accepted or rejected."
                 }
               />
             )
@@ -284,7 +312,7 @@ const ConnectionsPage = () => {
             ) : (
               <EmptyConnectionsState
                 title={search ? "No users found" : "No users to discover"}
-                description={search ? "Try a different name or keyword." : "New students will appear here as they join."}
+                description={search ? "Try a different name or keyword." : "Explore later to discover more peers in your network."}
               />
             )
           ) : null}
