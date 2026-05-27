@@ -58,6 +58,13 @@ const sortTasks = (items, sortBy) => {
   });
   return list;
 };
+const TASK_SORT_OPTIONS = [
+  { value: "dueAsc", label: "Due: Upcoming" },
+  { value: "dueDesc", label: "Due: Farthest" },
+  { value: "addedDesc", label: "Recently Added" },
+  { value: "titleAsc", label: "Title: A-Z" },
+  { value: "titleDesc", label: "Title: Z-A" }
+];
 
 const matchesSearch = (task, search) => {
   if (!search) return true;
@@ -227,6 +234,10 @@ const TasksPage = () => {
         };
       });
   }, [tasks, filters.search, workspaceMode, priorityFocus]);
+  const taskTypeOptions = useMemo(
+    () => Array.from(new Set(tasks.map((task) => String(task?.taskType || "").trim()).filter(Boolean))),
+    [tasks]
+  );
 
   const applyTaskUpdate = (updatedTask) => {
     if (!updatedTask?.id) return;
@@ -373,6 +384,8 @@ const TasksPage = () => {
               onChangeFilters={setFilters}
               sortBy={sortBy}
               onChangeSortBy={setSortBy}
+              sortOptions={TASK_SORT_OPTIONS}
+              taskTypeOptions={taskTypeOptions}
               viewMode={viewMode}
               onChangeViewMode={setViewMode}
               workspaceMode={workspaceMode}
