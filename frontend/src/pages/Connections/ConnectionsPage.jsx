@@ -171,16 +171,22 @@ const ConnectionsPage = () => {
   };
 
   const handleSendRequest = async (receiverId) => {
-    setSendingStates((prev) => ({ ...prev, [receiverId]: "loading" }));
+    const normalizedReceiverId = Number(receiverId);
+    if (!Number.isFinite(normalizedReceiverId) || normalizedReceiverId <= 0) {
+      setError("Unable to send friend request: invalid user id.");
+      return;
+    }
+
+    setSendingStates((prev) => ({ ...prev, [normalizedReceiverId]: "loading" }));
     setError("");
     try {
-      await sendFriendRequest(receiverId);
-      setSendingStates((prev) => ({ ...prev, [receiverId]: "success" }));
+      await sendFriendRequest(normalizedReceiverId);
+      setSendingStates((prev) => ({ ...prev, [normalizedReceiverId]: "success" }));
       setTimeout(() => {
-        setSendingStates((prev) => ({ ...prev, [receiverId]: "idle" }));
+        setSendingStates((prev) => ({ ...prev, [normalizedReceiverId]: "idle" }));
       }, 1200);
     } catch (err) {
-      setSendingStates((prev) => ({ ...prev, [receiverId]: "idle" }));
+      setSendingStates((prev) => ({ ...prev, [normalizedReceiverId]: "idle" }));
       setError(getApiErrorMessage(err, "Unable to send friend request."));
     }
   };
