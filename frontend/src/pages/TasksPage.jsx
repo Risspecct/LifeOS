@@ -5,7 +5,6 @@ import DashboardTopBar from "../components/dashboard/DashboardTopBar";
 import TaskBoard from "../components/tasks/TaskBoard";
 import TaskEditDrawer from "../components/tasks/TaskEditDrawer";
 import CreateTaskDrawer from "../components/tasks/CreateTaskDrawer";
-import TaskPriorityFocusStrip from "../components/tasks/TaskPriorityFocusStrip";
 import TaskSlideOverPanel from "../components/tasks/TaskSlideOverPanel";
 import TaskFullscreenDetail from "../components/tasks/TaskFullscreenDetail";
 import TaskWorkspaceToolbar from "../components/tasks/TaskWorkspaceToolbar";
@@ -27,9 +26,14 @@ import {
 import { buildTaskStatusOptions, normalizeTaskStatus } from "../utils/taskStatus";
 
 const TASKS_VIEW_MODE_KEY = "lifeos_tasks_view_mode";
+const TASKS_WORKSPACE_MODE_KEY = "lifeos_tasks_workspace_mode";
 const readInitialViewMode = () => {
   const stored = localStorage.getItem(TASKS_VIEW_MODE_KEY);
   return stored === "grid" ? "grid" : "list";
+};
+const readInitialWorkspaceMode = () => {
+  const stored = localStorage.getItem(TASKS_WORKSPACE_MODE_KEY);
+  return stored === "priority" ? "priority" : "standard";
 };
 
 const sortTasks = (items, sortBy) => {
@@ -120,12 +124,17 @@ const TasksPage = () => {
   const [creatingTask, setCreatingTask] = useState(false);
   const [createTaskError, setCreateTaskError] = useState("");
   const [viewMode, setViewMode] = useState(readInitialViewMode);
+  const [workspaceMode, setWorkspaceMode] = useState(readInitialWorkspaceMode);
   const [isLabelManagerOpen, setIsLabelManagerOpen] = useState(false);
   const [labelInfoMessage, setLabelInfoMessage] = useState("");
 
   useEffect(() => {
     localStorage.setItem(TASKS_VIEW_MODE_KEY, viewMode);
   }, [viewMode]);
+
+  useEffect(() => {
+    localStorage.setItem(TASKS_WORKSPACE_MODE_KEY, workspaceMode);
+  }, [workspaceMode]);
 
   useEffect(() => {
     const intent = new URLSearchParams(location.search).get("intent");
@@ -193,10 +202,31 @@ const TasksPage = () => {
     fetchTaskDetail();
   }, [detailRouteTaskId, selectedTaskId, isFullscreen, labels]);
 
-  const visibleTasks = useMemo(
-    () => tasks.filter((task) => matchesSearch(task, filters.search)),
-    [tasks, filters.search]
-  );
+  const visibleTasks = useMemo(() => {
+    const searchedTasks = tasks.filter((task) => matchesSearch(task, filters.search));
+    if (workspaceMode !== "priority") return searchedTasks;
+
+    const priorityByTaskId = new Map(
+      priorityFocus.map((task, index) => [task?.id, { index, priority: task }])
+    );
+
+    return [...searchedTasks]
+      .sort((a, b) => {
+        const aRank = priorityByTaskId.get(a.id)?.index ?? Number.MAX_SAFE_INTEGER;
+        const bRank = priorityByTaskId.get(b.id)?.index ?? Number.MAX_SAFE_INTEGER;
+        return aRank - bRank;
+      })
+      .map((task) => {
+        const priorityMeta = priorityByTaskId.get(task.id)?.priority;
+        if (!priorityMeta) return task;
+        return {
+          ...task,
+          priorityScore: priorityMeta.priorityScore,
+          smartPriority: priorityMeta.smartPriority,
+          reasons: priorityMeta.reasons
+        };
+      });
+  }, [tasks, filters.search, workspaceMode, priorityFocus]);
 
   const applyTaskUpdate = (updatedTask) => {
     if (!updatedTask?.id) return;
@@ -345,24 +375,22 @@ const TasksPage = () => {
               onChangeSortBy={setSortBy}
               viewMode={viewMode}
               onChangeViewMode={setViewMode}
+              workspaceMode={workspaceMode}
+              onChangeWorkspaceMode={setWorkspaceMode}
               onCreateTask={() => setIsCreateOpen(true)}
               statusOptions={statusOptions}
               labels={labels}
               onOpenLabelManager={() => setIsLabelManagerOpen(true)}
-            />
-            <TaskPriorityFocusStrip
-              tasks={priorityFocus}
-              loading={loadingPriorityFocus}
-              onOpenTask={(taskId) => navigate(`/tasks/${taskId}`)}
             />
             {taskActionError ? <p className="text-error text-label-sm">{taskActionError}</p> : null}
             <TaskBoard
               tasks={visibleTasks}
               selectedTaskId={selectedTaskId}
               onSelectTask={setSelectedTaskId}
-              loading={loadingTasks}
+              loading={loadingTasks || (workspaceMode === "priority" && loadingPriorityFocus)}
               error={tasksError}
               viewMode={viewMode}
+              priorityView={workspaceMode === "priority"}
             />
           </div>
         ) : (

@@ -1,10 +1,13 @@
 import { getDueDateMetadata } from "../../utils/taskUtils";
 import TaskStatusBadge from "./TaskStatusBadge";
 import TaskTypeChip from "./TaskTypeChip";
+import { useState } from "react";
 
-const TaskBoardCard = ({ task, isActive, onSelectTask }) => {
+const TaskBoardCard = ({ task, isActive, onSelectTask, priorityView = false }) => {
   const dueDateMeta = getDueDateMetadata(task.dueDate);
   const hasDescription = Boolean(task.description);
+  const reasons = Array.isArray(task?.reasons) ? task.reasons.filter(Boolean) : [];
+  const [showReasons, setShowReasons] = useState(false);
 
   return (
     <button
@@ -19,7 +22,12 @@ const TaskBoardCard = ({ task, isActive, onSelectTask }) => {
         <h4 className="font-body-md font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2 leading-tight">
           {task.title}
         </h4>
-        <div className="shrink-0 mt-0.5">
+        <div className="shrink-0 mt-0.5 flex items-center gap-xs">
+          {priorityView && task.smartPriority ? (
+            <span className="px-2 py-0.5 rounded border border-primary/20 bg-primary/10 text-primary text-[10px] uppercase font-bold tracking-wider">
+              {task.smartPriority}
+            </span>
+          ) : null}
           <TaskStatusBadge status={task.status} />
         </div>
       </div>
@@ -57,6 +65,46 @@ const TaskBoardCard = ({ task, isActive, onSelectTask }) => {
           </span>
         )}
       </div>
+
+      {priorityView && reasons.length > 0 ? (
+        <div className="w-full">
+          <div className="hidden md:block border border-outline-variant/70 bg-surface rounded-lg p-sm opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 ease-out">
+            <p className="text-[10px] uppercase tracking-wider text-on-surface-variant">Priority Insights</p>
+            <ul className="mt-1 space-y-1 text-label-xs text-on-surface-variant">
+              {reasons.slice(0, 4).map((reason, index) => (
+                <li key={`${task.id}-reason-${index}`} className="truncate">• {reason}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="md:hidden mt-1">
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(event) => {
+                event.stopPropagation();
+                setShowReasons((prev) => !prev);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setShowReasons((prev) => !prev);
+                }
+              }}
+              className="text-label-xs text-primary"
+            >
+              {showReasons ? "Hide Priority Reasons ▲" : "View Priority Reasons ▼"}
+            </span>
+            {showReasons ? (
+              <ul className="mt-2 space-y-1 text-label-xs text-on-surface-variant">
+                {reasons.map((reason, index) => (
+                  <li key={`${task.id}-mobile-reason-${index}`}>• {reason}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </button>
   );
 };

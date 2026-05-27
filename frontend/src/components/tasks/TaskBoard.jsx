@@ -1,7 +1,7 @@
 import TaskGridView from "./TaskGridView";
 import TaskListView from "./TaskListView";
 
-const TaskBoard = ({ tasks, selectedTaskId, onSelectTask, loading, error, viewMode = "list" }) => {
+const TaskBoard = ({ tasks, selectedTaskId, onSelectTask, loading, error, viewMode = "list", priorityView = false }) => {
   if (loading) {
     return <p className="text-on-surface-variant text-label-sm">Loading tasks...</p>;
   }
@@ -19,10 +19,10 @@ const TaskBoard = ({ tasks, selectedTaskId, onSelectTask, loading, error, viewMo
   }
 
   if (viewMode === "grid") {
-    return <TaskGridView tasks={tasks} selectedTaskId={selectedTaskId} onSelectTask={onSelectTask} />;
+    return <TaskGridView tasks={tasks} selectedTaskId={selectedTaskId} onSelectTask={onSelectTask} priorityView={priorityView} />;
   }
 
-  return <TaskListView tasks={tasks} selectedTaskId={selectedTaskId} onSelectTask={onSelectTask} />;
+  return <TaskListView tasks={tasks} selectedTaskId={selectedTaskId} onSelectTask={onSelectTask} priorityView={priorityView} />;
 };
 
 export default TaskBoard;

@@ -1,4 +1,5 @@
 import TasksViewSwitcher from "./TasksViewSwitcher";
+import PriorityModeToggle from "./PriorityModeToggle";
 
 const TaskWorkspaceToolbar = ({
   filters,
@@ -7,6 +8,8 @@ const TaskWorkspaceToolbar = ({
   onChangeSortBy,
   viewMode,
   onChangeViewMode,
+  workspaceMode,
+  onChangeWorkspaceMode,
   onCreateTask,
   statusOptions,
   labels = [],
@@ -17,6 +20,7 @@ const TaskWorkspaceToolbar = ({
       <div className="flex items-center justify-between gap-sm">
         <h1 className="font-h2 text-h2">Tasks Workspace</h1>
         <div className="flex items-center gap-sm">
+          <PriorityModeToggle mode={workspaceMode} onChangeMode={onChangeWorkspaceMode} />
           <TasksViewSwitcher viewMode={viewMode} onChangeViewMode={onChangeViewMode} />
           <button type="button" onClick={onCreateTask} className="rounded-full px-md py-xs bg-primary text-on-primary font-label-sm">
             + New Task
@@ -60,7 +64,10 @@ const TaskWorkspaceToolbar = ({
         <select
           value={sortBy}
           onChange={(event) => onChangeSortBy(event.target.value)}
-          className="bg-surface border border-outline-variant rounded-full px-sm py-xs text-label-sm"
+          disabled={workspaceMode === "priority"}
+          className={`bg-surface border border-outline-variant rounded-full px-sm py-xs text-label-sm ${
+            workspaceMode === "priority" ? "opacity-60 cursor-not-allowed" : ""
+          }`}
         >
           <option value="dueAsc">Sort</option>
           <option value="dueAsc">Due: Upcoming</option>

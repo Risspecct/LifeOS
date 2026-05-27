@@ -1,6 +1,6 @@
 import TaskListRow from "./TaskListRow";
 
-const TaskListView = ({ tasks, selectedTaskId, onSelectTask }) => {
+const TaskListView = ({ tasks, selectedTaskId, onSelectTask, priorityView = false }) => {
   return (
     <div className="space-y-xs">
       {tasks.map((task) => (
@@ -9,6 +9,7 @@ const TaskListView = ({ tasks, selectedTaskId, onSelectTask }) => {
           task={task}
           isActive={selectedTaskId === task.id}
           onSelectTask={onSelectTask}
+          priorityView={priorityView}
         />
       ))}
     </div>
