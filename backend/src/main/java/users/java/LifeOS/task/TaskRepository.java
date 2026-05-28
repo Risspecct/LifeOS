@@ -7,29 +7,20 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import users.java.LifeOS.user.User;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificationExecutor<Task> {
     List<Task> findAllByUser_Id(long userId);
-    List<Task> findTop5ByUserAndStatusNotInAndDueDateIsNotNullOrderByDueDateAsc(
-            User user,
-            Collection<Status> statuses
-    );
+    List<Task> findTop5ByUserAndStatusNotInAndDueDateIsNotNullOrderByDueDateAsc(User user, Collection<Status> statuses);
 
     Long countByUser(User user);
 
-    Long countByUserAndStatus(
-            User user,
-            Status status
-    );
+    Long countByUserAndStatus(User user, Status status);
 
-    Long countByUserAndStatusNotIn(
-            User user,
-            Collection<Status> statuses
-    );
+    Long countByUserAndStatusNotIn(User user, Collection<Status> statuses);
 
     @Query("""
         SELECT COUNT(t)
@@ -39,8 +30,7 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
         AND t.dueDate IS NOT NULL
         AND t.dueDate < CURRENT_TIMESTAMP
     """)
-    Long countOverdueTasks(
-            @Param("user") User user,
-            @Param("statuses") Collection<Status> statuses
-    );
+    Long countOverdueTasks(@Param("user") User user, @Param("statuses") Collection<Status> statuses);
+
+    List<Task> findTasksByDueDateBetween(LocalDateTime start, LocalDateTime end);
 }
