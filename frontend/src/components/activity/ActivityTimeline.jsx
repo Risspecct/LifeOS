@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+const INITIAL_LIMIT = 8;
+const INCREMENT = 8;
 
 const ActivityTimeline = ({ timelineData = [] }) => {
+    const [visibleCount, setVisibleCount] = useState(INITIAL_LIMIT);
     
     if (!timelineData || timelineData.length === 0) {
         return (
@@ -46,7 +50,14 @@ const ActivityTimeline = ({ timelineData = [] }) => {
         return Object.entries(groups).filter(([_, items]) => items.length > 0);
     };
 
-    const groupedData = groupTimelineData(timelineData);
+    const visibleData = timelineData.slice(0, visibleCount);
+    const groupedData = groupTimelineData(visibleData);
+
+    const hasMore = visibleCount < timelineData.length;
+    const canCollapse = visibleCount > INITIAL_LIMIT;
+
+    const handleViewMore = () => setVisibleCount(prev => prev + INCREMENT);
+    const handleShowLess = () => setVisibleCount(INITIAL_LIMIT);
 
     const getGroupIcon = (title) => {
         if (title === 'Today') return 'bolt';
@@ -108,6 +119,28 @@ const ActivityTimeline = ({ timelineData = [] }) => {
                     </div>
                 ))}
             </div>
+
+            {(hasMore || canCollapse) && (
+                <div className="mt-xl pt-lg border-t border-outline-variant/30 flex justify-center gap-4 relative z-10">
+                    {canCollapse && (
+                        <button 
+                            onClick={handleShowLess}
+                            className="px-6 py-2 rounded-full font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-variant border border-outline-variant transition-colors"
+                        >
+                            Show Less
+                        </button>
+                    )}
+                    {hasMore && (
+                        <button 
+                            onClick={handleViewMore}
+                            className="px-6 py-2 rounded-full font-label-sm text-label-sm text-on-surface hover:bg-surface-variant border border-outline-variant transition-colors flex items-center gap-2"
+                        >
+                            <span>View More</span>
+                            <span className="material-symbols-outlined text-sm">expand_more</span>
+                        </button>
+                    )}
+                </div>
+            )}
         </section>
     );
 };
