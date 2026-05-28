@@ -12,7 +12,9 @@ import { createBranch, getBranches } from "../api/branchApi";
 import { getMyStats } from "../api/statsApi";
 import { useAuth } from "../hooks/useAuth";
 import { useSidebar } from "../hooks/useSidebar";
+import { useDelayedLoading } from "../hooks/useDelayedLoading";
 import { getApiErrorMessage } from "../utils/errorUtils";
+import ProfileSkeleton from "../components/profile/ProfileSkeleton";
 
 const buildEditForm = (profile, branches) => {
   const matchedBranch = branches.find((item) => item.code === profile?.branchCode);
@@ -34,6 +36,7 @@ const ProfilePage = () => {
   const [profileData, setProfileData] = useState(profile);
   const [isLoadingProfile, setIsLoadingProfile] = useState(!profile);
   const [profileError, setProfileError] = useState("");
+  const showSkeleton = useDelayedLoading(isLoadingProfile, 200);
 
   const [stats, setStats] = useState(null);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
@@ -254,9 +257,7 @@ const ProfilePage = () => {
           <ProfileHeader isEditing={isEditing} onEdit={openEditMode} onCancel={openViewMode} isSaving={isSaving} />
 
           {isLoadingProfile ? (
-            <section className="bg-surface-container border border-outline-variant rounded-xl p-lg text-on-surface-variant">
-              Loading profile...
-            </section>
+            showSkeleton ? <ProfileSkeleton /> : null
           ) : null}
 
           {!isLoadingProfile && profileError ? (

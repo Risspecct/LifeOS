@@ -11,6 +11,7 @@ import { LEADERBOARD_SCOPES, getLeaderboard } from "../../api/leaderboardApi";
 import { getApiErrorMessage } from "../../utils/errorUtils";
 import { useAuth } from "../../hooks/useAuth";
 import { useSidebar } from "../../hooks/useSidebar";
+import { useDelayedLoading } from "../../hooks/useDelayedLoading";
 
 const LEADERBOARD_TABS = [
   { label: "Global", value: LEADERBOARD_SCOPES.GLOBAL },
@@ -25,6 +26,7 @@ const LeaderboardPage = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const showSkeleton = useDelayedLoading(loading, 200);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -78,7 +80,7 @@ const LeaderboardPage = () => {
           <LeaderboardTabs tabs={LEADERBOARD_TABS} activeScope={scope} onChangeScope={setScope} />
           <CurrentUserCard stats={currentUserStats} loading={loading} />
 
-          {loading ? <LeaderboardSkeleton /> : null}
+          {showSkeleton ? <LeaderboardSkeleton /> : null}
           {!loading && error ? <p className="text-error text-label-sm">{error}</p> : null}
           {!loading && !error && rows.length === 0 ? <EmptyLeaderboardState /> : null}
           {!loading && !error && rows.length > 0 ? (

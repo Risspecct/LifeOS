@@ -1,4 +1,6 @@
 import { formatDueDate, getStatusLabel } from "../../utils/taskUtils";
+import { Skeleton, SkeletonCard } from "../ui/Skeleton";
+import { useDelayedLoading } from "../../hooks/useDelayedLoading";
 
 const PRIORITY_TONE = {
   CRITICAL: {
@@ -26,6 +28,8 @@ const PRIORITY_TONE = {
 const getPriorityTone = (value) => PRIORITY_TONE[value] ?? PRIORITY_TONE.LOW;
 
 const DashboardTaskPreview = ({ tasks, loading, error, onOpenTasks, onOpenTask }) => {
+  const showSkeleton = useDelayedLoading(loading, 200);
+
   return (
     <section className="bg-surface-container border border-outline-variant rounded-xl p-md lg:p-lg space-y-md">
       <div className="flex items-center justify-between">
@@ -38,12 +42,36 @@ const DashboardTaskPreview = ({ tasks, loading, error, onOpenTasks, onOpenTask }
         </button>
       </div>
 
-      {loading ? <p className="text-on-surface-variant text-label-sm">Loading tasks...</p> : null}
-      {error ? <p className="text-error text-label-sm">{error}</p> : null}
-      {!loading && !error && tasks.length === 0 ? <p className="text-on-surface-variant text-label-sm">No prioritized tasks yet.</p> : null}
-
-      <div className="space-y-sm">
-        {tasks.map((task) => (
+      {showSkeleton ? (
+        <div className="space-y-sm">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <div key={idx} className="w-full rounded-xl border border-outline-variant bg-surface-container-high p-md">
+              <div className="flex items-start justify-between gap-sm">
+                <div className="flex items-start gap-sm w-full">
+                  <Skeleton className="w-1.5 h-12 rounded-full mt-0.5" />
+                  <div className="w-full space-y-3">
+                    <Skeleton className="h-4 w-3/4 max-w-[200px]" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex justify-between">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <p className="text-error text-label-sm">{error}</p>
+      ) : tasks.length === 0 ? (
+        <p className="text-on-surface-variant text-label-sm">No prioritized tasks yet.</p>
+      ) : (
+        <div className="space-y-sm">
+          {tasks.map((task) => (
           <button
             key={task.id}
             type="button"
@@ -72,8 +100,9 @@ const DashboardTaskPreview = ({ tasks, loading, error, onOpenTasks, onOpenTask }
               <span className="truncate max-w-[45%] text-right">{task.displayLabel}</span>
             </div>
           </button>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 };

@@ -12,6 +12,7 @@ import EmptyConnectionsState from "../../components/connections/EmptyConnections
 import ConnectionsSkeleton from "../../components/connections/ConnectionsSkeleton";
 import { useAuth } from "../../hooks/useAuth";
 import { useSidebar } from "../../hooks/useSidebar";
+import { useDelayedLoading } from "../../hooks/useDelayedLoading";
 import { getApiErrorMessage } from "../../utils/errorUtils";
 import { useToast } from "../../components/ui/ToastProvider";
 import {
@@ -61,6 +62,9 @@ const ConnectionsPage = () => {
   const [processingRequestId, setProcessingRequestId] = useState(null);
   const [sendingStates, setSendingStates] = useState({});
   const [comingSoonMessage, setComingSoonMessage] = useState("");
+
+  const showSkeleton = useDelayedLoading(loadingSection, 200);
+  const showSearchSkeleton = useDelayedLoading(loadingSearchResults, 200);
 
   const currentUserId = normalizeId(profile?.userId);
   const hasActiveSearch = Boolean(search.trim());
@@ -352,7 +356,7 @@ const ConnectionsPage = () => {
                 <p className="text-label-xs text-on-surface-variant">Relationship-aware</p>
               </div>
 
-              {loadingSearchResults ? <ConnectionsSkeleton rows={4} /> : null}
+              {showSearchSkeleton ? <ConnectionsSkeleton rows={4} /> : null}
 
               {!loadingSearchResults && relationshipAwareSearchResults.length === 0 ? (
                 <EmptyConnectionsState
@@ -361,7 +365,7 @@ const ConnectionsPage = () => {
                 />
               ) : null}
 
-              {!loadingSearchResults && relationshipAwareSearchResults.length > 0 ? (
+              {!showSearchSkeleton && relationshipAwareSearchResults.length > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-sm">
                   {relationshipAwareSearchResults.map((user) => {
                     const userId = normalizeId(user.id);
@@ -449,9 +453,9 @@ const ConnectionsPage = () => {
             </section>
           ) : (
             <>
-              {loadingSection ? <ConnectionsSkeleton rows={5} /> : null}
+              {showSkeleton ? <ConnectionsSkeleton rows={5} /> : null}
 
-              {!loadingSection && activeTab === "friends" ? (
+              {!showSkeleton && activeTab === "friends" ? (
                 friends.length ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-sm">
                     {friends.map((friend) => (
@@ -477,7 +481,7 @@ const ConnectionsPage = () => {
                 )
               ) : null}
 
-              {!loadingSection && activeTab === "requests" ? (
+              {!showSkeleton && activeTab === "requests" ? (
                 (activeRequestTab === "incoming" ? incomingRequests : outgoingRequests).length ? (
                   <div className="space-y-sm">
                     {(activeRequestTab === "incoming" ? incomingRequests : outgoingRequests).map((request) => (
@@ -508,7 +512,7 @@ const ConnectionsPage = () => {
                 )
               ) : null}
 
-              {!loadingSection && activeTab === "discover" ? (
+              {!showSkeleton && activeTab === "discover" ? (
                 discoverVisibleUsers.length ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-sm">
                     {discoverVisibleUsers.map((user) => (

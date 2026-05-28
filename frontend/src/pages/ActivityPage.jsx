@@ -12,11 +12,14 @@ import WeeklyTrendChart from '../components/activity/WeeklyTrendChart';
 import FocusDistribution from '../components/activity/FocusDistribution';
 import ProductivityInsights from '../components/activity/ProductivityInsights';
 import ActivityTimeline from '../components/activity/ActivityTimeline';
+import ActivitySkeleton from '../components/activity/ActivitySkeleton';
+import { useDelayedLoading } from '../hooks/useDelayedLoading';
 
 const ActivityPage = () => {
     const isCollapsed = useSidebar();
     const { clearAuth } = useAuth();
     const { data, loading, error } = useActivityInsights();
+    const showSkeleton = useDelayedLoading(loading, 200);
 
     return (
         <div className="bg-background min-h-screen text-on-surface">
@@ -25,11 +28,9 @@ const ActivityPage = () => {
             
             <main className={`ml-0 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} p-md lg:p-xl transition-all duration-300 ease-in-out`}>
                 <div className="max-w-5xl mx-auto space-y-xl">
-                    {loading ? (
-                        <div className="flex items-center justify-center h-64">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                        </div>
-                    ) : error ? (
+                    {showSkeleton ? (
+                        <ActivitySkeleton />
+                    ) : loading ? null : error ? (
                         <div className="p-md text-error bg-error-container/20 rounded-xl">
                             <p>{error}</p>
                         </div>
