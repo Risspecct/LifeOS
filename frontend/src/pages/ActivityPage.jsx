@@ -51,10 +51,7 @@ const ActivityPage = () => {
                 </div>
             </main>
 
-            {/* FAB */}
-            <button className="fixed bottom-lg right-lg w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-[0_8px_30px_rgba(87,241,219,0.4)] flex items-center justify-center hover:scale-110 hover:-translate-y-1 active:scale-95 transition-all z-50">
-                <span className="material-symbols-outlined text-3xl">add</span>
-            </button>
+
 
             <MobileBottomNav activeView="activity" />
         </div>
