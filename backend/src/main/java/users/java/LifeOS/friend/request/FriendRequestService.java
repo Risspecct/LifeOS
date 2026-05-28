@@ -4,10 +4,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.activity.ActivityService;
-import users.java.LifeOS.exceptions.ConflictException;
 import users.java.LifeOS.exceptions.InvalidRequestException;
 import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.friend.FriendshipService;
+import users.java.LifeOS.notification.NotificationService;
+import users.java.LifeOS.notification.NotificationType;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserRepository;
 
@@ -23,6 +24,7 @@ public class FriendRequestService {
     private final FriendRequestMapper mapper;
     private final FriendRequestValidationService validationService;
     private final ActivityService activityService;
+    private final NotificationService notificationService;
 
     @Transactional
     public void sendRequest(User sender, Long receiverId) {
@@ -37,6 +39,13 @@ public class FriendRequestService {
         }
         validationService.validateRequestEligibility(sender, receiver);
 
+        notificationService.createNotification(
+                receiver,
+                NotificationType.FRIEND_REQUEST_RECEIVED,
+                "New Friend Request",
+                sender.getUsername() + " sent you a friend request"
+        );
+
         friendRequestRepository.save(new FriendRequest(sender, receiver));
     }
 
@@ -49,9 +58,20 @@ public class FriendRequestService {
         if(!request.getReceiver().getId().equals(currentUser.getId())) {
             throw new RuntimeException("Unauthorized action");
         }
+
+        if (request.getStatus() == FriendRequestStatus.ACCEPTED)
+            throw new InvalidRequestException("Friend request already accepted");
+
         request.setStatus(FriendRequestStatus.ACCEPTED);
         request.setResolvedAt(LocalDateTime.now());
         friendshipService.createFriendship(request.getSender(),request.getReceiver());
+
+        notificationService.createNotification(
+                request.getSender(),
+                NotificationType.FRIEND_REQUEST_ACCEPTED,
+                "Friend Added",
+                request.getReceiver().getUsername() + " is added your social network"
+        );
 
         activityService.logFriendAdded(currentUser, request.getSender());
         activityService.logFriendAdded(request.getSender(), currentUser);

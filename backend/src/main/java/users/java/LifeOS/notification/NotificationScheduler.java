@@ -33,7 +33,7 @@ public class NotificationScheduler {
         }
     }
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void generateOverdueNotifications() {
         List<Task> tasks = taskRepository.findTasksByDueDateBefore(LocalDateTime.now());
 

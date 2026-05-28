@@ -1,6 +1,7 @@
 package users.java.LifeOS.notification;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
@@ -16,8 +17,8 @@ public class NotificationController {
     private final UserService userService;
 
     @GetMapping
-    public List<NotificationResponse> getNotifications() {
-        return notificationService.getUserNotifications(userService.getUserId());
+    public ResponseEntity<?> getNotifications() {
+        return ResponseEntity.ok(notificationService.getUserNotifications(userService.getUserId()));
     }
 
     @PatchMapping("/{notificationId}/read")
@@ -26,7 +27,7 @@ public class NotificationController {
     }
 
     @GetMapping("/unread-count")
-    public long getUnreadCount() {
-        return notificationService.getUnreadCount(userService.getUserId());
+    public ResponseEntity<?> getUnreadCount() {
+        return ResponseEntity.ok(notificationService.getUnreadCount(userService.getUserId()));
     }
 }
