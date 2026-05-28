@@ -33,4 +33,6 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
     Long countOverdueTasks(@Param("user") User user, @Param("statuses") Collection<Status> statuses);
 
     List<Task> findTasksByDueDateBetween(LocalDateTime start, LocalDateTime end);
+
+    List<Task> findTasksByDueDateBefore(LocalDateTime time);
 }
