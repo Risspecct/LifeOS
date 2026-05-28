@@ -3,6 +3,7 @@ package users.java.LifeOS.friend.request;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.exceptions.ConflictException;
+import users.java.LifeOS.friend.FriendshipRepository;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class FriendRequestValidationService {
-
+    private final FriendshipRepository friendshipRepository;
     private final FriendRequestRepository friendRequestRepository;
 
     public void validateRequestEligibility(User sender, User receiver) {
@@ -42,10 +43,6 @@ public class FriendRequestValidationService {
         }
         if(latestRequest.getStatus() == FriendRequestStatus.PENDING) {
             throw new ConflictException("Friend request already pending");
-        }
-
-        if(latestRequest.getStatus() == FriendRequestStatus.ACCEPTED) {
-            throw new ConflictException( "Users are already connected");
         }
     }
 }
