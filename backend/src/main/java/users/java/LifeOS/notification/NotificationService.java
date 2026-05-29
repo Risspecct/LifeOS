@@ -10,14 +10,15 @@ import users.java.LifeOS.user.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
 public class NotificationService {
     private final NotificationRepository notificationRepository;
 
-    public void createNotification(User user, NotificationType type, String title, String message) {
-        Notification notification = new Notification(user, type, title, message);
+    public void createNotification(User user, NotificationType type, String title, String message, Map<String, Object> metadata) {
+        Notification notification = new Notification(user, type, title, message, metadata);
         notificationRepository.save(notification);
     }
 
@@ -30,7 +31,8 @@ public class NotificationService {
                         notification.getTitle(),
                         notification.getMessage(),
                         notification.isRead(),
-                        notification.getCreatedAt()
+                        notification.getCreatedAt(),
+                        notification.getMetadata()
                 ))
                 .toList();
     }

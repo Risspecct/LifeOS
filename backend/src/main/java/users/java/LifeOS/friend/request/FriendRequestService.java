@@ -14,6 +14,7 @@ import users.java.LifeOS.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -39,14 +40,20 @@ public class FriendRequestService {
         }
         validationService.validateRequestEligibility(sender, receiver);
 
+        FriendRequest request = new FriendRequest(sender, receiver);
+
         notificationService.createNotification(
                 receiver,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
                 "New Friend Request",
-                sender.getUsername() + " sent you a friend request"
+                sender.getUsername() + " sent you a friend request",
+                Map.of(
+                        "requestId", request.getId(),
+                        "senderId", request.getSender().getId()
+                )
         );
 
-        friendRequestRepository.save(new FriendRequest(sender, receiver));
+        friendRequestRepository.save(request);
     }
 
     @Transactional
@@ -70,7 +77,10 @@ public class FriendRequestService {
                 request.getSender(),
                 NotificationType.FRIEND_REQUEST_ACCEPTED,
                 "Friend Added",
-                request.getReceiver().getUsername() + " is added your social network"
+                request.getReceiver().getUsername() + " is added your social network",
+                Map.of(
+                        "friendId", request.getSender().getId()
+                )
         );
 
         activityService.logFriendAdded(currentUser, request.getSender());

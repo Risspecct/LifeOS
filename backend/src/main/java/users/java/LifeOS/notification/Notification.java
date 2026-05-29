@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @NoArgsConstructor
 @Getter
@@ -42,10 +45,15 @@ public class Notification {
 
     private LocalDateTime scheduledFor;
 
-    public Notification(User user, NotificationType type, String title, String message) {
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Object> metadata;
+
+    public Notification(User user, NotificationType type, String title, String message, Map<String, Object> metadata) {
         this.user = user;
         this.type = type;
         this.title = title;
         this.message = message;
+        this.metadata = metadata;
     }
 }

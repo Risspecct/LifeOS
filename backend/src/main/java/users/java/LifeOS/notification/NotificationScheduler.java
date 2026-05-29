@@ -1,7 +1,6 @@
 package users.java.LifeOS.notification;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import users.java.LifeOS.task.Task;
@@ -9,6 +8,7 @@ import users.java.LifeOS.task.TaskRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
@@ -28,7 +28,11 @@ public class NotificationScheduler {
                     task.getUser(),
                     NotificationType.TASK_DUE_SOON,
                     "Task Due Soon",
-                    task.getTitle() + " is due at" + task.getDueDate().getHour()
+                    task.getTitle() + " is due today",
+                    Map.of(
+                            "taskId", task.getId(),
+                            "dueDate", task.getDueDate().toString()
+                    )
             );
         }
     }
@@ -42,7 +46,11 @@ public class NotificationScheduler {
                     task.getUser(),
                     NotificationType.TASK_OVERDUE,
                     "Task Overdue",
-                    task.getTitle() + " is overdue"
+                    task.getTitle() + " is overdue",
+                    Map.of(
+                            "taskId", task.getId(),
+                            "dueDate", task.getDueDate().toString()
+                    )
             );
         }
     }
