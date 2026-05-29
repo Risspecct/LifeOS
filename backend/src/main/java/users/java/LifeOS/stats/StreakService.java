@@ -1,10 +1,15 @@
 package users.java.LifeOS.stats;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class StreakService {
+    private final UserStatsRepository statsRepository;
 
     public void updateStreak(UserStats stats) {
         LocalDate today = LocalDate.now();

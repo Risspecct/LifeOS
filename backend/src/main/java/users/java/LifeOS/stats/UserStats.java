@@ -26,6 +26,7 @@ public class UserStats {
     private Integer currentStreak = 0;
     private Integer longestStreak = 0;
     private Integer tasksCompleted = 0;
+    private Integer pendingTasks = 0;
     private LocalDate lastActiveDate;
 
     public UserStats(User user) {
