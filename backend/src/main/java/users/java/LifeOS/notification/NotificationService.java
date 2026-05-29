@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.user.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -48,5 +49,9 @@ public class NotificationService {
 
     public long getUnreadCount(Long userId) {
         return notificationRepository.countByUserIdAndIsReadFalse(userId);
+    }
+
+    public boolean hasNotificationToday(Long userId, NotificationType type) {
+        return notificationRepository.existsByUserIdAndTypeAndCreatedAtAfter(userId, type, LocalDate.now().atStartOfDay());
     }
 }

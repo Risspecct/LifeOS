@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import users.java.LifeOS.stats.StreakView;
-import users.java.LifeOS.stats.UserStats;
 import users.java.LifeOS.stats.UserStatsRepository;
 import users.java.LifeOS.task.Task;
 import users.java.LifeOS.task.TaskRepository;
+import users.java.LifeOS.task.TaskService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,8 +18,10 @@ import java.util.Map;
 @Component
 public class NotificationScheduler {
     private final TaskRepository taskRepository;
+    private final TaskService taskService;
     private final NotificationService notificationService;
     private final UserStatsRepository statsRepository;
+    private final NotificationRepository notificationRepository;
 
     @Scheduled(cron = "0 0 * * * *")
     public void generateDeadlineNotifications() {
@@ -61,19 +63,52 @@ public class NotificationScheduler {
 
     @Scheduled(cron = "0 0 20 * * *")
     public void generateStreakNotifications() {
-        List<StreakView> stats = statsRepository.findUsersStreakStatus(3);
+        LocalDate today = LocalDate.now();
+        List<StreakView> stats = statsRepository.findUsersStreakStatus();
+        for (StreakView stat : stats) {
+            if (stat.lastActiveDate() == null) {
+                continue;
+            }
+            Long pendingTaskCount = taskService.getPendingTaskCount(stat.user());
+            if (stat.currentStreak() >= 3
+                    && stat.lastActiveDate().isBefore(today)
+                    && !notificationService.hasNotificationToday(
+                    stat.user().getId(),
+                    NotificationType.STREAK_RISK
+            )) {
 
-        for (StreakView stat: stats) {
-            if (!stat.lastActiveDate().isEqual(LocalDate.now()))
-               notificationService.createNotification(
-                       stat.user(),
-                       NotificationType.STREAK_RISK,
-                       "Streak is in danger",
-                       "Keep your " + stat.currentStreak() + " day streak going",
-                       Map.of(
-                               "currentStreak", stat.currentStreak()
-                       )
-               );
+                notificationService.createNotification(
+                        stat.user(),
+                        NotificationType.STREAK_RISK,
+                        "Streak at Risk",
+                        "Keep your " + stat.currentStreak()
+                                + "-day streak alive. Complete a task today.",
+                        Map.of(
+                                "currentStreak",
+                                stat.currentStreak()
+                        )
+                );
+            }
+            else if (stat.currentStreak() == 0
+                    && pendingTaskCount > 0
+                    && stat.lastActiveDate().isBefore(today)
+                    && !notificationService.hasNotificationToday(stat.user().getId(), NotificationType.USER_INACTIVE)) {
+
+                notificationService.createNotification(
+                        stat.user(),
+                        NotificationType.USER_INACTIVE,
+                        "Pending Tasks Waiting",
+                        "You have "
+                                + pendingTaskCount
+                                + " pending task"
+                                + (pendingTaskCount == 1 ? "" : "s")
+                                + " waiting for attention.",
+                        Map.of(
+                                "pendingTaskCount",
+                                pendingTaskCount
+                        )
+                );
+            }
         }
     }
  }
