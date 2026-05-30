@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDateTime;
@@ -16,15 +18,17 @@ import java.time.LocalDateTime;
 public class FriendRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "sender_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User sender;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "receiver_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User receiver;
 
     @Enumerated(EnumType.STRING)

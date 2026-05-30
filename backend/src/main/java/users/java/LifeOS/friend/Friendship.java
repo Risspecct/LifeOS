@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDateTime;
@@ -21,10 +23,12 @@ public class Friendship {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_one_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User userOne;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_two_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User userTwo;
 
     @Column(nullable = false)

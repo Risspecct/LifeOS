@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.util.BaseEntity;
@@ -20,11 +22,12 @@ import java.time.LocalDateTime;
 @Table(name = "task")
 public class Task extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     User user;
 
     @Column
@@ -42,7 +45,8 @@ public class Task extends BaseEntity {
     String taskType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "label_id")
+    @JoinColumn(name = "label_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Label label;
 
     @Column

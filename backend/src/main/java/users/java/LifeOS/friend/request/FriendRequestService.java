@@ -27,7 +27,6 @@ public class FriendRequestService {
     private final FriendRequestValidationService validationService;
     private final ActivityService activityService;
     private final NotificationService notificationService;
-    private final StatsService statsService;
 
     @Transactional
     public void sendRequest(User sender, Long receiverId) {
@@ -37,12 +36,16 @@ public class FriendRequestService {
         if(sender.getId().equals(receiver.getId())) {
             throw new InvalidRequestException("You cannot send request to yourself");
         }
+
         if(friendshipService.isFriends(sender, receiver)) {
             throw new InvalidRequestException("Users are already friends");
         }
+
         validationService.validateRequestEligibility(sender, receiver);
 
         FriendRequest request = new FriendRequest(sender, receiver);
+
+        friendRequestRepository.save(request);
 
         notificationService.createNotification(
                 receiver,
@@ -51,11 +54,9 @@ public class FriendRequestService {
                 sender.getUsername() + " sent you a friend request",
                 Map.of(
                         "requestId", request.getId(),
-                        "senderId", request.getSender().getId()
+                        "senderId", sender.getId()
                 )
         );
-
-        friendRequestRepository.save(request);
     }
 
     @Transactional
@@ -80,7 +81,7 @@ public class FriendRequestService {
                 "Friend Added",
                 request.getReceiver().getUsername() + " is added your social network",
                 Map.of(
-                        "friendId", request.getSender().getId()
+                        "friendId", request.getReceiver().getId()
                 )
         );
 

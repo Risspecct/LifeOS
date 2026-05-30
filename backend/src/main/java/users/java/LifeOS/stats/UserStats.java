@@ -2,6 +2,8 @@ package users.java.LifeOS.stats;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDate;
@@ -17,8 +19,9 @@ public class UserStats {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     private Long totalPoints = 0L;
@@ -46,9 +49,9 @@ public class UserStats {
 
     public void incrementFriendCount() { friendCount++; }
 
-    public void decrementFriendCount() { friendCount--; }
+    public void decrementFriendCount() { friendCount = Math.max(0, friendCount - 1); }
 
     public void incrementTasksCreated() { tasksCreated++; }
 
-    public void decrementTasksCreated() { tasksCreated--; }
+    public void decrementTasksCreated() { tasksCreated = Math.max(0, tasksCreated - 1); }
 }

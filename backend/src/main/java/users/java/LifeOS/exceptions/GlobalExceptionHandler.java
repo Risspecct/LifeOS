@@ -166,6 +166,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage(), request, ex);
     }
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<ApiErrorResponse> handleNullPointerException(NullPointerException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Null pointer exception" , ex.getMessage() , request, ex);
+    }
+
     // 500: All other unhandled exceptions
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnhandled(Exception ex, HttpServletRequest request) {
@@ -207,7 +212,7 @@ public class GlobalExceptionHandler {
 
         // Logging based on status
         if (status.is5xxServerError()) {
-            log.error("500 Error at [{}]: {} | Exception: {}", request.getRequestURI(), message, ex.getClass().getSimpleName());
+            log.error("500 Error at [{}]: {}", request.getRequestURI(), message, ex);
         } else if (status.is4xxClientError()) {
             log.warn("{} {} at [{}]: {} | Exception: {}", status.value(), error, request.getRequestURI(), message, ex.getClass().getSimpleName());
         }

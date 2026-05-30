@@ -2,6 +2,8 @@ package users.java.LifeOS.activity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import users.java.LifeOS.task.Task;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.util.BaseEntity;
@@ -30,11 +32,13 @@ public class Activity extends BaseEntity {
 
     private Integer points;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "task_id")
+    @JoinColumn(name = "task_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Task task;
 }

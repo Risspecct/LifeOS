@@ -2,6 +2,8 @@ package users.java.LifeOS.task.label;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.util.BaseEntity;
 
@@ -26,7 +28,8 @@ public class Label extends BaseEntity {
     @Column(nullable = false)
     private Integer priorityWeight = 0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 }

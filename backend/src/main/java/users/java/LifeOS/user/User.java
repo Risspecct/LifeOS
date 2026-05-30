@@ -15,7 +15,7 @@ import users.java.LifeOS.util.BaseEntity;
 @Table(name="users")
 public class User extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column
     private Long id;
 
