@@ -34,10 +34,7 @@ public class DashboardService {
         Integer currentStreak = statsService.getCurrentStreak(currentUser);
 
         DashboardSummary summary = new DashboardSummary(
-                        taskStats.totalTasks(),
-                        taskStats.completedTasks(),
-                        taskStats.pendingTasks(),
-                        taskStats.overdueTasks(),
+                        taskStats,
                         currentStreak
                 );
 
@@ -49,17 +46,11 @@ public class DashboardService {
                         .limit(5)
                         .toList();
 
+        List<UpcomingTaskDto> upcomingTasks = taskService.getUpcomingTasks(currentUser.getId());
 
-        List<UpcomingTaskDto> upcomingTasks =
-                taskService.getUpcomingTasks(currentUser.getId());
+        List<ActivityResponse> recentActivities = activityService.getRecentActivities(currentUser.getId());
 
-
-        List<ActivityResponse> recentActivities =
-                activityService
-                        .getRecentActivities(currentUser.getId());
-
-        StudentProfileView profile =
-                studentService.getStudentProfile(currentUser.getId());
+        StudentProfileView profile = studentService.getStudentProfile(currentUser.getId());
 
         DashboardProfile dashboardProfile =
                 new DashboardProfile(
