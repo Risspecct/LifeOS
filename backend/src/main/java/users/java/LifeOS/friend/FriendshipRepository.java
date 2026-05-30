@@ -8,7 +8,6 @@ import java.util.Optional;
 
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     boolean existsByUserOneAndUserTwo(User userOne, User userTwo);
-    Optional<Friendship> findByUserOneAndUserTwo(User userOne, User userTwo);
     List<Friendship> findByUserOneOrUserTwo(User userOne, User userTwo);
     void deleteByUserOneAndUserTwo(User userOne, User userTwo);
 }
