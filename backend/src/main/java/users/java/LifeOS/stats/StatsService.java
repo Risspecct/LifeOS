@@ -12,6 +12,7 @@ import java.time.temporal.ChronoUnit;
 @Service
 public class StatsService {
     private final UserStatsRepository userStatsRepository;
+    private final UserStatsMapper statsMapper;
 
     public UserStatsDto getUserStats(User user) {
 
@@ -19,21 +20,7 @@ public class StatsService {
                 .findByUser(user)
                 .orElseGet(() -> new UserStats(user));
 
-        return new UserStatsDto(
-                stats.getTotalPoints(),
-
-                calculateEffectiveStreak(stats),
-                stats.getLongestStreak(),
-
-                stats.getTasksCreated(),
-                stats.getTasksCompleted(),
-
-                stats.getTotalDaysActive(),
-
-                stats.getFriendCount(),
-
-                stats.getLastActiveDate()
-        );
+        return statsMapper.toUserStatsDto(stats);
     }
 
     public Integer getCurrentStreak(User user) {

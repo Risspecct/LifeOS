@@ -11,10 +11,10 @@ public record UserStatsDto(
         Integer tasksCreated,
         Integer tasksCompleted,
 
-        Integer totalActiveDays,
+        LocalDate lastActiveDate,
+        Integer totalDaysActive,
 
-        Integer totalFriends,
+        Integer friendCount
 
-        LocalDate lastActiveDate
 ) {
 }
