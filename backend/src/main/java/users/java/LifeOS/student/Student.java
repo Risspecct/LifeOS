@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import users.java.LifeOS.branch.Branch;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.util.BaseEntity;
@@ -18,11 +20,12 @@ import java.time.LocalDateTime;
 @Table(name = "student")
 public class Student extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column
@@ -42,8 +45,9 @@ public class Student extends BaseEntity {
     @Max(4)
     private Integer year;
 
-    @ManyToOne
-    @JoinColumn(name = "branch_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Branch branch;
 
     @Column
