@@ -1,9 +1,7 @@
 package users.java.LifeOS.stats;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDate;
@@ -22,12 +20,19 @@ public class UserStats {
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
+
     private Long totalPoints = 0L;
+
     private Integer currentStreak = 0;
     private Integer longestStreak = 0;
+
     private Integer tasksCompleted = 0;
-    private Integer pendingTasks = 0;
+    private Integer tasksCreated = 0;
+
     private LocalDate lastActiveDate;
+    private Integer totalDaysActive;
+
+    private Integer friendCount = 0;
 
     public UserStats(User user) {
         this.user = user;

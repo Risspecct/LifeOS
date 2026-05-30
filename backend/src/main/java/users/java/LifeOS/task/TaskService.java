@@ -101,18 +101,23 @@ public class TaskService {
         verifyAccess(userId, task);
         task.setStatus(status);
 
+        ActivityType type;
         int points;
         if (status == Status.COMPLETED) {
             points = ActivityPoints.TASK_COMPLETED;
+            type = ActivityType.TASK_COMPLETED;
+
             task.setCompletedAt(LocalDateTime.now());
             rewardService.rewardTaskCompletion(userService.getAuthenticatedUser(), task);
         }
-        else
+        else {
             points = ActivityPoints.TASK_UPDATED;
+            type = ActivityType.TASK_UPDATED;
+        }
 
         activityService.logActivity(
                 userService.getById(userId),
-                ActivityType.TASK_UPDATED,
+                type,
                 "Updated Task status",
                 task.getTitle(),
                 points,

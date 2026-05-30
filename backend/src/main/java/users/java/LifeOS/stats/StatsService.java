@@ -11,19 +11,28 @@ import java.time.temporal.ChronoUnit;
 @RequiredArgsConstructor
 @Service
 public class StatsService {
-
     private final UserStatsRepository userStatsRepository;
 
     public UserStatsDto getUserStats(User user) {
+
         UserStats stats = userStatsRepository
                 .findByUser(user)
                 .orElseGet(() -> new UserStats(user));
 
         return new UserStatsDto(
                 stats.getTotalPoints(),
+
                 calculateEffectiveStreak(stats),
                 stats.getLongestStreak(),
-                stats.getTasksCompleted()
+
+                stats.getTasksCreated(),
+                stats.getTasksCompleted(),
+
+                stats.getTotalDaysActive(),
+
+                stats.getFriendCount(),
+
+                stats.getLastActiveDate()
         );
     }
 

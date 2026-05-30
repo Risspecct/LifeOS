@@ -36,7 +36,7 @@ public class RewardService {
         userStatsRepository.save(stats);
     }
 
-    private long calculateTaskCompletionPoints(Task task) {
+    public long calculateTaskCompletionPoints(Task task) {
         SmartPriorityLevel level = priorityCalculator
                 .determineLevel(priorityCalculator.calculateBaseScore(task));
 
@@ -61,13 +61,17 @@ public class RewardService {
 
     private boolean isCompletedEarly(Task task) {
         return task.getDueDate() != null &&
-                LocalDateTime.now().isBefore(task.getDueDate());
+                task.getCompletedAt() != null &&
+                task.getCompletedAt().isBefore(task.getDueDate());
     }
 
     private boolean isSuspicious(Task task) {
+        if (task.getCompletedAt() == null) {
+            return false;
+        }
         Duration duration = Duration.between(
                 task.getCreatedAt(),
-                LocalDateTime.now()
+                task.getCompletedAt()
         );
         return duration.toMinutes() < 5;
     }

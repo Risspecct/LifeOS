@@ -2,15 +2,21 @@ package users.java.LifeOS.activity;
 
 public enum ActivityType {
 
-    TASK_CREATED,
-    TASK_UPDATED,
-    TASK_COMPLETED,
+    TASK_CREATED(true),
+    TASK_UPDATED(true),
+    TASK_COMPLETED(true),
 
-    PROFILE_UPDATED,
+    PROFILE_UPDATED(false),
+    LOGIN(false),
+    FRIEND_ADDED(false);
 
-    LOGIN,
+    private final boolean contributesToProductivity;
 
-    STREAK_REACHED,
+    ActivityType(boolean contributesToProductivity) {
+        this.contributesToProductivity = contributesToProductivity;
+    }
 
-    FRIEND_ADDED
+    public boolean contributesToProductivity() {
+        return contributesToProductivity;
+    }
 }
