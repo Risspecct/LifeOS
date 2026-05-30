@@ -15,12 +15,17 @@ public class StatsService {
     private final UserStatsMapper statsMapper;
 
     public UserStatsDto getUserStats(User user) {
-
         UserStats stats = userStatsRepository
                 .findByUser(user)
                 .orElseGet(() -> new UserStats(user));
 
         return statsMapper.toUserStatsDto(stats);
+    }
+
+    public UserStats getStats(User user) {
+        return userStatsRepository
+                .findByUser(user)
+                .orElseGet(() -> new UserStats(user));
     }
 
     public Integer getCurrentStreak(User user) {

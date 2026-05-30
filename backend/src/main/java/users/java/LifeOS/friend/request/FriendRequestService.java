@@ -9,6 +9,7 @@ import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.friend.FriendshipService;
 import users.java.LifeOS.notification.NotificationService;
 import users.java.LifeOS.notification.NotificationType;
+import users.java.LifeOS.stats.StatsService;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserRepository;
 
@@ -26,6 +27,7 @@ public class FriendRequestService {
     private final FriendRequestValidationService validationService;
     private final ActivityService activityService;
     private final NotificationService notificationService;
+    private final StatsService statsService;
 
     @Transactional
     public void sendRequest(User sender, Long receiverId) {
@@ -58,7 +60,6 @@ public class FriendRequestService {
 
     @Transactional
     public void acceptRequest(User currentUser, Long requestId) {
-
         FriendRequest request = friendRequestRepository.findById(requestId)
                         .orElseThrow(() -> new NotFoundException("Request not found"));
 

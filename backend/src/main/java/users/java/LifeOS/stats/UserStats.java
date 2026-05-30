@@ -30,7 +30,7 @@ public class UserStats {
     private Integer tasksCreated = 0;
 
     private LocalDate lastActiveDate;
-    private Integer totalDaysActive;
+    private Integer totalDaysActive = 0;
 
     private Integer friendCount = 0;
 
@@ -42,7 +42,13 @@ public class UserStats {
         totalPoints += points;
     }
 
-    public void incrementTasksCompleted() {
-        tasksCompleted++;
-    }
+    public void incrementTasksCompleted() {tasksCompleted++; }
+
+    public void incrementFriendCount() { friendCount++; }
+
+    public void decrementFriendCount() { friendCount--; }
+
+    public void incrementTasksCreated() { tasksCreated++; }
+
+    public void decrementTasksCreated() { tasksCreated--; }
 }
