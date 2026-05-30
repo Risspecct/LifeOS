@@ -11,9 +11,9 @@
             Integer tasksCreated,
             Integer tasksCompleted,
 
-            Integer totalActiveDays,
+            Integer totalDaysActive,
             LocalDate lastActiveDate,
 
-            Integer totalFriends
+            Integer friendCount
     ) {
     }
