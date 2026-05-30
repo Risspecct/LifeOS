@@ -11,20 +11,21 @@ import java.time.temporal.ChronoUnit;
 @RequiredArgsConstructor
 @Service
 public class StatsService {
-
     private final UserStatsRepository userStatsRepository;
+    private final UserStatsMapper statsMapper;
 
     public UserStatsDto getUserStats(User user) {
         UserStats stats = userStatsRepository
                 .findByUser(user)
                 .orElseGet(() -> new UserStats(user));
 
-        return new UserStatsDto(
-                stats.getTotalPoints(),
-                calculateEffectiveStreak(stats),
-                stats.getLongestStreak(),
-                stats.getTasksCompleted()
-        );
+        return statsMapper.toUserStatsDto(stats);
+    }
+
+    public UserStats getStats(User user) {
+        return userStatsRepository
+                .findByUser(user)
+                .orElseGet(() -> new UserStats(user));
     }
 
     public Integer getCurrentStreak(User user) {

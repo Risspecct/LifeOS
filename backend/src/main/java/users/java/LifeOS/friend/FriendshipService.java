@@ -3,7 +3,10 @@ package users.java.LifeOS.friend;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.exceptions.InvalidRequestException;
 import users.java.LifeOS.exceptions.NotFoundException;
+import users.java.LifeOS.stats.StatsService;
+import users.java.LifeOS.stats.StatsUpdateService;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserRepository;
 
@@ -14,6 +17,8 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class FriendshipService {
+    private final StatsService statsService;
+    private final StatsUpdateService statsUpdateService;
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
     private final FriendMapper friendMapper;
@@ -37,12 +42,15 @@ public class FriendshipService {
 
     public void createFriendship(User user1, User user2) {
         if(isFriends(user1, user2)) {
-            return;
+            throw new InvalidRequestException("You are already friends");
         }
         User first = user1.getId() < user2.getId()? user1 : user2;
         User second = user1.getId() < user2.getId() ? user2 : user1;
 
         friendshipRepository.save(new Friendship(first, second));
+
+        statsUpdateService.updateFriendCount(user1, 1);
+        statsUpdateService.updateFriendCount(user2, 1);
     }
 
     public Set<User> getFriendUsers(User currentUser) {
@@ -57,15 +65,18 @@ public class FriendshipService {
 
     @Transactional
     public void removeFriend(User currentUser, Long friendId) {
-
         User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new NotFoundException("Friend not found"));
 
         User first = currentUser.getId() < friend.getId()? currentUser : friend;
         User second = currentUser.getId() < friend.getId() ? friend : currentUser;
+
         if (friendshipRepository.existsByUserOneAndUserTwo(first, second))
             friendshipRepository.deleteByUserOneAndUserTwo(first, second);
         else
             throw new NotFoundException("Friendship doesn't exist");
+
+        statsUpdateService.updateFriendCount(first, -1);
+        statsUpdateService.updateFriendCount(second, -1);
     }
 }

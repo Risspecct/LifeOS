@@ -2,41 +2,30 @@ package users.java.LifeOS.rewards;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.stats.StatsUpdateService;
 import users.java.LifeOS.stats.StreakService;
-import users.java.LifeOS.stats.UserStats;
-import users.java.LifeOS.stats.UserStatsRepository;
 import users.java.LifeOS.task.Task;
 import users.java.LifeOS.task.prioritization.SmartPriorityLevel;
 import users.java.LifeOS.task.prioritization.TaskPriorityCalculator;
 import users.java.LifeOS.user.User;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
 public class RewardService {
-
-    private final UserStatsRepository userStatsRepository;
+    private final StatsUpdateService statsUpdateService;
     private final TaskPriorityCalculator priorityCalculator;
 
     private final StreakService streakService;
 
     public void rewardTaskCompletion(User user,Task task) {
-
-        UserStats stats = userStatsRepository.findByUser(user)
-                .orElseGet(() -> new UserStats(user));
-
         long earnedPoints = calculateTaskCompletionPoints(task);
 
-        stats.addPoints(earnedPoints);
-        stats.incrementTasksCompleted();
-
-        streakService.updateStreak(stats);
-        userStatsRepository.save(stats);
+        statsUpdateService.taskCompleted(user, earnedPoints);
     }
 
-    private long calculateTaskCompletionPoints(Task task) {
+    public long calculateTaskCompletionPoints(Task task) {
         SmartPriorityLevel level = priorityCalculator
                 .determineLevel(priorityCalculator.calculateBaseScore(task));
 
@@ -61,13 +50,17 @@ public class RewardService {
 
     private boolean isCompletedEarly(Task task) {
         return task.getDueDate() != null &&
-                LocalDateTime.now().isBefore(task.getDueDate());
+                task.getCompletedAt() != null &&
+                task.getCompletedAt().isBefore(task.getDueDate());
     }
 
     private boolean isSuspicious(Task task) {
+        if (task.getCompletedAt() == null) {
+            return false;
+        }
         Duration duration = Duration.between(
                 task.getCreatedAt(),
-                LocalDateTime.now()
+                task.getCompletedAt()
         );
         return duration.toMinutes() < 5;
     }

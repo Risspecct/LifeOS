@@ -1,10 +1,9 @@
 package users.java.LifeOS.Dashboard;
 
+import users.java.LifeOS.task.TaskStats;
+
 public record DashboardSummary(
-        Long totalTasks,
-        Long completedTasks,
-        Long pendingTasks,
-        Long overdueTasks,
+        TaskStats taskStats,
         Integer currentStreak
 ) {
 }

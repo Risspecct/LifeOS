@@ -10,9 +10,9 @@ import users.java.LifeOS.activity.ActivityService;
 import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.rewards.RewardService;
+import users.java.LifeOS.stats.StatsUpdateService;
 import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.task.label.LabelService;
-import users.java.LifeOS.task.prioritization.TaskStats;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
 
@@ -29,6 +29,7 @@ public class TaskService {
     private final ActivityService activityService;
     private final LabelService labelService;
     private final RewardService rewardService;
+    private final StatsUpdateService statsUpdateService;
 
     public TaskView create(long userId, TaskDto dto) {
         User user = userService.getById(userId);
@@ -54,6 +55,7 @@ public class TaskService {
                 task
         );
 
+        statsUpdateService.updateCreatedTasks(user, 1);
         return mapper.toTaskView(task);
     }
 
@@ -102,18 +104,23 @@ public class TaskService {
         verifyAccess(userId, task);
         task.setStatus(status);
 
+        ActivityType type;
         int points;
         if (status == Status.COMPLETED) {
             points = ActivityPoints.TASK_COMPLETED;
+            type = ActivityType.TASK_COMPLETED;
+
             task.setCompletedAt(LocalDateTime.now());
             rewardService.rewardTaskCompletion(userService.getAuthenticatedUser(), task);
         }
-        else
+        else {
             points = ActivityPoints.TASK_UPDATED;
+            type = ActivityType.TASK_UPDATED;
+        }
 
         activityService.logActivity(
                 userService.getById(userId),
-                ActivityType.TASK_UPDATED,
+                type,
                 "Updated Task status",
                 task.getTitle(),
                 points,
@@ -152,17 +159,6 @@ public class TaskService {
                 .toList();
     }
 
-    public Long getTotalTaskCount() {
-        return taskRepository.countByUser(userService.getAuthenticatedUser());
-    }
-
-    public Long getCompletedTaskCount(User user) {
-        return taskRepository.countByUserAndStatus(
-                user,
-                Status.COMPLETED
-        );
-    }
-
     public Long getPendingTaskCount(User user) {
         return taskRepository.countByUserAndStatusNotIn(
                 user,
@@ -173,23 +169,8 @@ public class TaskService {
         );
     }
 
-    public Long getOverdueTaskCount(User user) {
-        return taskRepository.countOverdueTasks(
-                user,
-                List.of(
-                        Status.COMPLETED,
-                        Status.CANCELLED
-                )
-        );
-    }
-
     public TaskStats getTaskStats(User user) {
-        Long totalTask = getTotalTaskCount();
-        Long completedTasks = getCompletedTaskCount(user);
-        Long overdueTasks = getOverdueTaskCount(user);
-        Long pendingTasks = getPendingTaskCount(user);
-
-        return new TaskStats(completedTasks, pendingTasks, overdueTasks, totalTask);
+        return taskRepository.getTaskStats(user);
     }
 
     public void delete(long userId, long taskId) {
@@ -197,6 +178,7 @@ public class TaskService {
         verifyAccess(userId, task);
 
         taskRepository.delete(task);
+        statsUpdateService.updateCreatedTasks(userService.getById(userId), -1);
     }
 
     private void verifyAccess(long userId, Task task) {
