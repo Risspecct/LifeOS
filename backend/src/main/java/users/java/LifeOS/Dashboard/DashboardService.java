@@ -8,6 +8,7 @@ import users.java.LifeOS.stats.StatsService;
 import users.java.LifeOS.student.StudentProfileView;
 import users.java.LifeOS.student.StudentService;
 import users.java.LifeOS.task.TaskService;
+import users.java.LifeOS.task.TaskStats;
 import users.java.LifeOS.task.UpcomingTaskDto;
 import users.java.LifeOS.task.prioritization.PrioritizationService;
 import users.java.LifeOS.task.prioritization.PrioritizedTaskResponse;
@@ -29,17 +30,14 @@ public class DashboardService {
 
     public DashboardResponse getDashboardData() {
         User currentUser = userService.getAuthenticatedUser();
-        Long totalTasks = taskService.getTotalTaskCount();
-        Long completedTasks = taskService.getCompletedTaskCount(currentUser);
-        Long pendingTasks = taskService.getPendingTaskCount(currentUser);
-        Long overdueTasks = taskService.getOverdueTaskCount(currentUser);
+        TaskStats taskStats = taskService.getTaskStats(currentUser);
         Integer currentStreak = statsService.getCurrentStreak(currentUser);
 
         DashboardSummary summary = new DashboardSummary(
-                        totalTasks,
-                        completedTasks,
-                        pendingTasks,
-                        overdueTasks,
+                        taskStats.totalTasks(),
+                        taskStats.completedTasks(),
+                        taskStats.pendingTasks(),
+                        taskStats.overdueTasks(),
                         currentStreak
                 );
 

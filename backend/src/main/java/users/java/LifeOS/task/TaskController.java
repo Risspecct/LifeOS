@@ -58,7 +58,11 @@ public class TaskController {
 
     @GetMapping("/stats")
     public ResponseEntity<?> getTaskStats() {
-        return ResponseEntity.ok(taskService.getTaskStats(userService.getAuthenticatedUser()));
+        return ResponseEntity.ok(taskService
+                .getTaskStats(
+                        userService.getAuthenticatedUser()
+                )
+        );
     }
 
     @DeleteMapping

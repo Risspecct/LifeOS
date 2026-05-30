@@ -8,7 +8,7 @@ import users.java.LifeOS.task.Task;
 import users.java.LifeOS.task.TaskRepository;
 import users.java.LifeOS.task.TaskService;
 import users.java.LifeOS.task.prioritization.PriorityWeights;
-import users.java.LifeOS.task.prioritization.TaskStats;
+import users.java.LifeOS.task.TaskStats;
 import users.java.LifeOS.user.UserService;
 
 import java.time.LocalDate;

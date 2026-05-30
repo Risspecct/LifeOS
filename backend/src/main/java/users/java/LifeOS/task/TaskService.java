@@ -12,7 +12,6 @@ import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.rewards.RewardService;
 import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.task.label.LabelService;
-import users.java.LifeOS.task.prioritization.TaskStats;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
 
@@ -152,17 +151,6 @@ public class TaskService {
                 .toList();
     }
 
-    public Long getTotalTaskCount() {
-        return taskRepository.countByUser(userService.getAuthenticatedUser());
-    }
-
-    public Long getCompletedTaskCount(User user) {
-        return taskRepository.countByUserAndStatus(
-                user,
-                Status.COMPLETED
-        );
-    }
-
     public Long getPendingTaskCount(User user) {
         return taskRepository.countByUserAndStatusNotIn(
                 user,
@@ -173,23 +161,8 @@ public class TaskService {
         );
     }
 
-    public Long getOverdueTaskCount(User user) {
-        return taskRepository.countOverdueTasks(
-                user,
-                List.of(
-                        Status.COMPLETED,
-                        Status.CANCELLED
-                )
-        );
-    }
-
     public TaskStats getTaskStats(User user) {
-        Long totalTask = getTotalTaskCount();
-        Long completedTasks = getCompletedTaskCount(user);
-        Long overdueTasks = getOverdueTaskCount(user);
-        Long pendingTasks = getPendingTaskCount(user);
-
-        return new TaskStats(completedTasks, pendingTasks, overdueTasks, totalTask);
+        return taskRepository.getTaskStats(user);
     }
 
     public void delete(long userId, long taskId) {
