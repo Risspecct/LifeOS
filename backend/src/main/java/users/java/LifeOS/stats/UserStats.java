@@ -41,17 +41,11 @@ public class UserStats {
         this.user = user;
     }
 
-    public void addPoints(Long points) {
-        totalPoints += points;
-    }
+    public void updateTasksCompletedCount(Integer d) { tasksCompleted = Math.max(0, tasksCompleted + d); }
 
-    public void incrementTasksCompleted() {tasksCompleted++; }
+    public void updateFriendCount(Integer d) { friendCount = Math.max(0, friendCount + 1); }
 
-    public void incrementFriendCount() { friendCount++; }
+    public void updateTaskCreatedCount(Integer d) { tasksCreated = Math.max(0, tasksCreated + d); }
 
-    public void decrementFriendCount() { friendCount = Math.max(0, friendCount - 1); }
-
-    public void incrementTasksCreated() { tasksCreated++; }
-
-    public void decrementTasksCreated() { tasksCreated = Math.max(0, tasksCreated - 1); }
+    public void updateTotalPoints(Long points) { totalPoints = Math.max(0, totalPoints + points); }
 }

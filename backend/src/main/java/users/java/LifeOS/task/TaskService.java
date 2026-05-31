@@ -1,5 +1,6 @@
 package users.java.LifeOS.task;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import users.java.LifeOS.activity.ActivityPoints;
 import users.java.LifeOS.activity.ActivityService;
 import users.java.LifeOS.activity.ActivityType;
+import users.java.LifeOS.exceptions.InvalidRequestException;
 import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.rewards.RewardService;
 import users.java.LifeOS.stats.StatsUpdateService;
@@ -99,27 +101,46 @@ public class TaskService {
         return getTask(userId, taskId);
     }
 
+    @Transactional
     public TaskDetailView updateStatus(long userId, long taskId, Status status) {
         Task task = getTask(taskId);
+        User user = userService.getById(userId);
+
         verifyAccess(userId, task);
-        task.setStatus(status);
+        if (task.getStatus() == status) {
+            throw new InvalidRequestException("Updated status cannot be same as the present status");
+        }
 
         ActivityType type;
         int points;
+
         if (status == Status.COMPLETED) {
             points = ActivityPoints.TASK_COMPLETED;
             type = ActivityType.TASK_COMPLETED;
 
             task.setCompletedAt(LocalDateTime.now());
-            rewardService.rewardTaskCompletion(userService.getAuthenticatedUser(), task);
-        }
-        else {
+
+            rewardService.rewardTaskCompletion(
+                    userService.getAuthenticatedUser(),
+                    task
+            );
+
+        } else {
+            if (task.getStatus() == Status.COMPLETED) {
+                statsUpdateService.taskNotComplete(task);
+
+                task.setCompletedAt(null);
+                task.setAwardedPoints(0L);
+            }
+
             points = ActivityPoints.TASK_UPDATED;
             type = ActivityType.TASK_UPDATED;
         }
 
+        task.setStatus(status);
+
         activityService.logActivity(
-                userService.getById(userId),
+                user,
                 type,
                 "Updated Task status",
                 task.getTitle(),
@@ -128,6 +149,7 @@ public class TaskService {
         );
 
         taskRepository.save(task);
+
         return getTask(userId, taskId);
     }
 
@@ -178,7 +200,8 @@ public class TaskService {
         verifyAccess(userId, task);
 
         taskRepository.delete(task);
-        statsUpdateService.updateCreatedTasks(userService.getById(userId), -1);
+
+        statsUpdateService.taskDeleted(task);
     }
 
     private void verifyAccess(long userId, Task task) {

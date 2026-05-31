@@ -15,13 +15,6 @@ import java.util.List;
 public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificationExecutor<Task> {
     List<Task> findAllByUser_Id(long userId);
 
-    @Query("""
-    SELECT t
-    FROM Task t
-    WHERE t.user = :user
-    AND t.status = users.java.LifeOS.task.Status.COMPLETED""")
-    List<Task> findCompletedTasks(@Param("user") User user);
-
     List<Task> findTop5ByUserAndStatusNotInAndDueDateIsNotNullOrderByDueDateAsc(User user, Collection<Status> statuses);
 
     Long countByUserAndStatusNotIn(User user, Collection<Status> statuses);

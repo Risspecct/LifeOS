@@ -14,7 +14,6 @@ import java.util.Optional;
 
 public interface UserStatsRepository extends JpaRepository<UserStats, Long> {
     Optional<UserStats> findByUser(User user);
-    List<UserStats> findTop10ByOrderByTotalPointsDesc();
     List<UserStats> findByUserIn(Collection<User> users);
 
     @Query("""
