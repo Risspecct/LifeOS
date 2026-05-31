@@ -43,7 +43,7 @@ public class UserStats {
 
     public void updateTasksCompletedCount(Integer d) { tasksCompleted = Math.max(0, tasksCompleted + d); }
 
-    public void updateFriendCount(Integer d) { friendCount = Math.max(0, friendCount + 1); }
+    public void updateFriendCount(Integer d) { friendCount = Math.max(0, friendCount + d); }
 
     public void updateTaskCreatedCount(Integer d) { tasksCreated = Math.max(0, tasksCreated + d); }
 

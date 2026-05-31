@@ -54,16 +54,4 @@ public class StatsUpdateService {
         UserStats stats = statsService.getStats(user);
         stats.updateTaskCreatedCount(d);
     }
-
-    @Transactional
-    public void updateCompletedTasks (User user, int d) {
-        UserStats stats = statsService.getStats(user);
-        stats.updateTasksCompletedCount(d);
-    }
-
-    @Transactional
-    public void updateTotalPoints(User user, long points) {
-        UserStats stats = statsService.getStats(user);
-        stats.updateTotalPoints(points);
-    }
 }
