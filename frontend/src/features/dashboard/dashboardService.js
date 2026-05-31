@@ -53,6 +53,7 @@ const normalizeDashboardResponse = (rawDashboard, labelMap) => {
   const payload = unwrapData(rawDashboard) ?? {};
   const profile = payload?.profile ?? {};
   const summary = payload?.summary ?? {};
+  const taskStats = payload?.summary?.taskStats ?? {};
   const prioritized = Array.isArray(payload?.prioritizedTasks) ? payload.prioritizedTasks : [];
   const upcoming = Array.isArray(payload?.upcomingTasks) ? payload.upcomingTasks : [];
   const activities = Array.isArray(payload?.recentActivities) ? payload.recentActivities : [];
@@ -65,9 +66,9 @@ const normalizeDashboardResponse = (rawDashboard, labelMap) => {
       year: profile?.year || null
     },
     summary: {
-      pendingTasks: Number(summary?.pendingTasks ?? 0),
-      completedTasks: Number(summary?.completedTasks ?? 0),
-      overdueTasks: Number(summary?.overdueTasks ?? 0),
+      pendingTasks: Number(taskStats?.pendingTasks ?? summary?.pendingTasks ?? 0),
+      completedTasks: Number(taskStats?.completedTasks ?? summary?.completedTasks ?? 0),
+      overdueTasks: Number(taskStats?.overdueTasks ?? summary?.overdueTasks ?? 0),
       currentStreak:
         summary?.currentStreak === null || summary?.currentStreak === undefined
           ? null
