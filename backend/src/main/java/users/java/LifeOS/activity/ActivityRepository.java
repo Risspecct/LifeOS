@@ -15,7 +15,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     @Query("""
     SELECT new users.java.LifeOS.activity.ActivityStats(
         MAX(a.createdAt),
-        COUNT(DISTINCT CAST(a.createdAt AS LocalDate))
+        COUNT(DISTINCT a.createdAt)
     )
     FROM Activity a
     WHERE a.user.id = :userId
