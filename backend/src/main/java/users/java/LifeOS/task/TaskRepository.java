@@ -57,4 +57,12 @@ FROM Task t
 WHERE t.user = :user
 """)
     TaskStats getTaskStats(@Param("user") User user);
+
+    @Query("""
+    SELECT COALESCE(SUM(t.awardedPoints), 0)
+    FROM Task t
+    WHERE t.user = :user
+      AND t.status = users.java.LifeOS.task.Status.COMPLETED
+""")
+    Long getTotalPointsFromCompletedTasks(@Param("user") User user);
 }

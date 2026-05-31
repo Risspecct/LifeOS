@@ -7,8 +7,6 @@ import users.java.LifeOS.activity.ActivityRepository;
 import users.java.LifeOS.activity.ActivityStats;
 import users.java.LifeOS.activity.ActivityTypes;
 import users.java.LifeOS.friend.FriendshipRepository;
-import users.java.LifeOS.rewards.RewardStats;
-import users.java.LifeOS.rewards.RewardStatsService;
 import users.java.LifeOS.task.TaskRepository;
 import users.java.LifeOS.task.TaskStats;
 import users.java.LifeOS.user.User;
@@ -26,14 +24,13 @@ public class StatsRebuildService {
     private final ActivityRepository activityRepository;
     private final StreakService streakService;
     private final UserStatsMapper statsMapper;
-    private final RewardStatsService rewardStatsService;
 
     @Transactional
     public void rebuildUserStats(User user) {
         UserStats stats = userStatsRepository.findByUser(user)
                 .orElseGet(() -> new UserStats(user));
 
-        RewardStats rewardStats = rewardStatsService.calculateRewardStats(user);
+        Long Totalpoints = taskRepository.getTotalPointsFromCompletedTasks(user);
 
         StreakStats streakStats = streakService.buildStreakStats(user);
 
@@ -47,7 +44,7 @@ public class StatsRebuildService {
         Integer friendCount = friendshipRepository.countFriends(user).intValue();
 
         UserStatsBuildDto dto = new UserStatsBuildDto(
-                rewardStats.totalPoints(),
+                Totalpoints,
                 streakStats.currentStreak(),
                 streakStats.longestStreak(),
                 tasksCreated,

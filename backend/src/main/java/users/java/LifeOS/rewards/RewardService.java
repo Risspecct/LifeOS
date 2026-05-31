@@ -21,6 +21,8 @@ public class RewardService {
     public void rewardTaskCompletion(User user,Task task) {
         long earnedPoints = calculateTaskCompletionPoints(task);
 
+        task.setAwardedPoints(earnedPoints);
+        taskRepository.save(task);
         statsUpdateService.taskCompleted(user, earnedPoints);
     }
 
@@ -44,9 +46,6 @@ public class RewardService {
         if(isSuspicious(task)) {
             points /= 2;
         }
-
-        task.setAwardedPoints(points);
-        taskRepository.save(task);
 
         return points;
     }
