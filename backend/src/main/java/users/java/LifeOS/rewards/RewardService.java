@@ -3,8 +3,8 @@ package users.java.LifeOS.rewards;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.stats.StatsUpdateService;
-import users.java.LifeOS.stats.StreakService;
 import users.java.LifeOS.task.Task;
+import users.java.LifeOS.task.TaskRepository;
 import users.java.LifeOS.task.prioritization.SmartPriorityLevel;
 import users.java.LifeOS.task.prioritization.TaskPriorityCalculator;
 import users.java.LifeOS.user.User;
@@ -14,10 +14,9 @@ import java.time.Duration;
 @RequiredArgsConstructor
 @Service
 public class RewardService {
+    private final TaskRepository taskRepository;
     private final StatsUpdateService statsUpdateService;
     private final TaskPriorityCalculator priorityCalculator;
-
-    private final StreakService streakService;
 
     public void rewardTaskCompletion(User user,Task task) {
         long earnedPoints = calculateTaskCompletionPoints(task);
@@ -45,6 +44,10 @@ public class RewardService {
         if(isSuspicious(task)) {
             points /= 2;
         }
+
+        task.setAwardedPoints(points);
+        taskRepository.save(task);
+
         return points;
     }
 

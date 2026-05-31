@@ -24,9 +24,14 @@ public class StatsController {
     }
 
     @PostMapping("/rebuild/me")
-    public void getRebuiltStats() {
+    public void rebuildMyStats() {
         statsRebuildService.rebuildUserStats(
                 userService.getAuthenticatedUser()
         );
+    }
+
+    @PostMapping("/rebuild/all")
+    public void rebuildAllStats() {
+        statsRebuildService.rebuildAllUsers();
     }
 }
