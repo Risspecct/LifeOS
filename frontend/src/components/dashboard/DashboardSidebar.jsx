@@ -16,8 +16,8 @@ const DashboardSidebar = ({ onLogout, activeView = "dashboard" }) => {
     { key: "dashboard", label: "Dashboard", icon: "dashboard", route: "/dashboard", available: true },
     { key: "tasks", label: "Tasks", icon: "checklist", route: "/tasks", available: true },
     { key: "activity", label: "Activity", icon: "monitoring", route: "/activity", available: true },
-    { key: "leaderboard", label: "Leaderboard", icon: "leaderboard", route: "/leaderboard", available: true },
     { key: "connections", label: "Connections", icon: "group", route: "/connections", available: true },
+    { key: "leaderboard", label: "Leaderboard", icon: "leaderboard", route: "/leaderboard", available: true },
     { key: "profile", label: "Profile", icon: "person", route: "/profile", available: true },
     { key: "settings", label: "Settings", icon: "settings", route: "/settings", available: true }
   ];
@@ -48,6 +48,7 @@ const DashboardSidebar = ({ onLogout, activeView = "dashboard" }) => {
         {navItems.map((item) => {
           const isActive = item.key === activeView;
           const canNavigate = Boolean(item.available && item.route);
+          const isGroupBreak = item.key === 'activity' || item.key === 'leaderboard';
 
           return (
             <button
@@ -55,7 +56,7 @@ const DashboardSidebar = ({ onLogout, activeView = "dashboard" }) => {
               type="button"
               onClick={canNavigate ? () => navigate(item.route) : undefined}
               disabled={!canNavigate}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-[10px]' : 'gap-sm p-sm'} rounded-xl text-left transition-all duration-200 group relative ${
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-[10px]' : 'gap-sm p-sm'} rounded-xl text-left transition-all duration-200 group relative ${isGroupBreak ? 'mb-4' : ''} ${
                 isActive
                   ? "text-primary bg-primary/10 border border-primary/30 shadow-[0_0_18px_rgba(87,241,219,0.14)]"
                   : canNavigate
