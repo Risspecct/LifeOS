@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.exceptions.InvalidRequestException;
 import users.java.LifeOS.exceptions.NotFoundException;
-import users.java.LifeOS.stats.StatsService;
 import users.java.LifeOS.stats.StatsUpdateService;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserRepository;
@@ -17,7 +16,6 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class FriendshipService {
-    private final StatsService statsService;
     private final StatsUpdateService statsUpdateService;
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;

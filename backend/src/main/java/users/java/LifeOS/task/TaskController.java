@@ -5,10 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.user.UserService;
-
-import java.util.List;
 
 @AllArgsConstructor
 @RestController

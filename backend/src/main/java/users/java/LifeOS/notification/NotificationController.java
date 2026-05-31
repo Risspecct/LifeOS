@@ -3,10 +3,7 @@ package users.java.LifeOS.notification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController

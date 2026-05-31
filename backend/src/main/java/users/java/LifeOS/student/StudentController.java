@@ -1,21 +1,18 @@
 package users.java.LifeOS.student;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import users.java.LifeOS.user.UserService;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("profile")
 public class StudentController {
     private final StudentService studentService;
     private final UserService userService;
-
-    StudentController(StudentService studentService, UserService userService) {
-        this.studentService = studentService;
-        this.userService = userService;
-    }
 
     @PostMapping
     public ResponseEntity<?> createProfile(@Valid @RequestBody StudentDto dto) {

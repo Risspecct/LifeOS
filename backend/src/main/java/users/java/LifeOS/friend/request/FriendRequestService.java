@@ -9,7 +9,6 @@ import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.friend.FriendshipService;
 import users.java.LifeOS.notification.NotificationService;
 import users.java.LifeOS.notification.NotificationType;
-import users.java.LifeOS.stats.StatsService;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserRepository;
 
