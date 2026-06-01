@@ -21,12 +21,12 @@ public class StudentController {
 
     @GetMapping
     public ResponseEntity<?> myProfile() {
-        return ResponseEntity.ok(studentService.getStudentProfile(userService.getUserId()));
+        return ResponseEntity.ok(studentService.getCurrentUserProfile());
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<?> getProfile(@PathVariable long userId) {
-        return ResponseEntity.ok(studentService.getStudentProfile(userId));
+    public ResponseEntity<?> getPublicProfile(@PathVariable long userId) {
+        return ResponseEntity.ok(studentService.getPublicProfile(userId));
     }
 
     @GetMapping("/all")

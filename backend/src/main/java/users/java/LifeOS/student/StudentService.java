@@ -9,6 +9,8 @@ import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.branch.Branch;
 import users.java.LifeOS.branch.BranchService;
 import users.java.LifeOS.exceptions.NotFoundException;
+import users.java.LifeOS.stats.StatsService;
+import users.java.LifeOS.stats.UserStats;
 import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
 
@@ -24,6 +26,7 @@ public class StudentService {
     private final UserService userService;
     private final BranchService branchService;
     private final ActivityService activityService;
+    private final StatsService statsService;
 
     public StudentProfileView create(long userId, StudentDto dto) {
         Optional<Student> existing = studentRepository.findByUser_Id(userId);
@@ -39,7 +42,7 @@ public class StudentService {
         studentRepository.save(student);
 
         log.info("User profile created for user id: {}", userId);
-        return getStudentProfile(userId);
+        return getCurrentUserProfile();
     }
 
     public StudentProfileView update(long userId, StudentUpdateDto dto) {
@@ -55,7 +58,7 @@ public class StudentService {
                 ActivityPoints.PROFILE_UPDATED,
                 null);
 
-        return getStudentProfile(userId);
+        return getCurrentUserProfile();
     }
 
     public StudentProfileView updateBranch(long userId, long branchId) {
@@ -65,12 +68,34 @@ public class StudentService {
 
         student.setBranch(branch);
         studentRepository.save(student);
-        return getStudentProfile(userId);
+        return getCurrentUserProfile();
     }
 
-    public StudentProfileView getStudentProfile(long userId) {
-        Student student = getStudent(userId);
+    public StudentProfileView getCurrentUserProfile() {
+        Student student = getStudent(userService.getUserId());
         return mapper.toProfileView(student);
+    }
+
+    public PublicStudentProfileView getPublicProfile(Long userId) {
+        Student student = getStudent(userId);
+        UserStats stats = statsService.getStats(student.getUser());
+
+        return new PublicStudentProfileView(
+                userId,
+                student.getUser().getUsername(),
+
+                student.getName(),
+                student.getCollege(),
+                student.getYear(),
+                student.getBranch().getCode(),
+                student.getBio(),
+
+                stats.getTotalPoints(),
+                stats.getCurrentStreak(),
+                stats.getLongestStreak(),
+                stats.getTasksCompleted(),
+                stats.getFriendCount()
+        );
     }
 
     public Student getStudent(long userId) {

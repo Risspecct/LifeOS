@@ -50,7 +50,7 @@ public class DashboardService {
 
         List<ActivityResponse> recentActivities = activityService.getRecentActivities(currentUser.getId());
 
-        StudentProfileView profile = studentService.getStudentProfile(currentUser.getId());
+        StudentProfileView profile = studentService.getCurrentUserProfile();
 
         DashboardProfile dashboardProfile =
                 new DashboardProfile(
