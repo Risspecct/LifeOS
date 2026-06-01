@@ -1,4 +1,5 @@
 import { useSidebar } from "../../hooks/useSidebar";
+import NotificationBell from "../notifications/NotificationBell";
 
 const DashboardTopBar = () => {
   const isCollapsed = useSidebar();
@@ -17,9 +18,7 @@ const DashboardTopBar = () => {
       </div>
 
       <div className="flex items-center gap-md">
-        <button className="text-on-surface-variant hover:text-primary transition-all">
-          <span className="material-symbols-outlined">notifications</span>
-        </button>
+        <NotificationBell />
         <button className="text-on-surface-variant hover:text-primary transition-all">
           <span className="material-symbols-outlined">settings</span>
         </button>

@@ -70,6 +70,10 @@ export default defineConfig({
         target: "http://localhost:8080",
         changeOrigin: true
       },
+      "/notifications": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      },
       "/insights": {
         target: "http://localhost:8080",
         changeOrigin: true
