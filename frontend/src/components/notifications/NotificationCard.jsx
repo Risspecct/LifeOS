@@ -20,7 +20,7 @@ const timeAgo = (iso) => {
   }
 };
 
-const NotificationCard = ({ notification, onMarkRead }) => {
+const NotificationCard = ({ notification, onMarkRead, onOpenProfile }) => {
   const navigate = useNavigate();
 
   const handleAccept = async () => {
@@ -56,8 +56,9 @@ const NotificationCard = ({ notification, onMarkRead }) => {
   };
 
   const type = notification.type || "SYSTEM";
-  const isTaskNotification = type === 'TASK_DUE_SOON' || type === 'TASK_OVERDUE';
-  const isNavigableNotification = isTaskNotification || type === 'FRIEND_REQUEST_RECEIVED' || type === 'FRIEND_REQUEST_ACCEPTED' || type === 'STREAK_REMINDER' || type === 'INACTIVITY_REMINDER';
+  const isTaskNotification = type === "TASK_DUE_SOON" || type === "TASK_OVERDUE";
+  const isFriendNotification = type === "FRIEND_REQUEST_RECEIVED" || type === "FRIEND_REQUEST_ACCEPTED";
+  const isNavigableNotification = isTaskNotification || isFriendNotification || type === "STREAK_RISK" || type === "USER_INACTIVE";
 
   const isRead = Boolean(notification.isRead);
 
@@ -96,13 +97,17 @@ const NotificationCard = ({ notification, onMarkRead }) => {
       }
     }
 
-    if (type === 'FRIEND_REQUEST_RECEIVED' || type === 'FRIEND_REQUEST_ACCEPTED') {
-      navigate('/connections');
+    if (isFriendNotification) {
+      const relatedUserId =
+        type === "FRIEND_REQUEST_RECEIVED" ? notification?.metadata?.senderId : notification?.metadata?.friendId;
+      if (relatedUserId) {
+        onOpenProfile?.(relatedUserId);
+      }
       return;
     }
 
-    if (type === 'STREAK_REMINDER' || type === 'INACTIVITY_REMINDER') {
-      navigate('/dashboard');
+    if (type === "STREAK_RISK" || type === "USER_INACTIVE") {
+      navigate("/dashboard");
       return;
     }
   };
@@ -158,10 +163,6 @@ const NotificationCard = ({ notification, onMarkRead }) => {
                 <button onClick={(event) => { event.stopPropagation(); handleAccept(); }} className="bg-primary-container text-on-primary-container px-3 py-1 rounded-md text-sm">Accept</button>
                 <button onClick={(event) => { event.stopPropagation(); handleReject(); }} className="border border-outline-variant text-primary px-3 py-1 rounded-md text-sm">Reject</button>
               </>
-            )}
-
-            {type === 'FRIEND_REQUEST_ACCEPTED' && (
-              <button onClick={(event) => { event.stopPropagation(); console.log('View profile (mock) for', notification?.metadata?.friendId); }} className="text-primary text-sm hover:underline">View Profile</button>
             )}
 
             {(type === 'STREAK_RISK' || type === 'USER_INACTIVE') && (

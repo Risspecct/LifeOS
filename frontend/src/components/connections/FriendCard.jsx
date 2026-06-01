@@ -4,13 +4,13 @@ const FriendCard = ({ friend, onRemove, removing, onViewProfile, onCompare }) =>
   return (
     <article className="rounded-xl border border-outline-variant bg-surface-container p-md space-y-sm">
       <div className="flex items-start justify-between gap-sm">
-        <div className="flex items-center gap-sm min-w-0">
+        <button type="button" onClick={() => onViewProfile(friend)} className="flex items-center gap-sm min-w-0 text-left">
           <ConnectionAvatar name={friend.username} size="lg" />
           <div className="min-w-0">
             <p className="text-body-md text-on-surface truncate">{friend.username}</p>
             <p className="text-label-sm text-on-surface-variant truncate">{friend.college || "LifeOS member"}</p>
           </div>
-        </div>
+        </button>
         <button
           type="button"
           onClick={() => onRemove(friend.id)}
@@ -27,13 +27,6 @@ const FriendCard = ({ friend, onRemove, removing, onViewProfile, onCompare }) =>
       </div>
 
       <div className="flex flex-wrap items-center gap-xs">
-        <button
-          type="button"
-          onClick={() => onViewProfile(friend)}
-          className="px-sm py-xs rounded-lg bg-primary-container text-on-primary-container text-label-sm hover:opacity-90"
-        >
-          View Profile
-        </button>
         <button
           type="button"
           onClick={() => onCompare(friend)}

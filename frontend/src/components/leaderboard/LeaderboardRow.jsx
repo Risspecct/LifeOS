@@ -5,7 +5,7 @@ const buildInitials = (username = "") => {
   return `${chunks[0][0] || ""}${chunks[1][0] || ""}`.toUpperCase();
 };
 
-const LeaderboardRow = ({ entry, highlightCurrentUser }) => {
+const LeaderboardRow = ({ entry, highlightCurrentUser, onOpenProfile }) => {
   const rank = Number(entry?.rank ?? 0);
   const rankTone =
     rank === 1
@@ -17,10 +17,12 @@ const LeaderboardRow = ({ entry, highlightCurrentUser }) => {
           : "text-on-surface-variant";
 
   return (
-    <div
+    <button
+      type="button"
+      onClick={() => onOpenProfile?.(entry?.userId)}
       className={`grid grid-cols-[32px_1fr_auto] sm:grid-cols-[40px_1.5fr_1fr_1fr] gap-sm sm:gap-md items-center p-sm rounded-xl border ${
         highlightCurrentUser ? "border-primary/40 bg-primary/5" : "border-outline-variant bg-surface-container/50"
-      } transition-colors hover:bg-surface-container`}
+      } transition-colors hover:bg-surface-container text-left w-full`}
     >
       <div className={`font-title-md ${rankTone}`}>#{entry.rank}</div>
 
@@ -42,7 +44,7 @@ const LeaderboardRow = ({ entry, highlightCurrentUser }) => {
       <p className="hidden sm:block font-label-sm text-label-sm text-on-surface-variant text-right">
         {entry.streak}d streak
       </p>
-    </div>
+    </button>
   );
 };
 

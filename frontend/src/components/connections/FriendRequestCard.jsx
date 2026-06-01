@@ -1,11 +1,16 @@
 import ConnectionAvatar from "./ConnectionAvatar";
 
-const FriendRequestCard = ({ request, type, onAccept, onReject, loading, college }) => {
+const FriendRequestCard = ({ request, type, onAccept, onReject, loading, college, onOpenProfile }) => {
   const username = type === "incoming" ? request.senderUsername : request.receiverUsername;
+  const profileUserId = type === "incoming" ? request.senderId : request.receiverId;
 
   return (
     <article className="rounded-xl border border-outline-variant bg-surface-container p-md flex items-center justify-between gap-sm">
-      <div className="flex items-center gap-sm min-w-0">
+      <button
+        type="button"
+        onClick={() => onOpenProfile?.(profileUserId)}
+        className="flex items-center gap-sm min-w-0 text-left"
+      >
         <ConnectionAvatar name={username} />
         <div className="min-w-0">
           <p className="text-body-md text-on-surface truncate">{username}</p>
@@ -13,7 +18,7 @@ const FriendRequestCard = ({ request, type, onAccept, onReject, loading, college
             {college || "LifeOS member"} · Request ID #{request.requestId}
           </p>
         </div>
-      </div>
+      </button>
 
       {type === "incoming" ? (
         <div className="flex items-center gap-xs">

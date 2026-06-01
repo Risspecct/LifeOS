@@ -10,6 +10,7 @@ import FriendRequestCard from "../../components/connections/FriendRequestCard";
 import DiscoverUserCard from "../../components/connections/DiscoverUserCard";
 import EmptyConnectionsState from "../../components/connections/EmptyConnectionsState";
 import ConnectionsSkeleton from "../../components/connections/ConnectionsSkeleton";
+import PublicProfileDialog from "../../components/profile/PublicProfileDialog";
 import { useAuth } from "../../hooks/useAuth";
 import { useSidebar } from "../../hooks/useSidebar";
 import { useDelayedLoading } from "../../hooks/useDelayedLoading";
@@ -62,6 +63,8 @@ const ConnectionsPage = () => {
   const [processingRequestId, setProcessingRequestId] = useState(null);
   const [sendingStates, setSendingStates] = useState({});
   const [comingSoonMessage, setComingSoonMessage] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
 
   const showSkeleton = useDelayedLoading(loadingSection, 200);
   const showSearchSkeleton = useDelayedLoading(loadingSearchResults, 200);
@@ -307,6 +310,13 @@ const ConnectionsPage = () => {
     setTimeout(() => setComingSoonMessage(""), 2000);
   };
 
+  const openProfileDialog = (userId) => {
+    const normalized = normalizeId(userId);
+    if (!normalized) return;
+    setSelectedUserId(normalized);
+    setIsProfileDialogOpen(true);
+  };
+
   const tabContext = useMemo(() => {
     if (activeTab === "friends") {
       return "Your accountability circle for consistency and momentum.";
@@ -378,9 +388,7 @@ const ConnectionsPage = () => {
                           friend={{ id: userId, username: user.username, college: user.college || "" }}
                           removing={Number(removingId) === Number(userId)}
                           onRemove={handleRemoveFriend}
-                          onViewProfile={(selectedFriend) =>
-                            showComingSoon(`Profile view for ${selectedFriend.username} is coming soon.`)
-                          }
+                          onViewProfile={(selectedFriend) => openProfileDialog(selectedFriend.id)}
                           onCompare={(selectedFriend) =>
                             showComingSoon(`Compare view with ${selectedFriend.username} is coming soon.`)
                           }
@@ -399,6 +407,7 @@ const ConnectionsPage = () => {
                           loading={Number(processingRequestId) === Number(request?.requestId)}
                           onAccept={handleAccept}
                           onReject={handleReject}
+                          onOpenProfile={openProfileDialog}
                         />
                       );
                     }
@@ -410,6 +419,7 @@ const ConnectionsPage = () => {
                             user={user}
                             onSendRequest={handleSendRequest}
                             actionState="success"
+                            onOpenProfile={openProfileDialog}
                           />
                           <div className="flex items-center justify-between gap-sm">
                             <span className="px-sm py-xs rounded-full bg-surface-variant text-on-surface-variant text-label-sm">Request sent</span>
@@ -445,6 +455,7 @@ const ConnectionsPage = () => {
                         user={user}
                         onSendRequest={handleSendRequest}
                         actionState={sendingStates[userId] || "idle"}
+                        onOpenProfile={openProfileDialog}
                       />
                     );
                   })}
@@ -464,9 +475,7 @@ const ConnectionsPage = () => {
                         friend={{ ...friend, college: profilesById[friend.id]?.college || "" }}
                         removing={Number(removingId) === Number(friend.id)}
                         onRemove={handleRemoveFriend}
-                        onViewProfile={(selectedFriend) =>
-                          showComingSoon(`Profile view for ${selectedFriend.username} is coming soon.`)
-                        }
+                        onViewProfile={(selectedFriend) => openProfileDialog(selectedFriend.id)}
                         onCompare={(selectedFriend) =>
                           showComingSoon(`Compare view with ${selectedFriend.username} is coming soon.`)
                         }
@@ -497,6 +506,7 @@ const ConnectionsPage = () => {
                         loading={Number(processingRequestId) === Number(request.requestId)}
                         onAccept={handleAccept}
                         onReject={handleReject}
+                        onOpenProfile={openProfileDialog}
                       />
                     ))}
                   </div>
@@ -521,6 +531,7 @@ const ConnectionsPage = () => {
                         user={user}
                         onSendRequest={handleSendRequest}
                         actionState={sendingStates[user.id] || "idle"}
+                        onOpenProfile={openProfileDialog}
                       />
                     ))}
                   </div>
@@ -536,6 +547,15 @@ const ConnectionsPage = () => {
         </section>
       </main>
       <MobileBottomNav activeView="connections" />
+      <PublicProfileDialog
+        isOpen={isProfileDialogOpen}
+        userId={selectedUserId}
+        onClose={() => setIsProfileDialogOpen(false)}
+        onRelationshipActionComplete={() => {
+          if (activeTab === "friends") loadFriends();
+          if (activeTab === "requests") loadRequests();
+        }}
+      />
     </div>
   );
 };

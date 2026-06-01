@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { getNotifications, getUnreadCount, markAsRead } from "../../services/notificationService";
 import NotificationCard from "./NotificationCard";
+import PublicProfileDialog from "../profile/PublicProfileDialog";
 
 const NotificationDrawer = ({ isOpen, onClose, onCloseRefresh }) => {
   const drawerRef = useRef(null);
@@ -11,6 +12,8 @@ const NotificationDrawer = ({ isOpen, onClose, onCloseRefresh }) => {
   const [error, setError] = useState(null);
   const [isMounted, setIsMounted] = useState(isOpen);
   const [isVisible, setIsVisible] = useState(isOpen);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
 
   const fetchAll = async () => {
     setIsLoading(true);
@@ -105,6 +108,7 @@ const NotificationDrawer = ({ isOpen, onClose, onCloseRefresh }) => {
   if (!isMounted) return null;
 
   return (
+    <>
     <div className="fixed inset-0 z-[55] flex justify-end">
       <button
         type="button"
@@ -155,13 +159,30 @@ const NotificationDrawer = ({ isOpen, onClose, onCloseRefresh }) => {
           ) : (
             <div className="space-y-2">
               {notifications.map((n) => (
-                <NotificationCard key={n.id} notification={n} onMarkRead={() => handleMarkRead(n.id)} />
+                <NotificationCard
+                  key={n.id}
+                  notification={n}
+                  onMarkRead={() => handleMarkRead(n.id)}
+                  onOpenProfile={(userId) => {
+                    const id = Number(userId);
+                    if (!Number.isFinite(id) || id <= 0) return;
+                    setSelectedUserId(id);
+                    setIsProfileDialogOpen(true);
+                  }}
+                />
               ))}
             </div>
           )}
         </div>
       </aside>
     </div>
+    <PublicProfileDialog
+      isOpen={isProfileDialogOpen}
+      userId={selectedUserId}
+      onClose={() => setIsProfileDialogOpen(false)}
+      onRelationshipActionComplete={fetchAll}
+    />
+    </>
   );
 };
 

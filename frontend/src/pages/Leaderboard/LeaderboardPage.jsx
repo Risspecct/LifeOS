@@ -7,6 +7,7 @@ import CurrentUserCard from "../../components/leaderboard/CurrentUserCard";
 import LeaderboardTable from "../../components/leaderboard/LeaderboardTable";
 import EmptyLeaderboardState from "../../components/leaderboard/EmptyLeaderboardState";
 import LeaderboardSkeleton from "../../components/leaderboard/LeaderboardSkeleton";
+import PublicProfileDialog from "../../components/profile/PublicProfileDialog";
 import { LEADERBOARD_SCOPES, getLeaderboard } from "../../api/leaderboardApi";
 import { getApiErrorMessage } from "../../utils/errorUtils";
 import { useAuth } from "../../hooks/useAuth";
@@ -26,6 +27,8 @@ const LeaderboardPage = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const showSkeleton = useDelayedLoading(loading, 200);
 
   useEffect(() => {
@@ -55,6 +58,13 @@ const LeaderboardPage = () => {
     );
     return current || rows[0] || null;
   }, [rows, profile]);
+
+  const openProfileDialog = (userId) => {
+    const id = Number(userId);
+    if (!Number.isFinite(id) || id <= 0) return;
+    setSelectedUserId(id);
+    setIsProfileDialogOpen(true);
+  };
 
   return (
     <div className="bg-background min-h-screen text-on-surface">
@@ -88,12 +98,18 @@ const LeaderboardPage = () => {
               entries={rows}
               currentUserId={profile?.userId ?? profile?.id}
               currentUsername={profile?.username ?? profile?.name}
+              onOpenProfile={openProfileDialog}
             />
           ) : null}
         </div>
       </main>
 
       <MobileBottomNav activeView="leaderboard" />
+      <PublicProfileDialog
+        isOpen={isProfileDialogOpen}
+        userId={selectedUserId}
+        onClose={() => setIsProfileDialogOpen(false)}
+      />
     </div>
   );
 };

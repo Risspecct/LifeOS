@@ -22,3 +22,15 @@ export const updateProfileBranch = async (branchId) => {
   const response = await apiClient.put(`/profile/${branchId}`);
   return response.data;
 };
+
+export const getPublicProfile = async (userId) => {
+  const numericUserId = Number(userId);
+  if (!Number.isFinite(numericUserId) || numericUserId <= 0) {
+    throw new Error("Invalid user id for public profile.");
+  }
+  const response = await apiClient.get(`/profile/${numericUserId}`);
+  if (!response?.data || typeof response.data !== "object" || Array.isArray(response.data)) {
+    throw new Error("Invalid public profile response received.");
+  }
+  return response.data;
+};
