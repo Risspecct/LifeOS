@@ -9,6 +9,8 @@ import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.branch.Branch;
 import users.java.LifeOS.branch.BranchService;
 import users.java.LifeOS.exceptions.NotFoundException;
+import users.java.LifeOS.friend.RelationshipInfo;
+import users.java.LifeOS.friend.RelationshipService;
 import users.java.LifeOS.stats.StatsService;
 import users.java.LifeOS.stats.UserStats;
 import users.java.LifeOS.user.User;
@@ -27,6 +29,7 @@ public class StudentService {
     private final BranchService branchService;
     private final ActivityService activityService;
     private final StatsService statsService;
+    private final RelationshipService relationshipService;
 
     public StudentProfileView create(long userId, StudentDto dto) {
         Optional<Student> existing = studentRepository.findByUser_Id(userId);
@@ -79,6 +82,9 @@ public class StudentService {
     public PublicStudentProfileView getPublicProfile(Long userId) {
         Student student = getStudent(userId);
         UserStats stats = statsService.getStats(student.getUser());
+        RelationshipInfo relInfo = relationshipService.getRelationship(
+                userService.getAuthenticatedUser(),
+                student.getUser());
 
         return new PublicStudentProfileView(
                 userId,
@@ -94,7 +100,10 @@ public class StudentService {
                 stats.getCurrentStreak(),
                 stats.getLongestStreak(),
                 stats.getTasksCompleted(),
-                stats.getFriendCount()
+                stats.getFriendCount(),
+
+                relInfo.status(),
+                relInfo.requestId()
         );
     }
 

@@ -33,9 +33,10 @@ public class FriendshipService {
     }
 
     public boolean isFriends(User user1, User user2) {
-        return friendshipRepository.existsByUserOneAndUserTwo(user1, user2)
-                ||
-                friendshipRepository.existsByUserOneAndUserTwo(user2, user1);
+        User first = user1.getId() < user2.getId() ? user1 : user2;
+        User second = user1.getId() < user2.getId() ? user2 : user1;
+
+        return friendshipRepository.existsByUserOneAndUserTwo(first, second);
     }
 
     public void createFriendship(User user1, User user2) {

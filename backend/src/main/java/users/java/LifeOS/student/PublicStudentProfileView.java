@@ -1,5 +1,7 @@
 package users.java.LifeOS.student;
 
+import users.java.LifeOS.friend.RelationshipStatus;
+
 public record PublicStudentProfileView(
         long userId,
         String username,
@@ -14,5 +16,8 @@ public record PublicStudentProfileView(
         Integer currentStreak,
         Integer longestStreak,
         Integer tasksCompleted,
-        Integer friendCount
+        Integer friendCount,
+
+        RelationshipStatus status,
+        Long pendingRequestId
 ) {}
