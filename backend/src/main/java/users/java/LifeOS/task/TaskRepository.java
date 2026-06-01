@@ -21,7 +21,13 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
 
     List<Task> findTasksByDueDateBetween(LocalDateTime start, LocalDateTime end);
 
-    List<Task> findTasksByDueDateBefore(LocalDateTime time);
+    @Query("""
+    SELECT t
+    FROM Task t
+    WHERE t.dueDate < :time
+      AND t.status NOT IN ('COMPLETED', 'CANCELLED')
+""")
+    List<Task> findOverdueTasks(@Param("time") LocalDateTime time);
 
     @Query("""
 SELECT new users.java.LifeOS.task.TaskStats(
