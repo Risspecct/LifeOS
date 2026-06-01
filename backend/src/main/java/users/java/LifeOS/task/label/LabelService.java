@@ -20,8 +20,7 @@ public class LabelService {
     private final LabelMapper labelMapper;
     private final UserService userService;
 
-    public LabelResponse createLabel(long userId, LabelRequest request) {
-        User currentUser = userService.getById(userId);
+    public LabelResponse createLabel(User currentUser, LabelRequest request) {
 
         if (labelRepository.existsByNameIgnoreCaseAndUser(request.name(),currentUser))
             throw new DuplicateResourceException("Label already exists");
@@ -39,7 +38,7 @@ public class LabelService {
 
     public void seedDefaultLabels() {
 
-        User currentUser = userService.getById(userService.getUserId());
+        User currentUser = userService.getAuthenticatedUser();
 
         List<DefaultLabelData> defaults =
                 DefaultLabels.getDefaults();
@@ -62,8 +61,7 @@ public class LabelService {
         }
     }
 
-    public List<LabelResponse> getUserLabels(long userId) {
-        User currentUser = userService.getById(userId);
+    public List<LabelResponse> getUserLabels(User currentUser) {
 
         return labelRepository.findAllByUserOrderByNameAsc(currentUser)
                 .stream()
@@ -77,12 +75,6 @@ public class LabelService {
 
         verifyAccess(userId, label);
         return label;
-    }
-
-    public LabelResponse getOwnedLabel(long userId, Long labelId) {
-        Label label = getLabelById(userId, labelId);
-        verifyAccess(userId, label);
-        return labelMapper.toResponse(label);
     }
 
     public LabelResponse updateLabel(long userId, long labelId, LabelUpdateRequest request) {

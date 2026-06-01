@@ -16,7 +16,7 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody TaskDto dto) {
-        return new ResponseEntity<>(taskService.create(userService.getUserId(), dto), HttpStatus.CREATED);
+        return new ResponseEntity<>(taskService.create(userService.getAuthenticatedUser(), dto), HttpStatus.CREATED);
     }
 
     @GetMapping("/all")
@@ -31,7 +31,7 @@ public class TaskController {
 
     @PutMapping("/{taskId}/{status}")
     public ResponseEntity<?> updateStatus(@PathVariable long taskId, @PathVariable Status status) {
-        return ResponseEntity.ok(taskService.updateStatus(userService.getUserId(), taskId, status));
+        return ResponseEntity.ok(taskService.updateStatus(userService.getAuthenticatedUser(), taskId, status));
     }
 
     @PutMapping("/{taskId}")
@@ -50,7 +50,7 @@ public class TaskController {
 
     @GetMapping("/upcoming")
     public ResponseEntity<?> getUpcomingTasks() {
-        return ResponseEntity.ok(taskService.getUpcomingTasks(userService.getUserId()));
+        return ResponseEntity.ok(taskService.getUpcomingTasks(userService.getAuthenticatedUser()));
     }
 
     @GetMapping("/stats")

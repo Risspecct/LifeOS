@@ -46,7 +46,7 @@ public class DashboardService {
                         .limit(5)
                         .toList();
 
-        List<UpcomingTaskDto> upcomingTasks = taskService.getUpcomingTasks(currentUser.getId());
+        List<UpcomingTaskDto> upcomingTasks = taskService.getUpcomingTasks(currentUser);
 
         List<ActivityResponse> recentActivities = activityService.getRecentActivities(currentUser.getId());
 

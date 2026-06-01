@@ -17,6 +17,10 @@ public class InsightsController {
 
     @GetMapping
     public ResponseEntity<?> getInsights() {
-        return ResponseEntity.ok(productivityInsightsService.getInsights(userService.getUserId()));
+        return ResponseEntity.ok(productivityInsightsService
+                .getInsights(
+                        userService.getUserId()
+                )
+        );
     }
 }

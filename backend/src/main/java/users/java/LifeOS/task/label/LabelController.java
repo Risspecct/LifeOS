@@ -19,12 +19,12 @@ public class LabelController {
     public ResponseEntity<?> createLabel(@Valid @RequestBody LabelRequest request) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(labelService.createLabel(userService.getUserId(), request));
+                .body(labelService.createLabel(userService.getAuthenticatedUser(), request));
     }
 
     @GetMapping
     public ResponseEntity<?> getUserLabels() {
-        return ResponseEntity.ok(labelService.getUserLabels(userService.getUserId()));
+        return ResponseEntity.ok(labelService.getUserLabels(userService.getAuthenticatedUser()));
     }
 
     @PutMapping("/{labelId}")

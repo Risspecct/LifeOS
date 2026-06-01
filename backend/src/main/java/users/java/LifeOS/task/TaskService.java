@@ -33,10 +33,9 @@ public class TaskService {
     private final RewardService rewardService;
     private final StatsUpdateService statsUpdateService;
 
-    public TaskView create(long userId, TaskDto dto) {
-        User user = userService.getById(userId);
+    public TaskView create(User user, TaskDto dto) {
         Task task = mapper.toEntity(dto);
-        Label label = labelService.getLabelById(userId, dto.labelId());
+        Label label = labelService.getLabelById(user.getId(), dto.labelId());
 
         if (dto.status() == null)
             task.setStatus(Status.TO_DO);
@@ -102,11 +101,10 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDetailView updateStatus(long userId, long taskId, Status status) {
+    public TaskDetailView updateStatus(User user, long taskId, Status status) {
         Task task = getTask(taskId);
-        User user = userService.getById(userId);
 
-        verifyAccess(userId, task);
+        verifyAccess(user.getId(), task);
         if (task.getStatus() == status) {
             throw new InvalidRequestException("Updated status cannot be same as the present status");
         }
@@ -150,7 +148,7 @@ public class TaskService {
 
         taskRepository.save(task);
 
-        return getTask(userId, taskId);
+        return getTask(user.getId(), taskId);
     }
 
     public List<TaskListView> getTasks(Long userId, Status status, Long labelId, String taskType) {
@@ -164,9 +162,7 @@ public class TaskService {
         return mapper.toTaskListViewList(tasks);
     }
 
-    public List<UpcomingTaskDto> getUpcomingTasks(Long userId) {
-        User currentUser =
-                userService.getById(userId);
+    public List<UpcomingTaskDto> getUpcomingTasks(User currentUser) {
 
         return taskRepository
                 .findTop5ByUserAndStatusNotInAndDueDateIsNotNullOrderByDueDateAsc(
