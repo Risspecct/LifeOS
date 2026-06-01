@@ -154,7 +154,20 @@ const PublicProfileDialog = ({ isOpen, userId, onClose, onRelationshipActionComp
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(14,21,19,0.8)] backdrop-blur-[8px] p-md sm:p-xl">
       <button type="button" onClick={onClose} className="absolute inset-0" aria-label="Close public profile dialog" />
 
-      <section className="relative w-full max-w-[680px] bg-surface-container border border-outline-variant rounded-xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden max-h-[85vh] overflow-y-auto">
+      <section
+  className="
+    relative
+    w-full
+    max-w-[580px]
+    bg-surface-container
+    border border-outline-variant
+    rounded-xl
+    shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]
+    overflow-hidden
+    max-h-[85vh]
+    overflow-y-auto
+  "
+>
         {loading ? <div className="h-[320px] bg-surface-container-high animate-pulse" /> : null}
 
         {!loading && error ? (
@@ -193,7 +206,7 @@ const PublicProfileDialog = ({ isOpen, userId, onClose, onRelationshipActionComp
             </div>
 
             <div className="px-md sm:px-lg pt-xs pb-md">
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-xs max-w-[340px] mx-auto">
                 {metrics.map((metric) => (
                   <article key={metric.label} className="bg-surface-container-high border border-outline-variant/30 rounded-lg px-xs py-xs flex flex-col gap-[2px]">
                     <span className="font-label-xs text-[10px] leading-tight text-outline uppercase tracking-wider">{metric.label}</span>
