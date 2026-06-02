@@ -22,6 +22,7 @@ const timeAgo = (iso) => {
 
 const NotificationCard = ({ notification, onMarkRead, onOpenProfile }) => {
   const navigate = useNavigate();
+  const [actionStatus, setActionStatus] = useState(null); // 'accepted', 'ignored', or null
 
   const handleAccept = async () => {
     const requestId = notification?.metadata?.requestId;
@@ -29,18 +30,20 @@ const NotificationCard = ({ notification, onMarkRead, onOpenProfile }) => {
     try {
       await acceptFriendRequest(requestId);
       await markAsRead(notification.id);
+      setActionStatus('accepted');
       if (onMarkRead) onMarkRead();
     } catch (e) {
       // ignore
     }
   };
 
-  const handleReject = async () => {
+  const handleIgnore = async () => {
     const requestId = notification?.metadata?.requestId;
     if (!requestId) return;
     try {
       await rejectFriendRequest(requestId);
       await markAsRead(notification.id);
+      setActionStatus('ignored');
       if (onMarkRead) onMarkRead();
     } catch (e) {
       // ignore
@@ -80,6 +83,9 @@ const NotificationCard = ({ notification, onMarkRead, onOpenProfile }) => {
   }, [primaryText]);
 
   const handleCardClick = async () => {
+    // Don't navigate if user has friend request buttons available to interact with
+    if (type === 'FRIEND_REQUEST_RECEIVED' && !actionStatus) return;
+    
     if (!isNavigableNotification) return;
 
     try {
@@ -97,7 +103,7 @@ const NotificationCard = ({ notification, onMarkRead, onOpenProfile }) => {
       }
     }
 
-    if (isFriendNotification) {
+    if (isFriendNotification && actionStatus) {
       const relatedUserId =
         type === "FRIEND_REQUEST_RECEIVED" ? notification?.metadata?.senderId : notification?.metadata?.friendId;
       if (relatedUserId) {
@@ -122,11 +128,11 @@ const NotificationCard = ({ notification, onMarkRead, onOpenProfile }) => {
 
   return (
     <div
-      role={isNavigableNotification ? 'button' : undefined}
-      tabIndex={isNavigableNotification ? 0 : undefined}
-      onClick={isNavigableNotification ? handleCardClick : undefined}
-      onKeyDown={isNavigableNotification ? handleCardKeyDown : undefined}
-      className={`group relative w-full flex gap-3 px-4 py-3 border border-outline-variant rounded-lg ${!isRead ? 'bg-surface-container-high' : 'bg-surface-container'} ${isTaskNotification ? 'cursor-pointer hover:bg-surface-container-highest' : ''}`}
+      role={isNavigableNotification && !(type === 'FRIEND_REQUEST_RECEIVED' && !actionStatus) ? 'button' : undefined}
+      tabIndex={isNavigableNotification && !(type === 'FRIEND_REQUEST_RECEIVED' && !actionStatus) ? 0 : undefined}
+      onClick={isNavigableNotification && !(type === 'FRIEND_REQUEST_RECEIVED' && !actionStatus) ? handleCardClick : undefined}
+      onKeyDown={isNavigableNotification && !(type === 'FRIEND_REQUEST_RECEIVED' && !actionStatus) ? handleCardKeyDown : undefined}
+      className={`group relative w-full flex gap-3 px-4 py-3 border border-outline-variant rounded-lg ${!isRead ? 'bg-surface-container-high' : 'bg-surface-container'} ${(isTaskNotification || (isFriendNotification && actionStatus)) ? 'cursor-pointer hover:bg-surface-container-highest' : ''}`}
     >
       <div className="w-9 h-9 rounded-full overflow-hidden border border-outline-variant flex-shrink-0 bg-surface-container flex items-center justify-center text-on-surface-variant">
         <span className="material-symbols-outlined text-[18px]">{(type === 'TASK_DUE_SOON' || type === 'TASK_OVERDUE') ? 'description' : type.includes('FRIEND') ? 'person' : (type === 'STREAK_RISK' ? 'local_fire_department' : 'notifications')}</span>
@@ -158,18 +164,26 @@ const NotificationCard = ({ notification, onMarkRead, onOpenProfile }) => {
           <span className="text-[11px] font-medium uppercase text-on-surface-variant bg-on-surface-variant/6 px-2 py-0.5 rounded-full">{type.replace(/_/g, ' ')}</span>
 
           <div className="flex flex-wrap items-center gap-2 justify-end">
-            {type === 'FRIEND_REQUEST_RECEIVED' && (
+            {type === 'FRIEND_REQUEST_RECEIVED' && !actionStatus && (
               <>
                 <button onClick={(event) => { event.stopPropagation(); handleAccept(); }} className="bg-primary-container text-on-primary-container px-3 py-1 rounded-md text-sm">Accept</button>
-                <button onClick={(event) => { event.stopPropagation(); handleReject(); }} className="border border-outline-variant text-primary px-3 py-1 rounded-md text-sm">Reject</button>
+                <button onClick={(event) => { event.stopPropagation(); handleIgnore(); }} className="border border-outline-variant text-primary px-3 py-1 rounded-md text-sm">Ignore</button>
               </>
+            )}
+
+            {type === 'FRIEND_REQUEST_RECEIVED' && actionStatus === 'accepted' && (
+              <span className="text-xs font-medium text-green-600 dark:text-green-400 px-3 py-1">Added to friends</span>
+            )}
+
+            {type === 'FRIEND_REQUEST_RECEIVED' && actionStatus === 'ignored' && (
+              <span className="text-xs font-medium text-on-surface-variant px-3 py-1">Ignored request</span>
             )}
 
             {(type === 'STREAK_RISK' || type === 'USER_INACTIVE') && (
               <button onClick={(event) => { event.stopPropagation(); handleNavigate('/dashboard'); }} className="bg-primary-container text-on-primary-container px-3 py-1 rounded-md text-sm">Go to Dashboard</button>
             )}
 
-            {!isRead && (
+            {!isRead && type !== 'FRIEND_REQUEST_RECEIVED' && (
               <button onClick={async (event) => { event.stopPropagation(); await markAsRead(notification.id); if (onMarkRead) onMarkRead(); }} className="text-on-surface-variant text-sm">Mark read</button>
             )}
           </div>
