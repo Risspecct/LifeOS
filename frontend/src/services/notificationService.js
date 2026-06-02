@@ -17,3 +17,8 @@ export const markAsRead = async (notificationId) => {
   const response = await apiClient.patch(`/notifications/${notificationId}/read`);
   return response.data;
 };
+
+export const markAllAsRead = async () => {
+  const response = await apiClient.patch("/notifications/read-all");
+  return response.data;
+};

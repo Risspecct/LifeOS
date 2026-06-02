@@ -17,7 +17,14 @@ const NotificationBell = () => {
 
   useEffect(() => {
     refresh();
-    const handler = () => refresh();
+    const handler = (event) => {
+      const nextUnreadCount = event?.detail?.unreadCount;
+      if (typeof nextUnreadCount === "number") {
+        setUnreadCount(nextUnreadCount);
+        return;
+      }
+      refresh();
+    };
     window.addEventListener("notificationsUpdated", handler);
     return () => window.removeEventListener("notificationsUpdated", handler);
   }, []);
