@@ -24,7 +24,7 @@ public class NotificationService {
     }
 
     public List<NotificationResponse> getUserNotifications(Long userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, 20))
+        return notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId, PageRequest.of(0, 20))
                 .stream()
                 .map(notification -> new NotificationResponse(
                         notification.getId(),
@@ -45,6 +45,11 @@ public class NotificationService {
 
         notification.setRead(true);
         notification.setReadAt(LocalDateTime.now());
+    }
+
+    @Transactional
+    public void markAllAsRead(Long userId) {
+        notificationRepository.markAllAsRead(userId);
     }
 
     public long getUnreadCount(Long userId) {

@@ -1,6 +1,8 @@
 package users.java.LifeOS.notification;
 
+import com.fasterxml.classmate.util.ResolvedTypeKey;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import users.java.LifeOS.user.UserService;
@@ -26,5 +28,11 @@ public class NotificationController {
     @GetMapping("/unread-count")
     public ResponseEntity<?> getUnreadCount() {
         return ResponseEntity.ok(notificationService.getUnreadCount(userService.getUserId()));
+    }
+
+    @PatchMapping("/read-all")
+    public ResponseEntity<?> markAllAsRead() {
+        notificationService.markAllAsRead(userService.getUserId());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
