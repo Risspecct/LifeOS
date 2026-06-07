@@ -25,6 +25,7 @@ import { getApiErrorMessage } from "../utils/errorUtils";
 import { useToast } from "../components/ui/ToastProvider";
 
 const DashboardPage = () => {
+  console.log("DashboardPage rendered");
   const isCollapsed = useSidebar();
   const navigate = useNavigate();
   const { clearAuth } = useAuth();

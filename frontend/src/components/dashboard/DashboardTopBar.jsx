@@ -1,8 +1,35 @@
+import { useEffect } from "react";
 import { useSidebar } from "../../hooks/useSidebar";
+import { useAuth } from "../../hooks/useAuth";
 import NotificationBell from "../notifications/NotificationBell";
+import { connectWebSocket, disconnectWebSocket } from "../../services/websocketService";
+import { AUTH_TOKEN_KEY } from "../../utils/constants";
 
 const DashboardTopBar = () => {
   const isCollapsed = useSidebar();
+  const { token: authToken } = useAuth();
+  const token = authToken || localStorage.getItem(AUTH_TOKEN_KEY);
+
+  console.log("DashboardTopBar rendered", { authTokenPresent: Boolean(authToken), tokenPresent: Boolean(token) });
+
+  useEffect(() => {
+    console.log("DashboardTopBar useEffect", { authTokenPresent: Boolean(authToken), tokenPresent: Boolean(token) });
+
+    if (!token) {
+      console.log("No JWT found");
+      return;
+    }
+
+    console.log("Calling connectWebSocket");
+
+    connectWebSocket(token, (notification) => {
+      console.log("Notification received:", notification);
+    });
+
+    return () => {
+      disconnectWebSocket();
+    };
+  }, [authToken]);
 
   return (
     <header className={`flex justify-between items-center px-md h-16 sticky top-0 z-40 bg-surface border-b border-outline-variant ml-0 ${isCollapsed ? 'md:ml-20 md:w-[calc(100%-5rem)]' : 'md:ml-64 md:w-[calc(100%-16rem)]'} transition-all duration-300 ease-in-out`}>
