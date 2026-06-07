@@ -1,5 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { getNotifications, getUnreadCount, markAllAsRead, markAsRead } from "../../services/notificationService";
+import {
+  initUnreadCount,
+  setUnreadCountLocal,
+  incrementUnreadLocal,
+  decrementUnreadLocal,
+} from "../../utils/notificationClientCache";
 import NotificationCard from "./NotificationCard";
 import PublicProfileDialog from "../profile/PublicProfileDialog";
 import { useToast } from "../ui/ToastProvider";
@@ -32,6 +38,7 @@ const NotificationDrawer = ({ isOpen, onClose, onCloseRefresh }) => {
       const [list, count] = await Promise.all([getNotifications(), getUnreadCount()]);
       setNotifications(list);
       setUnreadCount(count);
+      initUnreadCount(count);
     } catch (err) {
       setError(err.message || "Unable to load notifications");
     } finally {
@@ -66,6 +73,27 @@ const NotificationDrawer = ({ isOpen, onClose, onCloseRefresh }) => {
     if (isMounted) {
       closeButtonRef.current?.focus();
     }
+  }, [isMounted]);
+
+  // Listen for realtime notifications and prepend them to the list
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const handler = (event) => {
+      const notification = event?.detail;
+      if (!notification) return;
+
+      setNotifications((prev) => [notification, ...prev]);
+      setUnreadCount((prev) => {
+        const next = prev + 1;
+        incrementUnreadLocal(1);
+        emitNotificationsUpdated(next);
+        return next;
+      });
+    };
+
+    window.addEventListener("notificationReceived", handler);
+    return () => window.removeEventListener("notificationReceived", handler);
   }, [isMounted]);
 
   useEffect(() => {
@@ -114,6 +142,7 @@ const NotificationDrawer = ({ isOpen, onClose, onCloseRefresh }) => {
       prev.map((notification) => (notification.id === id ? { ...notification, isRead: true } : notification))
     );
     setUnreadCount(nextUnreadCount);
+    setUnreadCountLocal(nextUnreadCount);
     emitNotificationsUpdated(nextUnreadCount);
 
     try {
@@ -125,6 +154,7 @@ const NotificationDrawer = ({ isOpen, onClose, onCloseRefresh }) => {
         prev.map((notification) => (notification.id === id ? { ...notification, isRead: false } : notification))
       );
       setUnreadCount(previousUnreadCount);
+      setUnreadCountLocal(previousUnreadCount);
       emitNotificationsUpdated(previousUnreadCount);
       showToast(err.message || "Unable to mark notification as read", "error");
       return false;
@@ -139,6 +169,7 @@ const NotificationDrawer = ({ isOpen, onClose, onCloseRefresh }) => {
 
     setNotifications((prev) => prev.map((notification) => ({ ...notification, isRead: true })));
     setUnreadCount(0);
+    setUnreadCountLocal(0);
     emitNotificationsUpdated(0);
 
     try {
