@@ -44,6 +44,8 @@ public class SecurityConfig {
                                 "/",
                                 "/test/**",
                                 "/register",
+                                "/ws",
+                                "/ws/**",
                                 "/login",
                                 "/auth/**",
                                 "/refreshToken",
