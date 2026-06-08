@@ -24,7 +24,7 @@ public class Note {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "task_id", nullable = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "task_id")
     private Task task;
 }
