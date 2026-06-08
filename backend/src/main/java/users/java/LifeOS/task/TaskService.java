@@ -70,19 +70,20 @@ public class TaskService {
     }
 
     public TaskDetailView getTask(long userId, long taskId) {
-        Task task = getTask(taskId);
-        verifyAccess(userId, task);
+        Task task = getVerifiedTask(userId, taskId);
         return mapper.toTaskDetailView(task);
     }
 
-    private Task getTask(long taskId) {
-        return taskRepository.findById(taskId)
+    public Task getVerifiedTask(Long userId, Long taskId) {
+        Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new NotFoundException("No task found with given id"));
+
+        verifyAccess(userId, task);
+        return task;
     }
 
     public TaskDetailView updateTask(long userId, long taskId, TaskUpdateDto dto) {
-        Task task = getTask(taskId);
-        verifyAccess(userId, task);
+        Task task = getVerifiedTask(userId, taskId);
         Task updatedTask = mapper.updateTask(dto, task);
 
         taskRepository.save(updatedTask);
@@ -102,9 +103,8 @@ public class TaskService {
 
     @Transactional
     public TaskDetailView updateStatus(User user, long taskId, Status status) {
-        Task task = getTask(taskId);
+        Task task = getVerifiedTask(user.getId(), taskId);
 
-        verifyAccess(user.getId(), task);
         if (task.getStatus() == status) {
             throw new InvalidRequestException("Updated status cannot be same as the present status");
         }
@@ -192,8 +192,7 @@ public class TaskService {
     }
 
     public void delete(long userId, long taskId) {
-        Task task = getTask(taskId);
-        verifyAccess(userId, task);
+        Task task = getVerifiedTask(userId, taskId);
 
         taskRepository.delete(task);
 
