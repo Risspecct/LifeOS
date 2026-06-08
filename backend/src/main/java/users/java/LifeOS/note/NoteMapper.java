@@ -1,7 +1,8 @@
 package users.java.LifeOS.note;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface NoteMapper {
@@ -11,5 +12,17 @@ public interface NoteMapper {
     @Mapping(target = "user", ignore = true)
     Note toEntity(NoteCreateDto dto);
 
-    NoteView toView()
+    @Mapping(target = "taskId", source = "task.id")
+    NoteView toNoteView(Note note);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "task", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    Note updateNote(NoteUpdateDto dto, @MappingTarget Note note);
+
+    @Mapping(target = "taskId", source = "task.id")
+    NoteListView toNoteListView(Note note);
+
+    List<NoteListView> toNoteListViewList(List<Note> notes);
 }
