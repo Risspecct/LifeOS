@@ -1,7 +1,7 @@
 const QuickActionsSection = ({ onOpenTaskModal, onOpenNoteModal, onOpenLabelModal }) => {
   const actions = [
     { label: "Create Task", icon: "add_circle", onClick: onOpenTaskModal },
-    { label: "Quick Note", icon: "edit_note", onClick: onOpenNoteModal },
+    { label: "Add Note", icon: "edit_note", onClick: onOpenNoteModal },
     { label: "Add Label", icon: "label", onClick: onOpenLabelModal }
   ];
 
