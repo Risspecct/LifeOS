@@ -5,12 +5,13 @@ import lombok.Getter;
 import lombok.Setter;
 import users.java.LifeOS.task.Task;
 import users.java.LifeOS.user.User;
+import users.java.LifeOS.util.BaseEntity;
 
 @Setter
 @Getter
 @Entity
 @Table
-public class Note {
+public class Note extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
