@@ -13,6 +13,9 @@ public interface NoteMapper {
     Note toEntity(NoteCreateDto dto);
 
     @Mapping(target = "taskId", source = "task.id")
+    @Mapping(target = "taskTitle", source = "task.title")
+    @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "updatedAt", source = "updatedAt")
     NoteView toNoteView(Note note);
 
     @Mapping(target = "id", ignore = true)
@@ -22,6 +25,8 @@ public interface NoteMapper {
     Note updateNote(NoteUpdateDto dto, @MappingTarget Note note);
 
     @Mapping(target = "taskId", source = "task.id")
+    @Mapping(target = "taskTitle", source = "task.title")
+    @Mapping(target = "updatedAt", source = "updatedAt")
     NoteListView toNoteListView(Note note);
 
     List<NoteListView> toNoteListViewList(List<Note> notes);

@@ -7,6 +7,8 @@ public record NoteView(
         String title,
         String message,
         Long taskId,
+        String taskTitle,
+        LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
 }

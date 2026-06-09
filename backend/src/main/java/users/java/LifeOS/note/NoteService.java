@@ -64,11 +64,14 @@ public class NoteService {
     public NoteView updateNote(User user, NoteUpdateDto dto) {
         Note note = getVerifiedNote(user.getId(), dto.noteId());
 
-        if (noteRepository.existsByUserAndTitle(user, dto.title()))
+        if (dto.title() != null && !dto.title().trim().equals(note.getTitle()) &&
+                Boolean.TRUE.equals(noteRepository.existsByUserAndTitleAndIdNot(user, dto.title(), note.getId())))
             throw new InvalidRequestException("Note with title already exists");
 
         Note updatedNote = noteMapper.updateNote(dto, note);
-        if (dto.taskId() != null && dto.taskId().compareTo(note.getTask().getId()) != 0){
+        if (dto.taskId() == null) {
+            updatedNote.setTask(null);
+        } else if (note.getTask() == null || dto.taskId().compareTo(note.getTask().getId()) != 0) {
             Task task = taskService.getVerifiedTask(user.getId(), dto.taskId());
             updatedNote.setTask(task);
         }

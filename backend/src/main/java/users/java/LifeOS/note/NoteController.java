@@ -34,7 +34,7 @@ public class NoteController {
         return noteService.getAllNotes(currentUser);
     }
 
-    @GetMapping("/task/{taskId}")
+    @GetMapping({"/task/{taskId}", "/tasks/{taskId}/notes"})
     public List<NoteListView> getNotesByTask(@PathVariable Long taskId) {
         User currentUser = userService.getAuthenticatedUser();
 
