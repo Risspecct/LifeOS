@@ -70,18 +70,6 @@ const TaskDetailsSidebar = ({
           <p className="text-label-xs uppercase tracking-wide text-on-surface-variant">Due Date</p>
           <p className="text-body-md text-on-surface">{formatDueDate(task.dueDate)}</p>
         </div>
-        <div className="rounded-lg bg-surface-container-high border border-outline-variant p-sm">
-          <p className="text-label-xs uppercase tracking-wide text-on-surface-variant">Activity</p>
-          <p className="text-label-sm text-on-surface-variant">Activity timeline will be available soon.</p>
-        </div>
-        <div className="rounded-lg bg-surface-container-high border border-outline-variant p-sm">
-          <p className="text-label-xs uppercase tracking-wide text-on-surface-variant">Subtasks</p>
-          <p className="text-label-sm text-on-surface-variant">Subtask tracking is coming next.</p>
-        </div>
-        <div className="rounded-lg bg-surface-container-high border border-outline-variant p-sm">
-          <p className="text-label-xs uppercase tracking-wide text-on-surface-variant">Collaboration</p>
-          <p className="text-label-sm text-on-surface-variant">Collaboration insights are currently in preview.</p>
-        </div>
       </div>
 
       <div className="flex flex-wrap gap-sm pt-xs">

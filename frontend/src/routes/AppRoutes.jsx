@@ -9,6 +9,7 @@ import ActivityPage from "../pages/ActivityPage";
 import LeaderboardPage from "../pages/Leaderboard/LeaderboardPage";
 import ConnectionsPage from "../pages/Connections/ConnectionsPage";
 import SettingsPage from "../pages/SettingsPage";
+import NoteDetailPage from "../pages/NoteDetailPage";
 import ProtectedRoute from "../auth/ProtectedRoute";
 
 const AppRoutes = () => {
@@ -26,6 +27,9 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/tasks/:taskId" element={<TasksPage />} />
+        <Route path="/tasks/:taskId/notes" element={<TasksPage />} />
+        <Route path="/tasks/:taskId/notes/:noteId" element={<TasksPage />} />
+        <Route path="/notes/:noteId" element={<NoteDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/activity" element={<ActivityPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />

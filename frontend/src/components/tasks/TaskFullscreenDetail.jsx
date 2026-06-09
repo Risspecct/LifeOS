@@ -2,6 +2,7 @@ import { formatDueDate } from "../../utils/taskUtils";
 import TaskStatusBadge from "./TaskStatusBadge";
 import TaskTypeChip from "./TaskTypeChip";
 import { useState } from "react";
+import NotesList from "../notes/NotesList";
 
 const TaskFullscreenDetail = ({
   task,
@@ -14,7 +15,10 @@ const TaskFullscreenDetail = ({
   statusUpdating,
   labels = [],
   statusOptions = [],
-  onLabelChange
+  onLabelChange,
+  notes = [],
+  onViewAllNotes,
+  onViewNote
 }) => {
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [isEditingLabel, setIsEditingLabel] = useState(false);
@@ -111,18 +115,31 @@ const TaskFullscreenDetail = ({
         <p className="text-label-sm text-on-surface-variant">Click status and label pills above to edit inline.</p>
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-md">
-        <div className="rounded-xl border border-outline-variant bg-surface-container p-sm">
-          <h4 className="font-label-sm text-on-surface-variant uppercase tracking-wider mb-xs">Activity</h4>
-          <p className="text-label-sm text-on-surface-variant">Timeline enhancements coming next.</p>
+      <section className="space-y-sm">
+        <div className="flex items-center justify-between gap-sm">
+          <div>
+            <h4 className="font-label-sm text-on-surface-variant uppercase tracking-wider">Notes</h4>
+            <p className="text-label-sm text-on-surface-variant">Recent notes linked to this task.</p>
+          </div>
+          {onViewAllNotes ? (
+            <button type="button" onClick={onViewAllNotes} className="text-label-sm text-primary hover:underline">
+              View All
+            </button>
+          ) : null}
         </div>
+
         <div className="rounded-xl border border-outline-variant bg-surface-container p-sm">
-          <h4 className="font-label-sm text-on-surface-variant uppercase tracking-wider mb-xs">Subtasks</h4>
-          <p className="text-label-sm text-on-surface-variant">Checklist support coming next.</p>
-        </div>
-        <div className="rounded-xl border border-outline-variant bg-surface-container p-sm">
-          <h4 className="font-label-sm text-on-surface-variant uppercase tracking-wider mb-xs">Notes</h4>
-          <p className="text-label-sm text-on-surface-variant">Notes support coming next.</p>
+          {notes.length === 0 ? (
+            <p className="text-label-sm text-on-surface-variant">No notes yet.</p>
+          ) : (
+            <NotesList
+              notes={notes}
+              layout="list"
+              showContent={false}
+              maxHeight="max-h-[280px]"
+              onViewNote={onViewNote}
+            />
+          )}
         </div>
       </section>
 

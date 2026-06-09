@@ -11,6 +11,7 @@ import AchievementWidget from "../components/dashboard/AchievementWidget";
 import UpcomingTasksSidebar from "../components/dashboard/UpcomingTasksSidebar";
 import SocialPresenceWidget from "../components/dashboard/SocialPresenceWidget";
 import RecentActivityWidget from "../components/dashboard/RecentActivityWidget";
+import RecentNotesWidget from "../components/notes/RecentNotesWidget";
 import MobileBottomNav from "../components/navigation/MobileBottomNav";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
@@ -18,11 +19,13 @@ import { useSidebar } from "../hooks/useSidebar";
 import { useLabels } from "../hooks/useLabels";
 import DashboardTaskModal from "../components/dashboard/DashboardTaskModal";
 import DashboardLabelModal from "../components/dashboard/DashboardLabelModal";
-import DashboardNoteModal from "../components/dashboard/DashboardNoteModal";
 import { createTask } from "../api/taskApi";
 import { buildTaskStatusOptions } from "../utils/taskStatus";
 import { getApiErrorMessage } from "../utils/errorUtils";
 import { useToast } from "../components/ui/ToastProvider";
+import NoteFormModal from "../components/notes/NoteFormModal";
+import { createNote } from "../api/notesApi";
+import { useNotes } from "../hooks/useNotes";
 
 const DashboardPage = () => {
   console.log("DashboardPage rendered");
@@ -31,6 +34,7 @@ const DashboardPage = () => {
   const { clearAuth } = useAuth();
   const { dashboard, loading, refreshing, error, refresh, updateOptimistically } = useDashboard();
   const { labels, createLabel } = useLabels();
+  const { notes: recentNotes, loading: notesLoading, error: notesError, refresh: refreshNotes } = useNotes();
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
@@ -41,6 +45,8 @@ const DashboardPage = () => {
   const [labelError, setLabelError] = useState("");
 
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [isCreatingNote, setIsCreatingNote] = useState(false);
+  const [noteError, setNoteError] = useState("");
 
   const { showToast } = useToast();
 
@@ -91,6 +97,23 @@ const DashboardPage = () => {
       showToast("Label created");
     } catch (err) {
       showToast("Unable to create label", "error");
+    }
+  };
+
+  const handleCreateNote = async (payload) => {
+    setIsCreatingNote(true);
+    setNoteError("");
+    try {
+      await createNote(payload);
+      setIsNoteModalOpen(false);
+      showToast("Note created");
+      refreshNotes();
+    } catch (err) {
+      const message = getApiErrorMessage(err, "Unable to create note.");
+      setNoteError(message);
+      showToast("Unable to create note", "error");
+    } finally {
+      setIsCreatingNote(false);
     }
   };
 
@@ -172,6 +195,14 @@ const DashboardPage = () => {
                 loading={loading}
                 onOpenTask={(taskId) => navigate(`/tasks/${taskId}`)}
               />
+              <RecentNotesWidget
+                notes={recentNotes}
+                loading={notesLoading}
+                error={notesError}
+                compact
+                onCreateNote={() => setIsNoteModalOpen(true)}
+                onViewNote={(note) => navigate(note.taskId ? `/tasks/${note.taskId}/notes/${note.id}` : `/notes/${note.id}`)}
+              />
               <RecentActivityWidget
                 activities={recentActivities}
                 loading={loading}
@@ -202,9 +233,16 @@ const DashboardPage = () => {
         onCreateLabel={handleCreateLabel}
       />
 
-      <DashboardNoteModal
+      <NoteFormModal
         isOpen={isNoteModalOpen}
-        onClose={() => setIsNoteModalOpen(false)}
+        mode="create"
+        isSaving={isCreatingNote}
+        error={noteError}
+        onClose={() => {
+          setIsNoteModalOpen(false);
+          setNoteError("");
+        }}
+        onSubmit={handleCreateNote}
       />
     </div>
   );

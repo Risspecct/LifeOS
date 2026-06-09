@@ -10,9 +10,12 @@ import TaskFullscreenDetail from "../components/tasks/TaskFullscreenDetail";
 import TaskWorkspaceToolbar from "../components/tasks/TaskWorkspaceToolbar";
 import LabelManagerDrawer from "../components/tasks/LabelManagerDrawer";
 import MobileBottomNav from "../components/navigation/MobileBottomNav";
+import NoteFormModal from "../components/notes/NoteFormModal";
+import TaskNotesWorkspace from "../components/notes/TaskNotesWorkspace";
 import { useAuth } from "../hooks/useAuth";
 import { useLabels } from "../hooks/useLabels";
 import { useSidebar } from "../hooks/useSidebar";
+import { useNotes } from "../hooks/useNotes";
 import { getApiErrorMessage } from "../utils/errorUtils";
 import {
   createTask,
@@ -23,6 +26,7 @@ import {
   updateTask,
   updateTaskStatus
 } from "../api/taskApi";
+import { createNote, deleteNote, getNoteById, updateNote } from "../api/notesApi";
 import { buildTaskStatusOptions, normalizeTaskStatus } from "../utils/taskStatus";
 import { useToast } from "../components/ui/ToastProvider";
 
@@ -97,7 +101,9 @@ const TasksPage = () => {
   const location = useLocation();
   const params = useParams();
   const detailRouteTaskId = params.taskId ? Number(params.taskId) : null;
+  const detailRouteNoteId = params.noteId ? Number(params.noteId) : null;
   const isFullscreen = Boolean(detailRouteTaskId);
+  const isNotesRoute = location.pathname.includes("/notes");
   const { showToast } = useToast();
 
   const { clearAuth } = useAuth();
@@ -136,6 +142,22 @@ const TasksPage = () => {
   const [workspaceMode, setWorkspaceMode] = useState(readInitialWorkspaceMode);
   const [isLabelManagerOpen, setIsLabelManagerOpen] = useState(false);
   const [labelInfoMessage, setLabelInfoMessage] = useState("");
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [noteModalMode, setNoteModalMode] = useState("create");
+  const [editingNote, setEditingNote] = useState(null);
+  const [isSavingNote, setIsSavingNote] = useState(false);
+  const [noteError, setNoteError] = useState("");
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [loadingSelectedNote, setLoadingSelectedNote] = useState(false);
+  const [selectedNoteError, setSelectedNoteError] = useState("");
+  const activeNotesTaskId = isFullscreen ? detailRouteTaskId : selectedTaskId;
+  const {
+    notes: taskNotes,
+    loading: loadingTaskNotes,
+    error: taskNotesError,
+    refresh: refreshTaskNotes,
+    setNotes: setTaskNotes
+  } = useNotes(activeNotesTaskId);
 
   useEffect(() => {
     localStorage.setItem(TASKS_VIEW_MODE_KEY, viewMode);
@@ -210,6 +232,36 @@ const TasksPage = () => {
     };
     fetchTaskDetail();
   }, [detailRouteTaskId, selectedTaskId, isFullscreen, labels]);
+
+  useEffect(() => {
+    if (!detailRouteNoteId) {
+      setSelectedNote(null);
+      setSelectedNoteError("");
+      return;
+    }
+
+    let active = true;
+    const loadNote = async () => {
+      setLoadingSelectedNote(true);
+      setSelectedNoteError("");
+      try {
+        const data = await getNoteById(detailRouteNoteId);
+        if (!active) return;
+        setSelectedNote(data);
+      } catch (loadError) {
+        if (!active) return;
+        setSelectedNote(null);
+        setSelectedNoteError(getApiErrorMessage(loadError, "Unable to load note."));
+      } finally {
+        if (active) setLoadingSelectedNote(false);
+      }
+    };
+
+    loadNote();
+    return () => {
+      active = false;
+    };
+  }, [detailRouteNoteId]);
 
   const visibleTasks = useMemo(() => {
     const searchedTasks = tasks.filter((task) => matchesSearch(task, filters.search));
@@ -407,6 +459,137 @@ const TasksPage = () => {
     }
   };
 
+  const openCreateNote = () => {
+    setEditingNote(null);
+    setNoteModalMode("create");
+    setNoteError("");
+    setIsNoteModalOpen(true);
+  };
+
+  const openEditNote = (note) => {
+    if (!note) return;
+    setEditingNote(note);
+    setNoteModalMode("edit");
+    setNoteError("");
+    setIsNoteModalOpen(true);
+  };
+
+  const closeNoteModal = () => {
+    if (isSavingNote) return;
+    setIsNoteModalOpen(false);
+    setEditingNote(null);
+    setNoteError("");
+  };
+
+  const handleSubmitNote = async (payload) => {
+    setIsSavingNote(true);
+    setNoteError("");
+
+    const shouldRefresh = true;
+
+    if (noteModalMode === "edit" && editingNote?.id) {
+      const previousNote = editingNote;
+      const optimisticNote = {
+        ...previousNote,
+        ...payload,
+        taskId: payload.taskId,
+        updatedAt: new Date().toISOString()
+      };
+
+      setSelectedNote((prev) => (prev?.id === previousNote.id ? optimisticNote : prev));
+      setTaskNotes((prev) =>
+        prev.map((note) => (note.id === previousNote.id ? optimisticNote : note))
+      );
+
+      try {
+        const updated = await updateNote({ noteId: previousNote.id, ...payload });
+        setSelectedNote((prev) => (prev?.id === updated.id ? updated : prev));
+        setTaskNotes((prev) =>
+          prev
+            .map((note) => (note.id === updated.id ? updated : note))
+            .filter((note) => !activeNotesTaskId || note.taskId === activeNotesTaskId)
+        );
+        showToast("Note updated");
+        setIsNoteModalOpen(false);
+        setEditingNote(null);
+      } catch (saveError) {
+        setNoteError(getApiErrorMessage(saveError, "Unable to update note."));
+        showToast("Unable to update note", "error");
+        setSelectedNote(previousNote);
+        refreshTaskNotes();
+      } finally {
+        setIsSavingNote(false);
+      }
+      return;
+    }
+
+    const tempId = `temp-${Date.now()}`;
+    const optimisticNote = {
+      id: tempId,
+      title: payload.title,
+      message: payload.message,
+      taskId: payload.taskId,
+      taskTitle: payload.taskId ? selectedTaskDetail?.title || taskNotes.find((item) => String(item.taskId) === String(payload.taskId))?.taskTitle || "" : "",
+      updatedAt: new Date().toISOString()
+    };
+
+    if (!payload.taskId || String(payload.taskId) === String(activeNotesTaskId)) {
+      setTaskNotes((prev) => [optimisticNote, ...prev]);
+    }
+
+    try {
+      const created = await createNote(payload);
+      setTaskNotes((prev) =>
+        [created, ...prev.filter((note) => note.id !== tempId)].filter(
+          (note) => !activeNotesTaskId || String(note.taskId || "") === String(activeNotesTaskId)
+        )
+      );
+      showToast("Note created");
+      setIsNoteModalOpen(false);
+      setEditingNote(null);
+      refreshTaskNotes();
+    } catch (saveError) {
+      setTaskNotes((prev) => prev.filter((note) => note.id !== tempId));
+      setNoteError(getApiErrorMessage(saveError, "Unable to create note."));
+      showToast("Unable to create note", "error");
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
+  const handleDeleteNote = async (note) => {
+    if (!note?.id) return;
+    const noteIdToDelete = note.id;
+    const previousNotes = taskNotes;
+
+    setTaskNotes((prev) => prev.filter((item) => item.id !== noteIdToDelete));
+    if (selectedNote?.id === noteIdToDelete) {
+      setSelectedNote(null);
+    }
+
+    try {
+      await deleteNote(noteIdToDelete);
+      showToast("Note deleted");
+      refreshTaskNotes();
+      if (detailRouteNoteId) {
+        navigate(`/tasks/${detailRouteTaskId}/notes`, { replace: true });
+      }
+    } catch (deleteError) {
+      setTaskNotes(previousNotes);
+      if (selectedNote?.id === noteIdToDelete) {
+        setSelectedNote(note);
+      }
+      setNoteError(getApiErrorMessage(deleteError, "Unable to delete note."));
+      showToast("Unable to delete note", "error");
+    }
+  };
+
+  const openNoteDetail = (note) => {
+    const taskId = note?.taskId || activeNotesTaskId || detailRouteTaskId || selectedTaskId;
+    if (!note?.id || !taskId) return;
+    navigate(`/tasks/${taskId}/notes/${note.id}`);
+  };
+
   const statusOptions = useMemo(
     () => buildTaskStatusOptions(tasks.map((task) => task.status), selectedTaskDetail?.status),
     [tasks, selectedTaskDetail]
@@ -448,19 +631,59 @@ const TasksPage = () => {
             />
           </div>
         ) : (
-          <TaskFullscreenDetail
-            task={selectedTaskDetail}
-            loading={loadingDetail}
-            onBack={() => navigate("/tasks")}
-            onEdit={() => setIsEditOpen(true)}
-            onDelete={handleDeleteTask}
-            deleting={deletingTask}
-            onStatusChange={handleStatusChange}
-            statusUpdating={statusUpdatingTask}
-            labels={labels}
-            statusOptions={statusOptions}
-            onLabelChange={handleLabelChange}
-          />
+          <div className="max-w-container-max mx-auto space-y-md">
+            <div className="flex items-center gap-xs border-b border-outline-variant pb-xs">
+              <button
+                type="button"
+                onClick={() => navigate(`/tasks/${detailRouteTaskId}`)}
+                className={`rounded-t-lg px-md py-xs text-label-sm ${!isNotesRoute ? "border-b-2 border-primary text-primary" : "text-on-surface-variant"}`}
+              >
+                Overview
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(`/tasks/${detailRouteTaskId}/notes`)}
+                className={`rounded-t-lg px-md py-xs text-label-sm ${isNotesRoute ? "border-b-2 border-primary text-primary" : "text-on-surface-variant"}`}
+              >
+                Notes
+              </button>
+            </div>
+
+            {isNotesRoute ? (
+              <TaskNotesWorkspace
+                task={selectedTaskDetail}
+                notes={taskNotes}
+                loading={loadingTaskNotes}
+                error={taskNotesError || selectedNoteError}
+              selectedNote={selectedNote}
+              selectedNoteLoading={loadingSelectedNote}
+              selectedNoteError={selectedNoteError}
+              onBackToTask={() => navigate(`/tasks/${detailRouteTaskId}`)}
+              onBackToNotesList={() => navigate(`/tasks/${detailRouteTaskId}/notes`)}
+              onCreateNote={() => openCreateNote(detailRouteTaskId)}
+              onViewNote={openNoteDetail}
+              onEditNote={openEditNote}
+              onDeleteNote={handleDeleteNote}
+            />
+            ) : (
+              <TaskFullscreenDetail
+                task={selectedTaskDetail}
+                loading={loadingDetail}
+                onBack={() => navigate("/tasks")}
+                onEdit={() => setIsEditOpen(true)}
+                onDelete={handleDeleteTask}
+                deleting={deletingTask}
+                onStatusChange={handleStatusChange}
+                statusUpdating={statusUpdatingTask}
+                labels={labels}
+                statusOptions={statusOptions}
+                onLabelChange={handleLabelChange}
+                notes={taskNotes}
+                onViewAllNotes={() => navigate(`/tasks/${detailRouteTaskId}/notes`)}
+                onViewNote={openNoteDetail}
+              />
+            )}
+          </div>
         )}
       </main>
 
@@ -478,6 +701,11 @@ const TasksPage = () => {
           labels={labels}
           statusOptions={statusOptions}
           onLabelChange={handleLabelChange}
+          notesPreview={taskNotes}
+          notesCount={taskNotes.length}
+          onCreateNote={() => openCreateNote(selectedTaskId)}
+          onViewAllNotes={() => navigate(`/tasks/${selectedTaskId}/notes`)}
+          onOpenNote={openNoteDetail}
         />
       ) : null}
 
@@ -537,6 +765,17 @@ const TasksPage = () => {
             setLabelInfoMessage("Recommended labels are already available.");
           }
         }}
+      />
+
+      <NoteFormModal
+        isOpen={isNoteModalOpen}
+        mode={noteModalMode}
+        note={editingNote}
+        defaultTaskId={activeNotesTaskId || ""}
+        isSaving={isSavingNote}
+        error={noteError}
+        onClose={closeNoteModal}
+        onSubmit={handleSubmitNote}
       />
 
       {!isFullscreen ? <MobileBottomNav activeView="tasks" /> : null}

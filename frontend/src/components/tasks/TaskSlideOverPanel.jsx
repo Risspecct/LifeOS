@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { formatDueDate } from "../../utils/taskUtils";
 import TaskStatusBadge from "./TaskStatusBadge";
-import TaskTypeChip from "./TaskTypeChip";
+import NotesPreview from "../notes/NotesPreview";
 
-const tabs = ["Overview", "Activity", "Subtasks", "Notes"];
+const tabs = ["Overview", "Notes"];
 
 const TaskSlideOverPanel = ({
   task,
@@ -17,7 +17,12 @@ const TaskSlideOverPanel = ({
   statusUpdating,
   labels = [],
   statusOptions = [],
-  onLabelChange
+  onLabelChange,
+  notesPreview = [],
+  notesCount = 0,
+  onCreateNote,
+  onViewAllNotes,
+  onOpenNote
 }) => {
   const [activeTab, setActiveTab] = useState("Overview");
   const [isEditingStatus, setIsEditingStatus] = useState(false);
@@ -127,9 +132,13 @@ const TaskSlideOverPanel = ({
                 </div>
               </div>
             ) : (
-              <div className="rounded-xl border border-outline-variant bg-surface-container p-sm text-label-sm text-on-surface-variant">
-                {activeTab} data will be expanded in a future iteration.
-              </div>
+              <NotesPreview
+                notes={notesPreview}
+                totalCount={notesCount}
+                onCreateNote={onCreateNote}
+                onViewAll={onViewAllNotes}
+                onViewNote={onOpenNote}
+              />
             )}
 
             <div className="flex flex-wrap gap-sm pt-sm">

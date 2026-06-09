@@ -69,6 +69,8 @@ public class TaskService {
         return mapper.toTaskListViewList(tasks);
     }
 
+
+
     public TaskDetailView getTask(long userId, long taskId) {
         Task task = getVerifiedTask(userId, taskId);
         return mapper.toTaskDetailView(task);
