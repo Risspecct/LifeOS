@@ -33,6 +33,7 @@ public class TaskService {
     private final RewardService rewardService;
     private final StatsUpdateService statsUpdateService;
 
+    @Transactional
     public TaskView create(User user, TaskDto dto) {
         Task task = mapper.toEntity(dto);
         Label label = labelService.getLabelById(user.getId(), dto.labelId());
@@ -193,10 +194,20 @@ public class TaskService {
         return taskRepository.getTaskStats(user);
     }
 
+    @Transactional
     public void delete(long userId, long taskId) {
         Task task = getVerifiedTask(userId, taskId);
 
         taskRepository.delete(task);
+
+        activityService.logActivity(
+                userService.getById(userId),
+                ActivityType.TASK_DELETED,
+                "Task Deleted",
+                "Deleted " + task.getTitle() + " task",
+                ActivityPoints.TASK_DELETED,
+                null
+        );
 
         statsUpdateService.taskDeleted(task);
     }

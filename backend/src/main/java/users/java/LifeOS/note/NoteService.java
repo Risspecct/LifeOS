@@ -1,9 +1,13 @@
 package users.java.LifeOS.note;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.activity.ActivityPoints;
+import users.java.LifeOS.activity.ActivityService;
+import users.java.LifeOS.activity.ActivityType;
 import users.java.LifeOS.exceptions.InvalidRequestException;
 import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.task.Task;
@@ -21,7 +25,9 @@ public class NoteService {
     private final UserService userService;
     private final TaskService taskService;
     private final NoteMapper noteMapper;
+    private final ActivityService activityService;
 
+    @Transactional
     public NoteView createNote(NoteCreateDto dto) {
         User currentUser = userService.getAuthenticatedUser();
         Task task = null;
@@ -38,6 +44,16 @@ public class NoteService {
         note.setTask(task);
 
         noteRepository.save(note);
+
+        activityService.logActivity(
+                currentUser,
+                ActivityType.NOTE_CREATED,
+                "Note Created",
+                "Created " + note.getTitle() + " note",
+                ActivityPoints.NOTE_CREATED,
+                null
+        );
+
         return noteMapper.toNoteView(note);
     }
 
@@ -81,8 +97,18 @@ public class NoteService {
         return noteMapper.toNoteView(updatedNote);
     }
 
+    @Transactional
     public void deleteNote(long userId, long noteId) {
         Note note = getVerifiedNote(userId, noteId);
+
+        activityService.logActivity(
+                userService.getAuthenticatedUser(),
+                ActivityType.NOTE_DELETED,
+                "Note Deleted",
+                "Deleted " + note.getTitle() + " note",
+                ActivityPoints.NOTE_DELETED,
+                null
+        );
 
         noteRepository.delete(note);
     }

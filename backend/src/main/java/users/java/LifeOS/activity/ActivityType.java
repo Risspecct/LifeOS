@@ -5,6 +5,11 @@ public enum ActivityType {
     TASK_CREATED(true),
     TASK_UPDATED(true),
     TASK_COMPLETED(true),
+    TASK_DELETED(false),
+
+    NOTE_CREATED(false),
+    NOTE_DELETED(false),
+
 
     PROFILE_UPDATED(false),
     LOGIN(false),
