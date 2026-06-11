@@ -7,10 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LabelRepository extends JpaRepository<Label, Long> {
-
     List<Label> findAllByUserOrderByNameAsc(User user);
-
-    Optional<Label> findByIdAndUser(Long id, User user);
-
     boolean existsByNameIgnoreCaseAndUser(String name, User user);
+    List<Label> findAllByUser(User user);
 }
