@@ -7,10 +7,9 @@ import java.time.LocalDateTime;
 public record GeneratedTaskResponse(
         String title,
         String description,
-        String taskType,
+        TaskType taskType,
         TaskPriority priority,
         Long labelId,
         String labelName,
         LocalDateTime suggestedDueDate
-) {
-}
+) {}

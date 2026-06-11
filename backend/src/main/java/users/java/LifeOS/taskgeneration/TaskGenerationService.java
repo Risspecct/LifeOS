@@ -2,10 +2,12 @@ package users.java.LifeOS.taskgeneration;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.task.TaskPriority;
 import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.task.label.LabelRepository;
 import users.java.LifeOS.user.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,23 +27,20 @@ public class TaskGenerationService {
 
         GeneratedTaskDraft draft = aiTaskGenerationService.generateDraft(prompt, availableLabels);
 
-        Label selectedLabel = resolveLabel(
-                        draft.selectedLabel(),
-                        userLabels
-                );
+        Label selectedLabel = resolveLabel(draft.selectedLabel(), userLabels);
+
+        TaskType taskType = parseTaskType(draft.taskType());
+        TaskPriority priority = parsePriority(draft.priority());
+        LocalDateTime dueDate = parseDueDate(draft.suggestedDueDate());
 
         return new GeneratedTaskResponse(
                 draft.title(),
                 draft.description(),
-                draft.taskType().name(),
-                draft.priority(),
-                selectedLabel != null
-                        ? selectedLabel.getId()
-                        : null,
-                selectedLabel != null
-                        ? selectedLabel.getName()
-                        : null,
-                draft.suggestedDueDate()
+                taskType,
+                priority,
+                selectedLabel != null ? selectedLabel.getId() : null,
+                selectedLabel != null ? selectedLabel.getName() : null,
+                dueDate
         );
     }
 
@@ -54,5 +53,48 @@ public class TaskGenerationService {
                         label.getName().equalsIgnoreCase(selectedLabel))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private TaskType parseTaskType(String value) {
+
+        if (value == null) {
+            return TaskType.GENERAL;
+        }
+
+        try {
+            return TaskType.valueOf(
+                    value.trim().toUpperCase()
+            );
+        } catch (Exception e) {
+            return TaskType.GENERAL;
+        }
+    }
+
+    private TaskPriority parsePriority(String value) {
+
+        if (value == null) {
+            return TaskPriority.MEDIUM;
+        }
+
+        try {
+            return TaskPriority.valueOf(
+                    value.trim().toUpperCase()
+            );
+        } catch (Exception e) {
+            return TaskPriority.MEDIUM;
+        }
+    }
+
+    private LocalDateTime parseDueDate(String value) {
+
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        try {
+            return LocalDateTime.parse(value);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

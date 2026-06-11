@@ -15,10 +15,10 @@ public class MockAiClient implements AiClient {
         return new GeneratedTaskDraft(
                 "Prepare for Spring Boot Interview",
                 "Review Spring Boot, Security and JPA concepts.",
-                TaskType.CAREER,
-                TaskPriority.HIGH,
+                TaskType.CAREER.toString(),
+                TaskPriority.HIGH.toString(),
                 availableLabels.isEmpty() ? null : availableLabels.getFirst(),
-                LocalDateTime.now().plusDays(7)
+                LocalDateTime.now().plusDays(7).toString()
         );
     }
 }
