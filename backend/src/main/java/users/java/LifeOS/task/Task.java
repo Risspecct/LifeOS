@@ -23,26 +23,26 @@ import java.time.LocalDateTime;
 public class Task extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    Long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    User user;
+    private User user;
 
     @Column
     @NotBlank
-    String title;
+    private String title;
 
     @Column
-    String description;
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column
-    Status status;
+    private Status status;
 
     @Column
-    String taskType;
+    private String taskType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "label_id", nullable = true)
