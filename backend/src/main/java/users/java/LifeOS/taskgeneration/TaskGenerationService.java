@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import users.java.LifeOS.task.TaskPriority;
 import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.task.label.LabelRepository;
+import users.java.LifeOS.taskgeneration.ai.AiTaskGenerationService;
+import users.java.LifeOS.taskgeneration.ai.GeneratedTaskDraft;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDateTime;

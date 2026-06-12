@@ -1,7 +1,8 @@
-package users.java.LifeOS.taskgeneration;
+package users.java.LifeOS.taskgeneration.ai;
 
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.task.TaskPriority;
+import users.java.LifeOS.taskgeneration.TaskType;
 
 import java.time.LocalDateTime;
 import java.util.List;

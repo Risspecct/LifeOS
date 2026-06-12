@@ -1,4 +1,4 @@
-package users.java.LifeOS.taskgeneration;
+package users.java.LifeOS.taskgeneration.ai;
 
 public record GeneratedTaskDraft(
         String title,
