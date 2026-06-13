@@ -27,19 +27,29 @@ public class GeminiClient implements AiClient {
 
         String finalPrompt = promptBuilder.build(prompt, availableLabels);
 
-        GenerateContentResponse response = googleGeminiClient.models.generateContent(
-                properties.model(),
-                finalPrompt,
-                null
-        );
+        try {
+            GenerateContentResponse response = googleGeminiClient.models.generateContent(
+                    properties.model(),
+                    finalPrompt,
+                    null
+            );
+            return parseResponse(response.text());
 
-        return parseResponse(response.text());
+        } catch (Exception e) {
+            return new GeneratedTaskDraft(
+                    prompt,
+                    "",
+                    "GENERAL",
+                    "MEDIUM",
+                    null,
+                    null
+            );
+        }
     }
 
     private GeneratedTaskDraft parseResponse(String response) {
         try {
             return objectMapper.readValue(response, GeneratedTaskDraft.class);
-
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse Gemini response", e);
         }

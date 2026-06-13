@@ -30,7 +30,6 @@ public class TaskGenerationService {
         GeneratedTaskDraft draft = aiTaskGenerationService.generateDraft(prompt, availableLabels);
 
         Label selectedLabel = resolveLabel(draft.selectedLabel(), userLabels);
-
         TaskType taskType = parseTaskType(draft.taskType());
         TaskPriority priority = parsePriority(draft.priority());
         LocalDateTime dueDate = parseDueDate(draft.suggestedDueDate());
