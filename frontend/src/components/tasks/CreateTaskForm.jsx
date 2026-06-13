@@ -27,6 +27,7 @@ const CreateTaskForm = ({
   const [showAi, setShowAi] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [showAiSuccess, setShowAiSuccess] = useState(false);
   const { showToast } = useToast();
 
   const handleChange = (event) => {
@@ -76,6 +77,9 @@ const CreateTaskForm = ({
       });
 
       setShowAi(false);
+      setShowAiSuccess(true);
+      setAiPrompt("");
+      setTimeout(() => setShowAiSuccess(false), 3000);
     } catch (e) {
       const msg = getApiErrorMessage(e, "Unable to generate task.");
       showToast(msg, "error");
@@ -119,57 +123,70 @@ const CreateTaskForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-md" noValidate>
-      {/* AI generation section */}
-      <div className="rounded-xl border border-outline-variant bg-surface-container p-md space-y-md">
-        <div className="flex items-center justify-between">
-          <h4 className="font-label-sm">✨ Generate with AI</h4>
-          <div>
+      {/* AI generation lightweight action */}
+      <div className="flex items-start gap-sm">
+        <button
+          type="button"
+          onClick={() => {
+            setShowAi((s) => !s);
+            // clear any previous small prompt when opening
+            if (!showAi) setAiPrompt("");
+          }}
+          className="text-label-sm text-on-surface-variant hover:text-on-surface flex items-center gap-xs"
+        >
+          <span aria-hidden>✨</span>
+          <span>Generate with AI</span>
+        </button>
+
+        { /* subtle success indicator */ }
+        {false ? null : null}
+      </div>
+
+      {showAi ? (
+        <div className="mt-2">
+          <label className="sr-only" htmlFor="ai-prompt">AI prompt</label>
+          <textarea
+            id="ai-prompt"
+            name="aiPrompt"
+            rows={3}
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            className="w-full rounded-md px-sm py-xs bg-surface-container border border-outline-variant resize-none text-label-sm"
+            placeholder="Describe what you need to do..."
+          />
+          <p className="text-on-surface-variant text-label-xs mt-1">Example: Need to prepare for my Spring Boot interview next week.</p>
+
+          <div className="flex justify-end items-center gap-sm mt-2">
             <button
               type="button"
-              onClick={() => setShowAi((s) => !s)}
-              className="rounded-md px-sm py-1 text-label-sm border border-outline-variant bg-surface-container"
+              onClick={() => setShowAi(false)}
+              className="rounded-md px-sm py-1 border border-outline-variant text-on-surface-variant text-label-sm"
+              disabled={generating}
             >
-              {showAi ? "Collapse" : "Expand"}
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={generating}
+              className="rounded-md px-sm py-1 bg-primary text-on-primary text-label-sm disabled:opacity-60"
+            >
+              {generating ? "Generating..." : "Generate"}
             </button>
           </div>
         </div>
+      ) : null}
 
-        {showAi ? (
-          <div className="space-y-sm">
-            <label className="font-label-sm text-on-surface-variant" htmlFor="ai-prompt">Prompt</label>
-            <textarea
-              id="ai-prompt"
-              name="aiPrompt"
-              rows={3}
-              value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
-              className="w-full rounded-lg px-sm py-xs bg-surface-container border border-outline-variant resize-none"
-              placeholder="Describe the task you want generated. Include context, goals, and constraints."
-            />
-
-            <div className="flex justify-end items-center gap-sm">
-              <button
-                type="button"
-                onClick={() => setShowAi(false)}
-                className="rounded-lg px-md py-xs border border-outline-variant text-on-surface-variant text-label-sm"
-                disabled={generating}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleGenerate}
-                disabled={generating}
-                className="rounded-lg px-md py-xs bg-primary text-on-primary text-label-sm disabled:opacity-60"
-              >
-                {generating ? "Generating..." : "Generate"}
-              </button>
-            </div>
-          </div>
-        ) : null}
-      </div>
+      { /* small success hint */ }
+      { /* show a subtle success indicator when AI suggestions applied */ }
+      { /* We'll display it inline near the title field */ }
       <div className="space-y-sm">
-        <label className="font-label-sm text-on-surface-variant" htmlFor="create-title">Title</label>
+        <div className="flex items-center justify-between">
+          <label className="font-label-sm text-on-surface-variant" htmlFor="create-title">Title</label>
+          {showAiSuccess ? (
+            <span className="text-on-surface-variant text-label-xs flex items-center gap-xs">✓ AI suggestions applied</span>
+          ) : null}
+        </div>
         <input
           id="create-title"
           name="title"
