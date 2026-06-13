@@ -93,7 +93,14 @@ public class TaskGenerationService {
         }
 
         try {
-            return LocalDateTime.parse(value);
+            LocalDateTime dueDate = LocalDateTime.parse(value);
+
+            if (dueDate.isBefore(LocalDateTime.now())) {
+                dueDate = null;
+            }
+
+            return dueDate;
+
         } catch (Exception e) {
             return null;
         }
