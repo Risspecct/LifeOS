@@ -20,17 +20,14 @@ public class GeminiClient implements AiClient {
     private final GeminiProperties properties;
     private final TaskGenerationPromptBuilder promptBuilder;
     private final ObjectMapper objectMapper;
+    private final Client googleGeminiClient;
 
     @Override
     public GeneratedTaskDraft generateTaskDraft(String prompt, List<String> availableLabels) {
 
-        Client client = Client.builder()
-                .apiKey(properties.apiKey())
-                .build();
-
         String finalPrompt = promptBuilder.build(prompt, availableLabels);
 
-        GenerateContentResponse response = client.models.generateContent(
+        GenerateContentResponse response = googleGeminiClient.models.generateContent(
                 properties.model(),
                 finalPrompt,
                 null
