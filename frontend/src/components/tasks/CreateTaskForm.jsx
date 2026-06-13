@@ -1,5 +1,8 @@
 import { useState } from "react";
 import TaskStatusSelector from "./TaskStatusSelector";
+import { useToast } from "../ui/ToastProvider";
+import { generateTask } from "../../api/taskApi";
+import { getApiErrorMessage } from "../../utils/errorUtils";
 
 const initialForm = {
   title: "",
@@ -21,11 +24,68 @@ const CreateTaskForm = ({
 }) => {
   const [formData, setFormData] = useState(initialForm);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [showAi, setShowAi] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [showAiSuccess, setShowAiSuccess] = useState(false);
+  const { showToast } = useToast();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const parseSuggestedDueDate = (dateStr) => {
+    if (!dateStr) return { date: "", time: "" };
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return { date: "", time: "" };
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return { date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}` };
+  };
+
+  const handleGenerate = async () => {
+    if (generating) return;
+    if (!aiPrompt || !aiPrompt.trim()) {
+      showToast("Enter a prompt to generate a task", "error");
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const res = await generateTask(aiPrompt.trim());
+
+      // Merge generated values into existing form, but do not overwrite user-provided values.
+      setFormData((prev) => {
+        const next = { ...prev };
+        if (!prev.title && res.title) next.title = res.title;
+        if (!prev.description && res.description) next.description = res.description;
+        if (!prev.taskType && res.taskType) next.taskType = res.taskType;
+        if ((!prev.labelId || prev.labelId === "") && (res.labelId !== undefined && res.labelId !== null)) next.labelId = String(res.labelId);
+
+        if ((!prev.dueDate || prev.dueDate === "") && res.suggestedDueDate) {
+          const parsed = parseSuggestedDueDate(res.suggestedDueDate);
+          if (parsed.date) next.dueDate = parsed.date;
+          if (parsed.time) next.dueTime = parsed.time;
+        }
+
+        return next;
+      });
+
+      setShowAi(false);
+      setShowAiSuccess(true);
+      setAiPrompt("");
+      setTimeout(() => setShowAiSuccess(false), 3000);
+    } catch (e) {
+      const msg = getApiErrorMessage(e, "Unable to generate task.");
+      showToast(msg, "error");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const validate = () => {
@@ -63,8 +123,70 @@ const CreateTaskForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-md" noValidate>
+      {/* AI generation lightweight action */}
+      <div className="flex items-start gap-sm">
+        <button
+          type="button"
+          onClick={() => {
+            setShowAi((s) => !s);
+            // clear any previous small prompt when opening
+            if (!showAi) setAiPrompt("");
+          }}
+          className="text-label-sm text-on-surface-variant hover:text-on-surface flex items-center gap-xs"
+        >
+          <span aria-hidden>✨</span>
+          <span>Generate with AI</span>
+        </button>
+
+        { /* subtle success indicator */ }
+        {false ? null : null}
+      </div>
+
+      {showAi ? (
+        <div className="mt-2">
+          <label className="sr-only" htmlFor="ai-prompt">AI prompt</label>
+          <textarea
+            id="ai-prompt"
+            name="aiPrompt"
+            rows={3}
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            className="w-full rounded-md px-sm py-xs bg-surface-container border border-outline-variant resize-none text-label-sm"
+            placeholder="Describe what you need to do..."
+          />
+          <p className="text-on-surface-variant text-label-xs mt-1">Example: Need to prepare for my Spring Boot interview next week.</p>
+
+          <div className="flex justify-end items-center gap-sm mt-2">
+            <button
+              type="button"
+              onClick={() => setShowAi(false)}
+              className="rounded-md px-sm py-1 border border-outline-variant text-on-surface-variant text-label-sm"
+              disabled={generating}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={generating}
+              className="rounded-md px-sm py-1 bg-primary text-on-primary text-label-sm disabled:opacity-60"
+            >
+              {generating ? "Generating..." : "Generate"}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      { /* small success hint */ }
+      { /* show a subtle success indicator when AI suggestions applied */ }
+      { /* We'll display it inline near the title field */ }
       <div className="space-y-sm">
-        <label className="font-label-sm text-on-surface-variant" htmlFor="create-title">Title</label>
+        <div className="flex items-center justify-between">
+          <label className="font-label-sm text-on-surface-variant" htmlFor="create-title">Title</label>
+          {showAiSuccess ? (
+            <span className="text-on-surface-variant text-label-xs flex items-center gap-xs">✓ AI suggestions applied</span>
+          ) : null}
+        </div>
         <input
           id="create-title"
           name="title"

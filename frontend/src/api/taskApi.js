@@ -47,3 +47,9 @@ export const getPrioritizedTasks = async () => {
   const response = await apiClient.get("/tasks/prioritized");
   return response.data;
 };
+
+// AI-assisted task generation
+export const generateTask = async (prompt) => {
+  const response = await apiClient.post("/api/task-generation", { prompt });
+  return response.data;
+};
