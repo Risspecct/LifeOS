@@ -26,7 +26,23 @@ public class TaskGenerationPromptBuilder {
                 - Select exactly one label from the provided list or return null.
 
                 Today's date is: %s
-
+                
+                When the user mentions a weekday:
+                - Always choose the next occurrence of that weekday in the future.
+                - Never return a date in the past.
+                
+                Examples:
+                Friday -> 2026-06-19
+                Monday -> 2026-06-15
+                
+                When the user says "in X days":
+                - Add X calendar days to today's date.
+                
+                Example:
+                in 2 days -> 2026-06-15
+                
+                Return the calculated date in ISO-8601 format.
+                
                 Allowed Task Types:
                 - ACADEMICS
                 - CAREER
