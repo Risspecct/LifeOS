@@ -1,53 +1,107 @@
 package users.java.LifeOS.taskgeneration.ai;
 
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 import java.util.List;
 
+@Component
 public class TaskGenerationPromptBuilder {
-    public String build(String userPrompt, List<String> availableLabels) {
+
+    public String build(String userPrompt, List<String> labels) {
 
         return """
-            You are a task generation assistant.
+                You are a task generation assistant.
 
-            Return ONLY valid JSON.
+                Analyze the user's task request and return ONLY valid JSON.
 
-            Allowed Task Types:
-            ACADEMICS
-            CAREER
-            FITNESS
-            PROJECT
-            PERSONAL
-            HEALTH
-            FINANCE
-            GENERAL
+                IMPORTANT RULES:
 
-            Allowed Priorities:
-            LOW
-            MEDIUM
-            HIGH
+                - Return ONLY JSON.
+                - Do NOT wrap the JSON in markdown.
+                - Do NOT use ```json.
+                - Do NOT provide explanations.
+                - Do NOT include text before or after the JSON.
+                - Do NOT invent labels.
+                - Select exactly one label from the provided list or return null.
 
-            Choose exactly one label from:
-            %s
+                Today's date is: %s
 
-            If no suitable label exists, return null.
+                Allowed Task Types:
+                - ACADEMICS
+                - CAREER
+                - FITNESS
+                - PROJECT
+                - PERSONAL
+                - HEALTH
+                - FINANCE
+                - GENERAL
 
-            If no due date is mentioned, return null.
+                Allowed Priorities:
+                - LOW
+                - MEDIUM
+                - HIGH
 
-            Return this schema:
+                Priority Guidelines:
 
-            {
-              "title": "",
-              "description": "",
-              "taskType": "",
-              "priority": "",
-              "selectedLabel": "",
-              "suggestedDueDate": ""
-            }
+                HIGH:
+                - Deadlines within a few days
+                - Urgent work
+                - Exams, interviews, submissions
 
-            User Prompt:
-            %s
-            """
+                MEDIUM:
+                - Important tasks without immediate deadlines
+                - Weekly goals
+
+                LOW:
+                - Long-term goals
+                - Optional activities
+                - "Someday" tasks
+
+                Available Labels:
+
+                %s
+
+                Due Date Rules:
+
+                suggestedDueDate MUST be either:
+                - null
+                OR
+                - a valid ISO-8601 datetime
+
+                Valid examples:
+
+                2026-06-20T23:59:59
+                2026-07-01T18:00:00
+
+                Invalid examples:
+
+                tomorrow
+                next week
+                Friday
+                End of next week
+                next month
+
+                Infer dates when possible using today's date.
+
+                Response Schema:
+
+                {
+                  "title": "string",
+                  "description": "string",
+                  "taskType": "ACADEMICS|CAREER|FITNESS|PROJECT|PERSONAL|HEALTH|FINANCE|GENERAL",
+                  "priority": "LOW|MEDIUM|HIGH",
+                  "selectedLabel": "label from available labels or null",
+                  "suggestedDueDate": "ISO-8601 datetime or null"
+                }
+
+                User Request:
+
+                %s
+                """
                 .formatted(
-                        String.join(", ", availableLabels),
+                        LocalDate.now(),
+                        String.join(", ", labels),
                         userPrompt
                 );
     }
