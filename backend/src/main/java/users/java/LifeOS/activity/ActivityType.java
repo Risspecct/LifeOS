@@ -13,7 +13,11 @@ public enum ActivityType {
 
     PROFILE_UPDATED(false),
     LOGIN(false),
-    FRIEND_ADDED(false);
+    FRIEND_ADDED(false),
+
+    LEVEL_UP(true),
+    STREAK_MILESTONE(true),
+    PRODUCTIVITY_MILESTONE(true);
 
     private final boolean contributesToProductivity;
 
