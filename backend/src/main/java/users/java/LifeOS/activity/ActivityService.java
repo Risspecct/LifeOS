@@ -56,14 +56,13 @@ public class ActivityService {
     }
 
     public void createLevelUpActivity(User user, int level) {
-        Activity activity = Activity.builder()
-                        .user(user)
-                        .activityType(ActivityType.LEVEL_UP)
-                        .title("Reached Level " + level)
-                        .description("Reached Level " + level)
-                        .points(0)
-                        .build();
-
-        activityRepository.save(activity);
+        logActivity(
+                user,
+                ActivityType.LEVEL_UP,
+                "Level Up!",
+                "Reached Level " + level,
+                0,
+                null
+        );
     }
 }
