@@ -1,9 +1,10 @@
-package users.java.LifeOS.stats;
+package users.java.LifeOS.stats.streak;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.activity.ActivityRepository;
 import users.java.LifeOS.activity.ActivityTypes;
+import users.java.LifeOS.stats.UserStats;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDate;

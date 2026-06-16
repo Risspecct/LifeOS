@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import users.java.LifeOS.level.LevelProgressionService;
+import users.java.LifeOS.stats.streak.StreakService;
 import users.java.LifeOS.task.Status;
 import users.java.LifeOS.task.Task;
 import users.java.LifeOS.user.User;

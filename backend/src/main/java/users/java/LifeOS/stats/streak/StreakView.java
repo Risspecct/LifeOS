@@ -1,4 +1,4 @@
-package users.java.LifeOS.stats;
+package users.java.LifeOS.stats.streak;
 
 import users.java.LifeOS.user.User;
 

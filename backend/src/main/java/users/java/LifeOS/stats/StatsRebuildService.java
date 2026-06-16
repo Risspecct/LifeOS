@@ -7,6 +7,8 @@ import users.java.LifeOS.activity.ActivityRepository;
 import users.java.LifeOS.activity.ActivityStats;
 import users.java.LifeOS.activity.ActivityTypes;
 import users.java.LifeOS.friend.FriendshipRepository;
+import users.java.LifeOS.stats.streak.StreakService;
+import users.java.LifeOS.stats.streak.StreakStats;
 import users.java.LifeOS.task.TaskRepository;
 import users.java.LifeOS.task.TaskStats;
 import users.java.LifeOS.user.User;

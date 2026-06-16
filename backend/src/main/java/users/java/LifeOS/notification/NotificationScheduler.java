@@ -3,7 +3,7 @@ package users.java.LifeOS.notification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import users.java.LifeOS.stats.StreakView;
+import users.java.LifeOS.stats.streak.StreakView;
 import users.java.LifeOS.stats.UserStatsRepository;
 import users.java.LifeOS.task.Task;
 import users.java.LifeOS.task.TaskRepository;
