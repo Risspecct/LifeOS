@@ -17,6 +17,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
 import { useSidebar } from "../hooks/useSidebar";
 import { useLabels } from "../hooks/useLabels";
+import { useLevelProgression } from "../hooks/useLevelProgression";
 import DashboardTaskModal from "../components/dashboard/DashboardTaskModal";
 import DashboardLabelModal from "../components/dashboard/DashboardLabelModal";
 import { createTask } from "../api/taskApi";
@@ -33,6 +34,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const { clearAuth } = useAuth();
   const { dashboard, loading, refreshing, error, refresh, updateOptimistically } = useDashboard();
+  const { levelData, loading: levelLoading, error: levelError, refresh: refreshLevel } = useLevelProgression();
   const { labels, createLabel } = useLabels();
   const { notes: recentNotes, loading: notesLoading, error: notesError, refresh: refreshNotes } = useNotes();
 
@@ -123,10 +125,6 @@ const DashboardPage = () => {
     [prioritizedTasks]
   );
   const totalCount = summary.pendingTasks + summary.completedTasks;
-  const focusScore = Math.max(
-    40,
-    Math.min(95, 60 + summary.completedTasks * 8 - summary.pendingTasks - summary.overdueTasks * 2)
-  );
 
   return (
     <div className="bg-background text-on-surface">
@@ -138,7 +136,10 @@ const DashboardPage = () => {
           <section className="lg:col-span-7 space-y-xl">
             <DashboardWelcomeHero
               profile={profile}
-              focusScore={focusScore}
+              levelData={levelData}
+              levelLoading={levelLoading}
+              levelError={levelError}
+              onRetryLevel={refreshLevel}
               urgentCount={urgentCount}
               pendingCount={summary.pendingTasks}
             />

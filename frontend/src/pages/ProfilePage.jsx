@@ -11,6 +11,7 @@ import { updateProfile, updateProfileBranch } from "../api/profileApi";
 import { createBranch, getBranches } from "../api/branchApi";
 import { getMyStats } from "../api/statsApi";
 import { useAuth } from "../hooks/useAuth";
+import { useLevelProgression } from "../hooks/useLevelProgression";
 import { useSidebar } from "../hooks/useSidebar";
 import { useDelayedLoading } from "../hooks/useDelayedLoading";
 import { getApiErrorMessage } from "../utils/errorUtils";
@@ -32,6 +33,7 @@ const ProfilePage = () => {
   const isCollapsed = useSidebar();
   const [searchParams, setSearchParams] = useSearchParams();
   const { clearAuth, profile, refreshProfileStatus, markProfileCompleted } = useAuth();
+  const { levelData, loading: levelLoading, error: levelError, refresh: refreshLevel } = useLevelProgression();
 
   const [profileData, setProfileData] = useState(profile);
   const [isLoadingProfile, setIsLoadingProfile] = useState(!profile);
@@ -294,6 +296,10 @@ const ProfilePage = () => {
                 statsLoading={isLoadingStats}
                 statsError={statsError}
                 onRetryStats={loadStats}
+                levelData={levelData}
+                levelLoading={levelLoading}
+                levelError={levelError}
+                onRetryLevel={refreshLevel}
               />
             )
           ) : null}

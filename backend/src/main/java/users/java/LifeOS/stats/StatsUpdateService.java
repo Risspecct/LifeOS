@@ -3,6 +3,7 @@ package users.java.LifeOS.stats;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.level.LevelProgressionService;
 import users.java.LifeOS.task.Status;
 import users.java.LifeOS.task.Task;
 import users.java.LifeOS.user.User;
@@ -12,15 +13,22 @@ import users.java.LifeOS.user.User;
 public class StatsUpdateService {
     private final StatsService statsService;
     private final StreakService streakService;
+    private final LevelProgressionService levelProgressionService;
 
     @Transactional
     public void taskCompleted(User user, long points) {
         UserStats stats = statsService.getStats(user);
 
+
+        long oldPoints = stats.getTotalPoints();
         stats.updateTotalPoints(points);
+        long newPoints = stats.getTotalPoints();
+
         stats.updateTasksCompletedCount(1);
 
         streakService.updateStreak(stats);
+
+        levelProgressionService.handleLevelProgression(user, oldPoints, newPoints);
     }
 
     @Transactional

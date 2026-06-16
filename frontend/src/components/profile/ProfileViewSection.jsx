@@ -2,8 +2,9 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import AcademicInfoCard from "./AcademicInfoCard";
 import ProfileStatsCard from "./ProfileStatsCard";
+import LevelProgressionCard from "../level/LevelProgressionCard";
 
-const ProfileViewSection = ({ profile, stats, statsLoading, statsError, onRetryStats }) => {
+const ProfileViewSection = ({ profile, stats, statsLoading, statsError, onRetryStats, levelData, levelLoading, levelError, onRetryLevel }) => {
   const navigate = useNavigate();
   const completionRate = useMemo(() => {
     if (!stats || !stats.tasksCreated || stats.tasksCreated <= 0) return 0;
@@ -41,6 +42,14 @@ const ProfileViewSection = ({ profile, stats, statsLoading, statsError, onRetryS
         college={profile?.college}
         branch={profile?.branchCode}
         year={profile?.year}
+      />
+
+      <LevelProgressionCard
+        variant="profile"
+        levelData={levelData}
+        loading={levelLoading}
+        error={levelError}
+        onRetry={onRetryLevel}
       />
 
       <ProfileStatsCard stats={stats} loading={statsLoading} error={statsError} onRetry={onRetryStats} />

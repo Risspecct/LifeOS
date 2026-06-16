@@ -1,8 +1,10 @@
-const DashboardWelcomeHero = ({ profile, focusScore, urgentCount, pendingCount }) => {
+import LevelProgressionCard from "../level/LevelProgressionCard";
+
+const DashboardWelcomeHero = ({ profile, levelData, levelLoading, levelError, onRetryLevel, urgentCount, pendingCount }) => {
   const displayName = profile?.name || profile?.username || "Student";
   const branchYearText = [profile?.branch, profile?.year ? `Year ${profile.year}` : null]
     .filter(Boolean)
-    .join(" • ");
+    .join(" | ");
 
   return (
     <div className="glass-glow relative overflow-hidden bg-surface-container border border-outline-variant rounded-xl p-lg flex flex-col md:flex-row items-center gap-lg shadow-[0_4px_24px_rgba(0,0,0,0.2)]">
@@ -18,7 +20,7 @@ const DashboardWelcomeHero = ({ profile, focusScore, urgentCount, pendingCount }
         </div>
 
         <p className="text-on-surface-variant font-body-md max-w-md">
-          Your focus score is at <span className="text-primary font-bold">{focusScore}%</span>. Stay steady and protect deep work blocks today.
+          Keep momentum going. Your level progress shows how close you are to the next milestone.
         </p>
 
         <div className="inline-flex items-center gap-xs text-primary font-label-sm bg-primary/10 px-sm py-xs rounded-lg border border-primary/20">
@@ -38,15 +40,13 @@ const DashboardWelcomeHero = ({ profile, focusScore, urgentCount, pendingCount }
         </div>
       </div>
 
-      <div className="w-32 h-32 relative">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-          <path className="text-surface-container-highest" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray="100, 100" strokeWidth="3" />
-          <path className="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray={`${focusScore}, 100`} strokeLinecap="round" strokeWidth="3" />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-h3 text-h3">{focusScore}</span>
-          <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Score</span>
-        </div>
+      <div className="w-full md:w-[360px]">
+        <LevelProgressionCard
+          levelData={levelData}
+          loading={levelLoading}
+          error={levelError}
+          onRetry={onRetryLevel}
+        />
       </div>
     </div>
   );

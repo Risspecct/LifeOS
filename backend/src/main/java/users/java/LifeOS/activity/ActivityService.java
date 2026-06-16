@@ -54,4 +54,15 @@ public class ActivityService {
                 null
         );
     }
+
+    public void createLevelUpActivity(User user, int level) {
+        logActivity(
+                user,
+                ActivityType.LEVEL_UP,
+                "Level Up!",
+                "Reached Level " + level,
+                0,
+                null
+        );
+    }
 }
