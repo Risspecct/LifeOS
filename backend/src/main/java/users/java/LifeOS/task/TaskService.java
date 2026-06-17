@@ -106,6 +106,7 @@ public class TaskService {
 
     @Transactional
     public TaskDetailView updateStatus(User user, long taskId, Status status) {
+
         Task task = getVerifiedTask(user.getId(), taskId);
 
         if (task.getStatus() == status) {
@@ -116,16 +117,26 @@ public class TaskService {
         int points;
 
         if (status == Status.COMPLETED) {
+
             points = ActivityPoints.TASK_COMPLETED;
             type = ActivityType.TASK_COMPLETED;
 
             task.setCompletedAt(LocalDateTime.now());
 
-            rewardService.rewardTaskCompletion(
-                    userService.getAuthenticatedUser(),
+            task.setStatus(Status.COMPLETED);
+
+            taskRepository.save(task);
+
+            activityService.logActivity(
+                    user,
+                    type,
+                    "Completed Task",
+                    task.getTitle(),
+                    points,
                     task
             );
 
+            rewardService.rewardTaskCompletion(userService.getAuthenticatedUser(), task);
         } else {
             if (task.getStatus() == Status.COMPLETED) {
                 statsUpdateService.taskNotComplete(task);
@@ -136,20 +147,19 @@ public class TaskService {
 
             points = ActivityPoints.TASK_UPDATED;
             type = ActivityType.TASK_UPDATED;
+
+            task.setStatus(status);
+            taskRepository.save(task);
+
+            activityService.logActivity(
+                    user,
+                    type,
+                    "Updated Task Status",
+                    task.getTitle(),
+                    points,
+                    task
+            );
         }
-
-        task.setStatus(status);
-
-        activityService.logActivity(
-                user,
-                type,
-                "Updated Task status",
-                task.getTitle(),
-                points,
-                task
-        );
-
-        taskRepository.save(task);
 
         return getTask(user.getId(), taskId);
     }
