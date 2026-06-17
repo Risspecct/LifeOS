@@ -14,6 +14,7 @@ import java.util.List;
 @Service
 public class StreakService {
     private final ActivityRepository activityRepository;
+    private final StreakMilestoneService streakMilestoneService;
 
     public StreakStats buildStreakStats(User user) {
         List<LocalDate> dates = activityRepository
@@ -32,13 +33,13 @@ public class StreakService {
         LocalDate today = LocalDate.now();
         LocalDate lastActiveDate = stats.getLastActiveDate();
 
+        int oldStreak = stats.getCurrentStreak();
+
         if(lastActiveDate == null) {
             stats.setCurrentStreak(1);
         }
         else if(lastActiveDate.equals(today.minusDays(1))) {
-            stats.setCurrentStreak(
-                    stats.getCurrentStreak() + 1
-            );
+            stats.setCurrentStreak(stats.getCurrentStreak() + 1);
         }
         else if(!lastActiveDate.equals(today)) {
             stats.setCurrentStreak(1);
@@ -48,6 +49,12 @@ public class StreakService {
             stats.setLongestStreak(stats.getCurrentStreak());
         }
         stats.setLastActiveDate(today);
+
+        streakMilestoneService.checkMilestone(
+                stats.getUser(),
+                oldStreak,
+                stats.getCurrentStreak()
+        );
     }
 
     private int calculateLongestStreak(List<LocalDate> dates) {

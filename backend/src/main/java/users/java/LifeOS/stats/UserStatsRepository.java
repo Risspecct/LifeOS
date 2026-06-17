@@ -18,7 +18,7 @@ public interface UserStatsRepository extends JpaRepository<UserStats, Long> {
     List<UserStats> findByUserIn(Collection<User> users);
 
     @Query("""
-    SELECT new users.java.LifeOS.stats.StreakView(
+    SELECT new users.java.LifeOS.stats.streak.StreakView(
         us.user,
         us.currentStreak,
         us.lastActiveDate
