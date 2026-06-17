@@ -12,7 +12,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class StreakMilestoneService {
 
-    private static final Set<Integer> MILESTONES = Set.of(1, 7, 14, 30, 50, 75, 100);
+    private static final Set<Integer> MILESTONES = Set.of(3, 7, 14, 30, 50, 75, 100);
     private final ActivityService activityService;
 
     public void checkMilestone(User user, int oldStreak, int newStreak) {
