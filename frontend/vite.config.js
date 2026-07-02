@@ -66,6 +66,10 @@ export default defineConfig({
           if (req.headers.accept?.includes("text/html")) return "/index.html";
         }
       },
+      "/feed": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      },
       "/labels": {
         target: "http://localhost:8080",
         changeOrigin: true

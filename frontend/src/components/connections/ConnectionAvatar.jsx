@@ -19,7 +19,12 @@ const hashName = (name = "") => {
 
 const ConnectionAvatar = ({ name, size = "md" }) => {
   const color = palette[hashName(name) % palette.length];
-  const sizeClass = size === "lg" ? "w-12 h-12 text-label-sm" : "w-10 h-10 text-label-sm";
+  const sizeClass =
+    size === "lg"
+      ? "w-12 h-12 text-label-sm"
+      : size === "sm"
+        ? "w-8 h-8 text-[11px]"
+        : "w-10 h-10 text-label-sm";
 
   return (
     <div className={`${sizeClass} rounded-full bg-gradient-to-br ${color} flex items-center justify-center font-semibold shadow-sm`}>

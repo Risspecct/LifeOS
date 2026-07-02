@@ -27,6 +27,7 @@ import { useToast } from "../components/ui/ToastProvider";
 import NoteFormModal from "../components/notes/NoteFormModal";
 import { createNote } from "../api/notesApi";
 import { useNotes } from "../hooks/useNotes";
+import { useFriendFeed } from "../hooks/useFriendFeed";
 
 const DashboardPage = () => {
   console.log("DashboardPage rendered");
@@ -37,6 +38,12 @@ const DashboardPage = () => {
   const { levelData, loading: levelLoading, error: levelError, refresh: refreshLevel } = useLevelProgression();
   const { labels, createLabel } = useLabels();
   const { notes: recentNotes, loading: notesLoading, error: notesError, refresh: refreshNotes } = useNotes();
+  const {
+    activities: friendHighlights,
+    loading: friendHighlightsLoading,
+    error: friendHighlightsError,
+    refresh: refreshFriendHighlights
+  } = useFriendFeed();
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
@@ -51,6 +58,10 @@ const DashboardPage = () => {
   const [noteError, setNoteError] = useState("");
 
   const { showToast } = useToast();
+  const handleRefreshDashboard = () => {
+    refresh();
+    refreshFriendHighlights();
+  };
 
   const handleCreateTask = async (payload) => {
     const tempId = `temp-${Date.now()}`;
@@ -171,7 +182,7 @@ const DashboardPage = () => {
               )}
               <button
                 type="button"
-                onClick={refresh}
+                onClick={handleRefreshDashboard}
                 disabled={refreshing}
                 className="text-label-sm text-primary hover:underline disabled:opacity-60 disabled:no-underline"
               >
@@ -188,7 +199,11 @@ const DashboardPage = () => {
                 error={error}
               />
               <AchievementWidget />
-              <SocialPresenceWidget />
+              <SocialPresenceWidget
+                activities={friendHighlights}
+                loading={friendHighlightsLoading}
+                error={friendHighlightsError}
+              />
             </div>
             <div className="space-y-md">
               <UpcomingTasksSidebar

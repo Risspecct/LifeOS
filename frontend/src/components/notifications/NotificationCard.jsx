@@ -1,23 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { acceptFriendRequest, rejectFriendRequest } from "../../services/connectionsApi";
-
-const timeAgo = (iso) => {
-  try {
-    const then = new Date(iso).getTime();
-    const now = Date.now();
-    const sec = Math.round((now - then) / 1000);
-    if (sec < 60) return `${sec}s ago`;
-    const min = Math.round(sec / 60);
-    if (min < 60) return `${min}m ago`;
-    const hr = Math.round(min / 60);
-    if (hr < 24) return `${hr}h ago`;
-    const d = Math.round(hr / 24);
-    return `${d}d ago`;
-  } catch (e) {
-    return "just now";
-  }
-};
+import { formatRelativeTime } from "../../utils/dateTime";
 
 const NotificationCard = ({ notification, onMarkRead, onOpenProfile, onActionError }) => {
   const navigate = useNavigate();
@@ -150,7 +134,7 @@ const NotificationCard = ({ notification, onMarkRead, onOpenProfile, onActionErr
             </div>
           </div>
           <span className="text-label-xs text-on-surface-variant whitespace-nowrap mt-0.5 flex-shrink-0">
-            {timeAgo(notification.createdAt || notification.updatedAt || new Date())}
+            {formatRelativeTime(notification.createdAt || notification.updatedAt || new Date())}
           </span>
         </div>
 

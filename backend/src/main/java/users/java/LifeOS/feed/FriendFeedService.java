@@ -1,3 +1,4 @@
+
 package users.java.LifeOS.feed;
 
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FriendFeedService {
-
     private final FriendshipService friendshipService;
     private final ActivityRepository activityRepository;
     private final FriendFeedMapper friendFeedMapper;
