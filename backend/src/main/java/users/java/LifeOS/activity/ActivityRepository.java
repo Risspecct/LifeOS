@@ -6,11 +6,14 @@ import org.springframework.data.repository.query.Param;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface ActivityRepository extends JpaRepository<Activity, Long> {
     List<Activity> findByUserIdOrderByCreatedAtDesc(Long userId);
     List<Activity> findTop10ByUser_IdOrderByCreatedAtDesc(long userId);
+    List<Activity> findTop20ByUser_IdInAndActivityTypeInOrderByCreatedAtDesc(Collection<Long> userIds, Set<ActivityType> activityTypes);
 
     @Query("""
     SELECT new users.java.LifeOS.activity.ActivityStats(

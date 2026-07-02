@@ -4,5 +4,4 @@ public record FriendDto(
         Long id,
         String username,
         String email
-) {
-}
+) {}
