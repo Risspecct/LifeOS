@@ -19,7 +19,6 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
-
     private final UserRepository userRepository;
     private final OAuthCodeService oauthCodeService;
 
@@ -33,21 +32,15 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             Authentication authentication
     ) throws IOException, ServletException {
 
-        CustomOAuth2User oauthUser =
-                (CustomOAuth2User) authentication.getPrincipal();
-
+        CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
         String email = oauthUser.getAttribute("email");
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
                         new UsernameNotFoundException("User not found"));
-
         String code = oauthCodeService.createCode(user.getId());
 
         log.info("OAuth login successful for user {}", user.getId());
 
-        response.sendRedirect(
-                frontendUrl + "/oauth-success?code=" + code
-        );
+        response.sendRedirect(frontendUrl + "/oauth-success?code=" + code);
     }
 }
