@@ -1,6 +1,7 @@
 package users.java.LifeOS.auth.config;
 
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,18 +19,21 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import users.java.LifeOS.auth.filters.JwtAuthenticationFilter;
+import users.java.LifeOS.auth.oauth.CustomOAuth2SuccessHandler;
+import users.java.LifeOS.auth.oauth.CustomOAuth2UserService;
+import users.java.LifeOS.auth.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
 
+@RequiredArgsConstructor
 @EnableMethodSecurity
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
-    SecurityConfig(UserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter){
-        this.userDetailsService = userDetailsService;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -44,11 +48,13 @@ public class SecurityConfig {
                                 "/",
                                 "/test/**",
                                 "/register",
-                                "/ws",
-                                "/ws/**",
                                 "/login",
                                 "/auth/**",
                                 "/refreshToken",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
+                                "/ws",
+                                "/ws/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/docs"
@@ -62,6 +68,17 @@ public class SecurityConfig {
                 .authenticationProvider(this.authenticationProvider())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2Login(oauth -> oauth
+                        .authorizationEndpoint(endpoint ->
+                                endpoint.authorizationRequestRepository(
+                                        cookieAuthorizationRequestRepository
+                                )
+                        )
+                        .userInfoEndpoint(user ->
+                                user.userService(customOAuth2UserService)
+                        )
+                        .successHandler(customOAuth2SuccessHandler)
+                )
                 .addFilterBefore(
                         this.jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
