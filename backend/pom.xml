@@ -123,6 +123,10 @@
 			<version>1.58.0</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>spring-auth-starter</finalName>
