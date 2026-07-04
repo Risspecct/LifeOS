@@ -1,12 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
-
-const AuthLoadingScreen = () => (
-  <div className="min-h-screen bg-background text-on-background flex items-center justify-center p-md">
-    <p className="text-body-md text-on-surface-variant">Loading your workspace...</p>
-  </div>
-);
+import AuthLoadingScreen from "./AuthLoadingScreen";
 
 const ProtectedRoute = ({ requireProfile = true }) => {
   const {
