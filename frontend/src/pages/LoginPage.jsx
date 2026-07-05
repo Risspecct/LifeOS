@@ -1,21 +1,22 @@
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { login } from "../api/authApi";
+import { login, startGoogleOAuthLogin } from "../api/authApi";
 import { getApiErrorMessage } from "../utils/errorUtils";
 import { isValidEmail } from "../utils/validation";
 import { useAuth } from "../hooks/useAuth";
+import { useCompleteLogin } from "../hooks/useCompleteLogin";
 
 const LoginPage = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isAuthenticated, setAuthFromToken, refreshProfileStatus, clearAuth } = useAuth();
+  const { isAuthenticated, clearAuth } = useAuth();
+  const completeLogin = useCompleteLogin();
 
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
   const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState("");
+  const [apiError, setApiError] = useState(location.state?.authError ?? "");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,14 +66,7 @@ const LoginPage = () => {
         return;
       }
 
-      setAuthFromToken(response.jwt_token);
-
-      const profileResult = await refreshProfileStatus();
-      if (profileResult?.hasProfile) {
-        navigate("/", { replace: true });
-      } else {
-        navigate("/profile-setup", { replace: true });
-      }
+      await completeLogin(response.jwt_token);
     } catch (error) {
       clearAuth();
       setApiError(getApiErrorMessage(error, "Unable to login right now."));
@@ -178,6 +172,24 @@ const LoginPage = () => {
             </span>
           </button>
         </form>
+
+        <div className="my-md flex items-center gap-sm text-on-surface-variant/60">
+          <div className="h-px flex-1 bg-outline-variant/30" />
+          <span className="text-label-xs uppercase tracking-[0.2em]">or</span>
+          <div className="h-px flex-1 bg-outline-variant/30" />
+        </div>
+
+        <button
+          className="w-full bg-surface text-on-surface font-label-sm text-label-sm py-[12px] rounded-DEFAULT border border-outline-variant hover:bg-surface-bright transition-colors duration-200 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+          type="button"
+          disabled={isSubmitting}
+          onClick={() => {
+            setApiError("");
+            startGoogleOAuthLogin();
+          }}
+        >
+          Continue with Google
+        </button>
 
         <div className="mt-lg text-center pt-sm border-t border-outline-variant/30">
           <p className="font-body-md text-body-md text-on-surface-variant">

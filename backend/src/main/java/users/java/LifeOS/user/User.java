@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import users.java.LifeOS.auth.oauth.AuthProvider;
 import users.java.LifeOS.util.BaseEntity;
 
 @NoArgsConstructor
@@ -32,4 +33,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     @NotNull
     private String role;
+
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider = AuthProvider.LOCAL;
+
+    private String providerId;
 }

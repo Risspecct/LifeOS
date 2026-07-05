@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import SignupPage from "../pages/SignupPage";
 import LoginPage from "../pages/LoginPage";
+import OAuthSuccessPage from "../pages/OAuthSuccessPage";
 import DashboardPage from "../pages/DashboardPage";
 import TasksPage from "../pages/TasksPage";
 import ProfileSetupPage from "../pages/ProfileSetupPage";
@@ -17,6 +18,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/oauth-success" element={<OAuthSuccessPage />} />
 
       <Route element={<ProtectedRoute requireProfile={false} />}>
         <Route path="/profile-setup" element={<ProfileSetupPage />} />

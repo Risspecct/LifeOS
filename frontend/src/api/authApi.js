@@ -1,4 +1,4 @@
-import apiClient from "./axiosClient";
+import apiClient, { API_BASE_URL } from "./axiosClient";
 
 export const signup = async (payload) => {
   console.log("[AuthAPI] signup called with payload:", payload);
@@ -10,4 +10,13 @@ export const signup = async (payload) => {
 export const login = async (payload) => {
   const response = await apiClient.post("/login", payload);
   return response.data;
+};
+
+export const exchangeOAuthCode = async (payload) => {
+  const response = await apiClient.post("/auth/oauth/exchange", payload);
+  return response.data;
+};
+
+export const startGoogleOAuthLogin = () => {
+  window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
 };

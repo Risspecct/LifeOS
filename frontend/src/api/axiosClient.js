@@ -1,10 +1,12 @@
 import axios from "axios";
 import { AUTH_TOKEN_KEY } from "../utils/constants";
 
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+
 const apiClient = axios.create({
   // Use Vite proxy in development to avoid CORS blocking.
   // In production, set VITE_API_BASE_URL to your backend origin.
-  baseURL: import.meta.env.VITE_API_BASE_URL || "/",
+  baseURL: API_BASE_URL || "/",
   headers: {
     "Content-Type": "application/json"
   }
@@ -48,7 +50,12 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    const requestUrl = error.config?.url ?? "";
+    const isAuthRequest =
+      typeof requestUrl === "string" &&
+      ["/login", "/register", "/auth/oauth/exchange"].some((path) => requestUrl.startsWith(path));
+
+    if ((error.response?.status === 401 || error.response?.status === 403) && !isAuthRequest) {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       window.location.href = "/login";
     }

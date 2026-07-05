@@ -16,6 +16,14 @@ export default defineConfig({
           if (req.headers.accept?.includes("text/html")) return "/index.html";
         }
       },
+      "/auth": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      },
+      "/oauth2": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      },
       "/api": {
         target: "http://localhost:8080",
         changeOrigin: true
