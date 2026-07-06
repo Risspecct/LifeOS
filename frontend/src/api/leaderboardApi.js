@@ -7,7 +7,7 @@ export const LEADERBOARD_SCOPES = {
 };
 
 export const getLeaderboard = async (scope = LEADERBOARD_SCOPES.GLOBAL) => {
-  const response = await apiClient.get(`/leaderboard?scope=${scope}`);
+  const response = await apiClient.get(`/api/leaderboard?scope=${scope}`);
   if (!Array.isArray(response?.data)) {
     throw new Error("Invalid leaderboard response format.");
   }

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import users.java.LifeOS.user.UserService;
 
 @RestController
-@RequestMapping("/labels")
+@RequestMapping("/api/labels")
 @RequiredArgsConstructor
 public class LabelController {
 

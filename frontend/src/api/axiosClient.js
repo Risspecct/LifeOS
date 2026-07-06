@@ -53,7 +53,7 @@ apiClient.interceptors.response.use(
     const requestUrl = error.config?.url ?? "";
     const isAuthRequest =
       typeof requestUrl === "string" &&
-      ["/login", "/register", "/auth/oauth/exchange"].some((path) => requestUrl.startsWith(path));
+      ["/api/auth/login", "/api/auth/register", "/api/auth/oauth/exchange"].some((path) => requestUrl.startsWith(path));
 
     if ((error.response?.status === 401 || error.response?.status === 403) && !isAuthRequest) {
       localStorage.removeItem(AUTH_TOKEN_KEY);

@@ -11,7 +11,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/friends")
+@RequestMapping("/api/social")
 public class FriendFeedController {
     private final FriendFeedService friendFeedService;
     private final UserService userService;

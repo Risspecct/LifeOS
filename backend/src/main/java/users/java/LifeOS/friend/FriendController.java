@@ -7,7 +7,7 @@ import users.java.LifeOS.friend.request.FriendRequestService;
 import users.java.LifeOS.user.UserService;
 
 @RestController
-@RequestMapping("/friends")
+@RequestMapping("/api/friends")
 @RequiredArgsConstructor
 public class FriendController {
     private final UserService userService;

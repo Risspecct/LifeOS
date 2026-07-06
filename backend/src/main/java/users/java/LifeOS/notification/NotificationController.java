@@ -9,7 +9,7 @@ import users.java.LifeOS.user.UserService;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/notifications")
+@RequestMapping("/api/notifications")
 public class NotificationController {
 
     private final NotificationService notificationService;

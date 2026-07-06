@@ -10,7 +10,7 @@ import users.java.LifeOS.user.UserService;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/stats")
+@RequestMapping("/api/stats")
 public class StatsController {
     private final StatsService statsService;
     private final UserService userService;

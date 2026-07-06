@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import users.java.LifeOS.user.UserService;
 
 @RestController
-@RequestMapping("/insights")
+@RequestMapping("/api/insights")
 @RequiredArgsConstructor
 public class InsightsController {
 

@@ -10,22 +10,22 @@ const normalizeDiscoverUser = (user) => {
 };
 
 export const getFriends = async () => {
-  const response = await apiClient.get("/friends");
+  const response = await apiClient.get("/api/friends");
   return Array.isArray(response?.data) ? response.data : [];
 };
 
 export const removeFriend = async (friendId) => {
-  const response = await apiClient.delete(`/friends/${friendId}`);
+  const response = await apiClient.delete(`/api/friends/${friendId}`);
   return response.data;
 };
 
 export const getIncomingRequests = async () => {
-  const response = await apiClient.get("/friends/requests/incoming");
+  const response = await apiClient.get("/api/friends/requests/incoming");
   return Array.isArray(response?.data) ? response.data : [];
 };
 
 export const getOutgoingRequests = async () => {
-  const response = await apiClient.get("/friends/requests/outgoing");
+  const response = await apiClient.get("/api/friends/requests/outgoing");
   return Array.isArray(response?.data) ? response.data : [];
 };
 
@@ -34,26 +34,26 @@ export const sendFriendRequest = async (receiverId) => {
   if (!Number.isFinite(numericReceiverId) || numericReceiverId <= 0) {
     throw new Error("Invalid receiver id for friend request.");
   }
-  const response = await apiClient.post(`/friends/request/${numericReceiverId}`);
+  const response = await apiClient.post(`/api/friends/request/${numericReceiverId}`);
   return response.data;
 };
 
 export const acceptFriendRequest = async (requestId) => {
-  const response = await apiClient.post(`/friends/request/${requestId}/accept`);
+  const response = await apiClient.post(`/api/friends/request/${requestId}/accept`);
   return response.data;
 };
 
 export const rejectFriendRequest = async (requestId) => {
-  const response = await apiClient.post(`/friends/request/${requestId}/reject`);
+  const response = await apiClient.post(`/api/friends/request/${requestId}/reject`);
   return response.data;
 };
 
 export const getDiscoverUsers = async () => {
-  const response = await apiClient.get("/profile/all");
+  const response = await apiClient.get("/api/profile/all");
   return Array.isArray(response?.data) ? response.data.map(normalizeDiscoverUser) : [];
 };
 
 export const searchDiscoverUsers = async (query) => {
-  const response = await apiClient.get("/profile/search", { params: { q: query } });
+  const response = await apiClient.get("/api/profile/search", { params: { q: query } });
   return Array.isArray(response?.data) ? response.data.map(normalizeDiscoverUser) : [];
 };

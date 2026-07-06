@@ -9,7 +9,7 @@ import users.java.LifeOS.user.UserService;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/task")
+@RequestMapping("/api/task")
 public class TaskController {
     private final TaskService taskService;
     private final UserService userService;

@@ -1,7 +1,7 @@
 import apiClient from "./axiosClient";
 
 export const getMyStats = async () => {
-  const response = await apiClient.get("/stats/me");
+  const response = await apiClient.get("/api/stats/me");
 
   // Backend source of truth: UserStatsDto record
   // { totalPoints: Long, currentStreak: Integer, longestStreak: Integer, tasksCompleted: Integer }

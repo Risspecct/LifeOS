@@ -9,7 +9,7 @@ import users.java.LifeOS.user.UserService;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("profile")
+@RequestMapping("/api/profile")
 public class StudentController {
     private final StudentService studentService;
     private final UserService userService;

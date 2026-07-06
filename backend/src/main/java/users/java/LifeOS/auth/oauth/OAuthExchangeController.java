@@ -8,7 +8,7 @@ import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserRepository;
 
 @RestController
-@RequestMapping("/auth/oauth")
+@RequestMapping("/api/auth/oauth")
 @RequiredArgsConstructor
 public class OAuthExchangeController {
 

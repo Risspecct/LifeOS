@@ -9,7 +9,7 @@ import users.java.LifeOS.user.UserService;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/activities")
+@RequestMapping("/api/activities")
 public class ActivityController {
     private final ActivityService activityService;
     private final UserService userService;

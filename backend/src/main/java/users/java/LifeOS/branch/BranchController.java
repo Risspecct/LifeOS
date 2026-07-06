@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/branch")
+@RequestMapping("/api/branch")
 public class BranchController {
     private final BranchService branchService;
 

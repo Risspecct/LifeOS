@@ -25,7 +25,7 @@ const isValidFriendActivityResponse = (value) => {
 };
 
 export const getFriendFeed = async () => {
-  const response = await apiClient.get("/feed", {
+  const response = await apiClient.get("/api/social/feed", {
     headers: {
       Accept: "application/json"
     }

@@ -1,12 +1,12 @@
 import apiClient from "./axiosClient";
 
 export const getAllTasks = async () => {
-  const response = await apiClient.get("/task/all");
+  const response = await apiClient.get("/api/task/all");
   return response.data;
 };
 
 export const createTask = async (payload) => {
-  const response = await apiClient.post("/task", payload);
+  const response = await apiClient.post("/api/task", payload);
   return response.data;
 };
 
@@ -19,32 +19,32 @@ export const getTasks = async (filters = {}) => {
   }
   if (filters.taskType) params.taskType = filters.taskType;
 
-  const response = await apiClient.get("/task", { params });
+  const response = await apiClient.get("/api/task", { params });
   return response.data;
 };
 
 export const getTaskById = async (taskId) => {
-  const response = await apiClient.get(`/task/${taskId}`);
+  const response = await apiClient.get(`/api/task/${taskId}`);
   return response.data;
 };
 
 export const updateTask = async (taskId, payload) => {
-  const response = await apiClient.put(`/task/${taskId}`, payload);
+  const response = await apiClient.put(`/api/task/${taskId}`, payload);
   return response.data;
 };
 
 export const updateTaskStatus = async (taskId, status) => {
-  const response = await apiClient.put(`/task/${taskId}/${status}`);
+  const response = await apiClient.put(`/api/task/${taskId}/${status}`);
   return response.data;
 };
 
 export const deleteTask = async (taskId) => {
-  const response = await apiClient.delete("/task", { params: { taskId } });
+  const response = await apiClient.delete("/api/task", { params: { taskId } });
   return response.data;
 };
 
 export const getPrioritizedTasks = async () => {
-  const response = await apiClient.get("/tasks/prioritized");
+  const response = await apiClient.get("/api/tasks/prioritized");
   return response.data;
 };
 

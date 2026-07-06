@@ -6,12 +6,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import users.java.LifeOS.auth.dtos.LoginDto;
 import users.java.LifeOS.user.UserDto;
 import users.java.LifeOS.user.UserService;
 
 @AllArgsConstructor
+@RequestMapping("/api/auth")
 @RestController
 public class AuthController {
     private final UserService userService;
