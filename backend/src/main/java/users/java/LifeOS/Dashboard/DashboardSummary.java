@@ -1,4 +1,4 @@
-package users.java.LifeOS.Dashboard;
+package users.java.LifeOS.dashboard;
 
 import users.java.LifeOS.task.TaskStats;
 

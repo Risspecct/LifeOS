@@ -1,4 +1,4 @@
-package users.java.LifeOS.Dashboard;
+package users.java.LifeOS.dashboard;
 
 public record DashboardProfile(
 

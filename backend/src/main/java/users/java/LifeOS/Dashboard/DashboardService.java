@@ -1,4 +1,4 @@
-package users.java.LifeOS.Dashboard;
+package users.java.LifeOS.dashboard;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
