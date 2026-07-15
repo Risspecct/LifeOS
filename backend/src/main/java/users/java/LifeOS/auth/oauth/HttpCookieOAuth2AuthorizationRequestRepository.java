@@ -17,9 +17,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
     private static final int COOKIE_EXPIRE_SECONDS = 180;
 
     @Override
-    public OAuth2AuthorizationRequest loadAuthorizationRequest(
-            HttpServletRequest request
-    ) {
+    public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
 
         return CookieUtils.getCookie(
                         request,
@@ -81,9 +79,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
     }
 
 
-    public OAuth2AuthorizationRequest removeAuthorizationRequest(
-            HttpServletRequest request
-    ) {
+    public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request) {
         return loadAuthorizationRequest(request);
     }
 }

@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import users.java.LifeOS.auth.filters.JwtAuthenticationFilter;
+import users.java.LifeOS.auth.oauth.CustomOAuth2FailureHandler;
 import users.java.LifeOS.auth.oauth.CustomOAuth2SuccessHandler;
 import users.java.LifeOS.auth.oauth.CustomOAuth2UserService;
 import users.java.LifeOS.auth.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
@@ -33,7 +34,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
-
+    private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -77,6 +78,7 @@ public class SecurityConfig {
                                 user.userService(customOAuth2UserService)
                         )
                         .successHandler(customOAuth2SuccessHandler)
+                        .failureHandler(customOAuth2FailureHandler)
                 )
                 .addFilterBefore(
                         this.jwtAuthenticationFilter,

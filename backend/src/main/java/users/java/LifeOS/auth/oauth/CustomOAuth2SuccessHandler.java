@@ -21,15 +21,13 @@ import java.io.IOException;
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final UserRepository userRepository;
     private final OAuthCodeService oauthCodeService;
+    private final HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
     @Override
-    public void onAuthenticationSuccess(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication authentication
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication
     ) throws IOException, ServletException {
 
         CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
@@ -40,6 +38,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         String code = oauthCodeService.createCode(user.getId());
 
         log.info("OAuth login successful for user {}", user.getId());
+
+        authorizationRequestRepository.removeAuthorizationRequest(request, response);
 
         response.sendRedirect(frontendUrl + "/oauth-success?code=" + code);
     }

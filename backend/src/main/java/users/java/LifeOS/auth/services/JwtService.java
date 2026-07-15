@@ -58,11 +58,11 @@ public class JwtService {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException ex){
-            log.error("JWT token expired");
+            log.debug("JWT token expired");
             throw new JwtExpiredException("Jwt Expired");
         } catch (MalformedJwtException | SignatureException | IllegalArgumentException ex){
-            log.error("Unrecognizable JWT format");
-            throw new InvalidJwtException("Jwt invalid. " + ex.getMessage());
+            log.debug("Unrecognizable JWT format");
+            throw new InvalidJwtException("Invalid Jwt");
         }
     }
 
