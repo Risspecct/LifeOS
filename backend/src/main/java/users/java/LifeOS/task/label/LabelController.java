@@ -17,7 +17,6 @@ public class LabelController {
 
     @PostMapping
     public ResponseEntity<?> createLabel(@Valid @RequestBody LabelRequest request) {
-
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(labelService.createLabel(userService.getAuthenticatedUser(), request));
     }
@@ -35,14 +34,12 @@ public class LabelController {
     @DeleteMapping("/{labelId}")
     public ResponseEntity<?> deleteLabel(@PathVariable Long labelId) {
         labelService.deleteLabel(userService.getUserId(), labelId);
-        return ResponseEntity.ok("Label deleted successfully!");
+        return new ResponseEntity<>("Label deleted successfully!", HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/defaults")
     public ResponseEntity<String> seedDefaultLabels() {
         labelService.seedDefaultLabels();
-        return ResponseEntity.ok(
-                "Default labels added successfully"
-        );
+        return ResponseEntity.ok("Default labels added successfully");
     }
 }

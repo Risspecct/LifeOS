@@ -25,6 +25,6 @@ public class BranchController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable long id) {
         branchService.delete(id);
-        return new ResponseEntity<>("Branch deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>("Branch deleted successfully", HttpStatus.NO_CONTENT);
     }
 }

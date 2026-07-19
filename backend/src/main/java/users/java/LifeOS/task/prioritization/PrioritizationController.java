@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/tasks")
 @RequiredArgsConstructor
 public class PrioritizationController {
-
     private final PrioritizationService prioritizationService;
 
     @GetMapping("/prioritized")

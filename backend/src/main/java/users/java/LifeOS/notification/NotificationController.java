@@ -11,7 +11,6 @@ import users.java.LifeOS.user.UserService;
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
-
     private final NotificationService notificationService;
     private final UserService userService;
 

@@ -17,10 +17,7 @@ public class OAuthExchangeController {
     private final JwtService jwtService;
 
     @PostMapping("/exchange")
-    public OAuthExchangeResponse exchange(
-            @RequestBody OAuthExchangeRequest request
-    ) {
-
+    public OAuthExchangeResponse exchange(@RequestBody OAuthExchangeRequest request) {
         Long userId = oauthCodeService.consumeCode(request.code());
 
         User user = userRepository.findById(userId)
