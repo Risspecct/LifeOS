@@ -30,6 +30,7 @@ public class StatsUpdateService {
         streakService.updateStreak(stats);
 
         levelProgressionService.handleLevelProgression(user, oldPoints, newPoints);
+        statsService.save(stats);
     }
 
     @Transactional
@@ -42,6 +43,7 @@ public class StatsUpdateService {
         }
 
         stats.updateTaskCreatedCount(-1);
+        statsService.save(stats);
     }
 
     @Transactional
@@ -50,17 +52,20 @@ public class StatsUpdateService {
 
             stats.updateTasksCompletedCount(-1);
             stats.updateTotalPoints(-task.getAwardedPoints());
+            statsService.save(stats);
     }
 
     @Transactional
     public void updateFriendCount(User user, int d) {
         UserStats stats = statsService.getStats(user);
         stats.updateFriendCount(d);
+        statsService.save(stats);
     }
 
     @Transactional
     public void updateCreatedTasks(User user, int d) {
         UserStats stats = statsService.getStats(user);
         stats.updateTaskCreatedCount(d);
+        statsService.save(stats);
     }
 }

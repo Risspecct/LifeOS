@@ -2,10 +2,9 @@ package users.java.LifeOS.task.prioritization;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import users.java.LifeOS.task.Status;
 import users.java.LifeOS.task.Task;
 import users.java.LifeOS.task.TaskRepository;
-import users.java.LifeOS.task.TaskService;
-import users.java.LifeOS.user.User;
 import users.java.LifeOS.user.UserService;
 
 import java.util.Comparator;
@@ -21,10 +20,11 @@ public class PrioritizationService {
     private final PrioritizationMapper prioritizationMapper;
 
     public List<PrioritizedTaskResponse> getPrioritizedTasks() {
-        User currentUser = userService.getById(userService.getUserId());
         List<Task> tasks = taskRepository.findAllByUser_Id(userService.getUserId());
 
         return tasks.stream()
+                .filter(task -> task.getStatus() != Status.COMPLETED)
+                .filter(task -> task.getStatus() != Status.CANCELLED)
                 .map(task -> {
 
                     PriorityResult result =

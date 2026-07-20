@@ -19,16 +19,13 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
     @Override
     public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
 
-        return CookieUtils.getCookie(
-                        request,
-                        OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME
-                )
-                .map(cookie ->
-                        CookieUtils.deserialize(
-                                cookie,
-                                OAuth2AuthorizationRequest.class
-                        )
-                )
+        var cookie = CookieUtils.getCookie(
+                request,
+                OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME
+        );
+
+        return cookie
+                .map(c -> CookieUtils.deserialize(c, OAuth2AuthorizationRequest.class))
                 .orElse(null);
     }
 

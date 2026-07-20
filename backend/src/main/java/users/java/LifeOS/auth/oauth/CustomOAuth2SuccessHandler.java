@@ -39,7 +39,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         log.info("OAuth login successful for user {}", user.getId());
 
-        authorizationRequestRepository.removeAuthorizationRequest(request, response);
+//        authorizationRequestRepository.removeAuthorizationRequest(request, response);
 
         response.sendRedirect(frontendUrl + "/oauth-success?code=" + code);
     }

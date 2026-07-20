@@ -1,8 +1,8 @@
 package users.java.LifeOS.stats;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDate;
@@ -15,22 +15,31 @@ public class StatsService {
     private final UserStatsMapper statsMapper;
 
     public UserStatsDto getUserStats(User user) {
-        UserStats stats = userStatsRepository
-                .findByUser(user)
-                .orElseGet(() -> new UserStats(user));
+        UserStats stats = getStats(user);
 
         return statsMapper.toUserStatsDto(stats);
     }
 
+    @Transactional
     public UserStats getStats(User user) {
         return userStatsRepository
                 .findByUser(user)
-                .orElseGet(() -> new UserStats(user));
+                .orElseGet(() -> userStatsRepository.save(new UserStats(user)));
+    }
+
+    @Transactional
+    public UserStats ensureStats(User user) {
+        return getStats(user);
+    }
+
+    @Transactional
+    public UserStats save(UserStats stats) {
+        return userStatsRepository.save(stats);
     }
 
     public Integer getCurrentStreak(User user) {
         UserStats stats = userStatsRepository.findByUser(user)
-                .orElseThrow(() -> new NotFoundException("No user stats found"));
+                .orElseGet(() -> new UserStats(user));
 
         return calculateEffectiveStreak(stats);
     }

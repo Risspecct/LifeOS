@@ -58,6 +58,9 @@ public class TaskService {
         );
 
         statsUpdateService.updateCreatedTasks(user, 1);
+        if (task.getStatus() == Status.COMPLETED) {
+            rewardService.rewardTaskCompletion(user, task);
+        }
         return mapper.toTaskView(task);
     }
 

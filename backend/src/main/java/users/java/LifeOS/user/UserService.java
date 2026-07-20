@@ -16,6 +16,7 @@ import users.java.LifeOS.auth.dtos.JwtResponseDto;
 import users.java.LifeOS.auth.dtos.LoginDto;
 import users.java.LifeOS.exceptions.NotFoundException;
 import users.java.LifeOS.auth.services.JwtService;
+import users.java.LifeOS.stats.StatsService;
 
 import java.util.List;
 
@@ -30,6 +31,7 @@ public class UserService {
     private final JwtService jwtService;
     private final HttpServletRequest request;
     private final ActivityService activityService;
+    private final StatsService statsService;
 
 
     public List<UserView> findAll() {
@@ -51,6 +53,7 @@ public class UserService {
         user.setRole("USER");
         user.setPassword(encoder.encode(user.getPassword()));
         userRepository.save(user);
+        statsService.ensureStats(user);
 
         log.info("Creating a user with id: {}", user.getId());
         return findById(user.getId());

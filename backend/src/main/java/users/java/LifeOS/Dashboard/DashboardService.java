@@ -54,7 +54,7 @@ public class DashboardService {
 
         DashboardProfile dashboardProfile =
                 new DashboardProfile(
-                        profile.name(),
+                        getDisplayName(profile, currentUser),
                         currentUser.getUsername(),
                         currentUser.getEmail(),
                         profile.branchCode(),
@@ -68,5 +68,22 @@ public class DashboardService {
                 upcomingTasks,
                 recentActivities
         );
+    }
+
+    private String getDisplayName(StudentProfileView profile, User currentUser) {
+        if (hasText(profile.name())) {
+            return profile.name().trim();
+        }
+        if (hasText(currentUser.getUsername())) {
+            return currentUser.getUsername().trim();
+        }
+        if (hasText(currentUser.getEmail())) {
+            return currentUser.getEmail().trim();
+        }
+        return "Student";
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }
