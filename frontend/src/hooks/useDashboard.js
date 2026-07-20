@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchDashboardData, getEmptyDashboard } from "../features/dashboard/dashboardService";
 import { getApiErrorMessage } from "../utils/errorUtils";
+import { DATA_REFRESH_EVENT } from "../utils/dataRefreshEvents";
 
 export const useDashboard = () => {
   const [dashboard, setDashboard] = useState(() => getEmptyDashboard());
@@ -29,6 +30,25 @@ export const useDashboard = () => {
 
   useEffect(() => {
     loadDashboard();
+  }, [loadDashboard]);
+
+  useEffect(() => {
+    const refreshDashboard = () => loadDashboard({ force: true });
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        refreshDashboard();
+      }
+    };
+
+    window.addEventListener(DATA_REFRESH_EVENT, refreshDashboard);
+    window.addEventListener("focus", refreshDashboard);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      window.removeEventListener(DATA_REFRESH_EVENT, refreshDashboard);
+      window.removeEventListener("focus", refreshDashboard);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, [loadDashboard]);
 
   const refresh = useCallback(() => loadDashboard({ force: true }), [loadDashboard]);

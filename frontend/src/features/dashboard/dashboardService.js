@@ -8,7 +8,6 @@ const EMPTY_DASHBOARD = {
   recentActivities: []
 };
 
-let cachedDashboard = null;
 let pendingDashboardPromise = null;
 
 const PRIORITY_ORDER = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
@@ -109,7 +108,6 @@ const normalizeDashboardResponse = (rawDashboard, labelMap) => {
 export const getEmptyDashboard = () => EMPTY_DASHBOARD;
 
 export const fetchDashboardData = async ({ force = false } = {}) => {
-  if (!force && cachedDashboard) return cachedDashboard;
   if (!force && pendingDashboardPromise) return pendingDashboardPromise;
 
   pendingDashboardPromise = getDashboard()
@@ -122,7 +120,6 @@ export const fetchDashboardData = async ({ force = false } = {}) => {
       }
       const labelMap = normalizeLabelMeta(labelsData);
       const normalized = normalizeDashboardResponse(dashboardData, labelMap);
-      cachedDashboard = normalized;
       return normalized;
     })
     .finally(() => {

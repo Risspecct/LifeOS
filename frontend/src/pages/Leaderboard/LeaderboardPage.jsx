@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardTopBar from "../../components/dashboard/DashboardTopBar";
 import MobileBottomNav from "../../components/navigation/MobileBottomNav";
@@ -13,6 +13,7 @@ import { getApiErrorMessage } from "../../utils/errorUtils";
 import { useAuth } from "../../hooks/useAuth";
 import { useSidebar } from "../../hooks/useSidebar";
 import { useDelayedLoading } from "../../hooks/useDelayedLoading";
+import { DATA_REFRESH_EVENT } from "../../utils/dataRefreshEvents";
 
 const LEADERBOARD_TABS = [
   { label: "Global", value: LEADERBOARD_SCOPES.GLOBAL },
@@ -31,22 +32,42 @@ const LeaderboardPage = () => {
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const showSkeleton = useDelayedLoading(loading, 200);
 
+  const fetchLeaderboard = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await getLeaderboard(scope);
+      setRows(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setRows([]);
+      setError(getApiErrorMessage(err, "Unable to load leaderboard."));
+    } finally {
+      setLoading(false);
+    }
+  }, [scope]);
+
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const data = await getLeaderboard(scope);
-        setRows(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setRows([]);
-        setError(getApiErrorMessage(err, "Unable to load leaderboard."));
-      } finally {
-        setLoading(false);
+    fetchLeaderboard();
+  }, [fetchLeaderboard]);
+
+  useEffect(() => {
+    const refreshLeaderboard = () => fetchLeaderboard();
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        refreshLeaderboard();
       }
     };
-    fetchLeaderboard();
-  }, [scope]);
+
+    window.addEventListener(DATA_REFRESH_EVENT, refreshLeaderboard);
+    window.addEventListener("focus", refreshLeaderboard);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      window.removeEventListener(DATA_REFRESH_EVENT, refreshLeaderboard);
+      window.removeEventListener("focus", refreshLeaderboard);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
+  }, [fetchLeaderboard]);
 
   const currentUserStats = useMemo(() => {
     const authUserId = profile?.userId ?? profile?.id;
@@ -56,7 +77,7 @@ const LeaderboardPage = () => {
         (authUserId && String(entry.userId) === String(authUserId)) ||
         (authUsername && String(entry.username).toLowerCase() === String(authUsername).toLowerCase())
     );
-    return current || rows[0] || null;
+    return current || null;
   }, [rows, profile]);
 
   const openProfileDialog = (userId) => {

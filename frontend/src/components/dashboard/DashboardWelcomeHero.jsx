@@ -1,7 +1,7 @@
 import LevelProgressionCard from "../level/LevelProgressionCard";
 
 const DashboardWelcomeHero = ({ profile, levelData, levelLoading, levelError, onRetryLevel, urgentCount, pendingCount }) => {
-  const displayName = profile?.name || profile?.username || "Student";
+  const displayName = profile?.name?.trim() || profile?.username?.trim() || "Student";
   const branchYearText = [profile?.branch, profile?.year ? `Year ${profile.year}` : null]
     .filter(Boolean)
     .join(" | ");

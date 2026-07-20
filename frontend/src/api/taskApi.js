@@ -1,4 +1,5 @@
 import apiClient from "./axiosClient";
+import { emitDataRefresh } from "../utils/dataRefreshEvents";
 
 export const getAllTasks = async () => {
   const response = await apiClient.get("/api/task/all");
@@ -7,6 +8,7 @@ export const getAllTasks = async () => {
 
 export const createTask = async (payload) => {
   const response = await apiClient.post("/api/task", payload);
+  emitDataRefresh();
   return response.data;
 };
 
@@ -30,16 +32,19 @@ export const getTaskById = async (taskId) => {
 
 export const updateTask = async (taskId, payload) => {
   const response = await apiClient.put(`/api/task/${taskId}`, payload);
+  emitDataRefresh();
   return response.data;
 };
 
 export const updateTaskStatus = async (taskId, status) => {
   const response = await apiClient.put(`/api/task/${taskId}/${status}`);
+  emitDataRefresh();
   return response.data;
 };
 
 export const deleteTask = async (taskId) => {
   const response = await apiClient.delete("/api/task", { params: { taskId } });
+  emitDataRefresh();
   return response.data;
 };
 

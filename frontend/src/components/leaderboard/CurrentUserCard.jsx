@@ -3,7 +3,14 @@ const CurrentUserCard = ({ stats, loading }) => {
     return <div className="h-[88px] rounded-xl border border-outline-variant bg-surface-container animate-pulse" />;
   }
 
-  if (!stats) return null;
+  if (!stats) {
+    return (
+      <section className="rounded-xl border border-outline-variant bg-surface-container p-md">
+        <p className="font-label-sm text-label-sm text-on-surface-variant mb-xs">Your standing</p>
+        <p className="font-title-sm text-title-sm text-on-surface">Complete tasks to earn points and rank up.</p>
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-xl border border-primary/30 bg-primary/5 p-md">

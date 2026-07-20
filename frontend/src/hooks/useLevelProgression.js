@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getMyLevel } from "../api/levelApi";
+import { DATA_REFRESH_EVENT } from "../utils/dataRefreshEvents";
 
 export const useLevelProgression = () => {
   const [levelData, setLevelData] = useState(null);
@@ -30,6 +31,25 @@ export const useLevelProgression = () => {
 
   useEffect(() => {
     loadLevelProgression();
+  }, [loadLevelProgression]);
+
+  useEffect(() => {
+    const refreshLevelProgression = () => loadLevelProgression({ force: true });
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        refreshLevelProgression();
+      }
+    };
+
+    window.addEventListener(DATA_REFRESH_EVENT, refreshLevelProgression);
+    window.addEventListener("focus", refreshLevelProgression);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      window.removeEventListener(DATA_REFRESH_EVENT, refreshLevelProgression);
+      window.removeEventListener("focus", refreshLevelProgression);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, [loadLevelProgression]);
 
   const refresh = useCallback(() => loadLevelProgression({ force: true }), [loadLevelProgression]);
