@@ -1,0 +1,23 @@
+package users.java.LifeOS.demo.config;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ConfigurationProperties(prefix = "lifeos.demo")
+@Getter
+@Setter
+public class DemoConfiguration {
+
+    private boolean enabled = false;
+
+    private int users = 40;
+
+    private int tasksPerUser = 25;
+
+    private int maxFriends = 8;
+
+    private long randomSeed = 42L;
+}
