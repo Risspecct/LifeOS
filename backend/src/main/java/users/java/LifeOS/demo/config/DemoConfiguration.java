@@ -19,5 +19,15 @@ public class DemoConfiguration {
 
     private int maxFriends = 8;
 
+    private int friendMin = 4;
+
+    private int friendMax = 8;
+
+    private int sameBranchProbability = 70;
+
+    private int sameYearProbability = 20;
+
+    private int randomProbability = 10;
+
     private long randomSeed = 42L;
 }

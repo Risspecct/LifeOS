@@ -7,6 +7,7 @@ import users.java.LifeOS.auth.oauth.AuthProvider;
 import users.java.LifeOS.branch.Branch;
 import users.java.LifeOS.branch.BranchRepository;
 import users.java.LifeOS.demo.config.DemoConfiguration;
+import users.java.LifeOS.demo.context.DemoContext;
 import users.java.LifeOS.demo.context.GeneratedUser;
 import users.java.LifeOS.demo.util.DemoConstants;
 import users.java.LifeOS.demo.util.Identity;
@@ -17,7 +18,6 @@ import users.java.LifeOS.student.Student;
 import users.java.LifeOS.user.User;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -31,11 +31,11 @@ public class UserGenerator {
 
     private List<Branch> branches;
 
-    public List<GeneratedUser> generate() {
+    public void generate(DemoContext context) {
 
         loadBranches();
 
-        List<GeneratedUser> users = new ArrayList<>();
+        List<GeneratedUser> users = context.getUsers();
 
         users.add(createAdmin());
         users.add(createAlice());
@@ -45,8 +45,6 @@ public class UserGenerator {
         while (users.size() < config.getUsers()) {
             users.add(createRandomUser());
         }
-
-        return users;
     }
 
     private void loadBranches() {

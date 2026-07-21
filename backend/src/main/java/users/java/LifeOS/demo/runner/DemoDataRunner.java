@@ -5,8 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import users.java.LifeOS.demo.config.DemoConfiguration;
+import users.java.LifeOS.demo.context.DemoContext;
 import users.java.LifeOS.demo.context.GeneratedUser;
+import users.java.LifeOS.demo.generators.FriendshipGenerator;
 import users.java.LifeOS.demo.generators.UserGenerator;
+import users.java.LifeOS.friend.Friendship;
+import users.java.LifeOS.friend.FriendshipRepository;
 import users.java.LifeOS.stats.UserStatsRepository;
 import users.java.LifeOS.student.StudentRepository;
 import users.java.LifeOS.user.UserRepository;
@@ -19,10 +23,12 @@ public class DemoDataRunner implements CommandLineRunner {
 
     private final DemoConfiguration config;
     private final UserGenerator userGenerator;
+    private final FriendshipGenerator friendshipGenerator;
 
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final UserStatsRepository userStatsRepository;
+    private final FriendshipRepository friendshipRepository;
 
     @Override
     @Transactional
@@ -37,13 +43,23 @@ public class DemoDataRunner implements CommandLineRunner {
             return;
         }
 
-        List<GeneratedUser> users = userGenerator.generate();
+        DemoContext context = new DemoContext();
 
-        saveUsers(users);
-        saveStudents(users);
-        saveStats(users);
+        userGenerator.generate(context);
 
-        System.out.printf("Generated %d demo users%n", users.size());
+        saveUsers(context.getUsers());
+
+        friendshipGenerator.generate(context);
+
+        saveFriendships(context.getFriendships());
+        saveStudents(context.getUsers());
+        saveStats(context.getUsers());
+
+        System.out.printf(
+                "Generated %d demo users and %d friendships%n",
+                context.getUsers().size(),
+                context.getFriendships().size()
+        );
     }
 
     private void saveUsers(List<GeneratedUser> users) {
@@ -68,5 +84,9 @@ public class DemoDataRunner implements CommandLineRunner {
                         .map(GeneratedUser::getStats)
                         .toList()
         );
+    }
+
+    private void saveFriendships(List<Friendship> friendships) {
+        friendshipRepository.saveAll(friendships);
     }
 }
