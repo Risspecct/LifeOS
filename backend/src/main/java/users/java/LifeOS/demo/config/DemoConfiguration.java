@@ -23,6 +23,10 @@ public class DemoConfiguration {
 
     private int friendMax = 8;
 
+    private int labelMin = 6;
+
+    private int labelMax = 10;
+
     private int sameBranchProbability = 70;
 
     private int sameYearProbability = 20;
