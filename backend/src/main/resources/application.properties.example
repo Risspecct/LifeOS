@@ -1,0 +1,19 @@
+# PostgreSQL (Neon)
+spring.datasource.url=
+spring.datasource.username=
+spring.datasource.password=
+
+# JWT
+jwt.secret=
+jwt.expiration=60000000
+
+# Google OAuth
+spring.security.oauth2.client.registration.google.client-id=
+spring.security.oauth2.client.registration.google.client-secret=
+
+# Gemini
+gemini.api-key=
+gemini.model=gemini-2.5-flash
+
+# Frontend URL
+app.frontend.url=http://localhost:5173
