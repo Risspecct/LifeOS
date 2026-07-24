@@ -9,6 +9,7 @@ import users.java.LifeOS.branch.BranchRepository;
 import users.java.LifeOS.demo.config.DemoConfiguration;
 import users.java.LifeOS.demo.context.DemoContext;
 import users.java.LifeOS.demo.context.GeneratedUser;
+import users.java.LifeOS.demo.util.DateGenerator;
 import users.java.LifeOS.demo.util.DemoConstants;
 import users.java.LifeOS.demo.util.Identity;
 import users.java.LifeOS.demo.util.IdentityGenerator;
@@ -28,6 +29,7 @@ public class UserGenerator {
     private final PasswordEncoder passwordEncoder;
     private final BranchRepository branchRepository;
     private final RandomData randomData;
+    private final DateGenerator dateGenerator;
 
     private List<Branch> branches;
 
@@ -88,6 +90,9 @@ public class UserGenerator {
         Student student = buildStudent(user, identity);
 
         UserStats stats = buildStats(user);
+
+        dateGenerator.applyTimestamps(user);
+        dateGenerator.applyTimestamps(student, user.getCreatedAt());
 
         return new GeneratedUser(
                 user,

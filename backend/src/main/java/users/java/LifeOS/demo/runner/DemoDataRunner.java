@@ -13,6 +13,8 @@ import users.java.LifeOS.demo.generators.TaskGenerator;
 import users.java.LifeOS.demo.generators.UserGenerator;
 import users.java.LifeOS.friend.Friendship;
 import users.java.LifeOS.friend.FriendshipRepository;
+import users.java.LifeOS.stats.StatsRebuildService;
+import users.java.LifeOS.stats.UserStats;
 import users.java.LifeOS.stats.UserStatsRepository;
 import users.java.LifeOS.student.StudentRepository;
 import users.java.LifeOS.task.Task;
@@ -39,6 +41,8 @@ public class DemoDataRunner implements CommandLineRunner {
     private final FriendshipRepository friendshipRepository;
     private final LabelRepository labelRepository;
     private final TaskRepository taskRepository;
+
+    private final StatsRebuildService statsRebuildService;
 
     @Override
     @Transactional
@@ -68,9 +72,10 @@ public class DemoDataRunner implements CommandLineRunner {
         saveFriendships(context.getFriendships());
         saveLabels(context.getLabels());
         saveTasks(context.getTasks());
+        saveUserStats();
 
         System.out.printf(
-                "Generated %d demo users, %d friendships, %d labels, and %d tasks%n",
+                "Generated %d demo users, %d friendships, %d labels, %d tasks%n and rebuilt stats",
                 context.getUsers().size(),
                 context.getFriendships().size(),
                 context.getLabels().size(),
@@ -113,4 +118,6 @@ public class DemoDataRunner implements CommandLineRunner {
     private void saveTasks(List<Task> tasks) {
         taskRepository.saveAll(tasks);
     }
+
+    private void saveUserStats() { statsRebuildService.rebuildAllUsers(); }
 }

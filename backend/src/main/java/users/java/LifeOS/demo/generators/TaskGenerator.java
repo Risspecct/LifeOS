@@ -10,6 +10,7 @@ import users.java.LifeOS.demo.context.GeneratedUser;
 import users.java.LifeOS.demo.util.DateGenerator;
 import users.java.LifeOS.demo.util.RandomData;
 import users.java.LifeOS.demo.util.WeightedItem;
+import users.java.LifeOS.rewards.RewardCalculator;
 import users.java.LifeOS.task.Status;
 import users.java.LifeOS.task.Task;
 import users.java.LifeOS.task.TaskPriority;
@@ -25,7 +26,6 @@ public class TaskGenerator {
 
     private static final double LABEL_PROBABILITY = 0.85;
     private static final double CATALOG_PRIORITY_PROBABILITY = 0.30;
-    private static final double COMPLETED_DUE_DATE_PROBABILITY = 0.90;
 
     private static final List<WeightedItem<Status>> STATUS_WEIGHTS = List.of(
             new WeightedItem<>(Status.TO_DO, 40),
@@ -45,6 +45,7 @@ public class TaskGenerator {
     private final DemoConfiguration config;
     private final RandomData randomData;
     private final DateGenerator dateGenerator;
+    private final RewardCalculator rewardCalculator;
 
     public void generate(DemoContext context) {
 
@@ -96,7 +97,11 @@ public class TaskGenerator {
     ) {
 
         Status status = assignStatus();
-        LocalDateTime dueDate = assignDueDate(status);
+        Label label = selectLabel(userLabels);
+        LocalDateTime createdAt = assignCreatedAt(generatedUser, label);
+        LocalDateTime completedAt = assignCompletedAt(status, createdAt);
+        LocalDateTime dueDate = assignDueDate(status, createdAt, completedAt);
+        LocalDateTime updatedAt = assignUpdatedAt(createdAt, completedAt);
 
         Task task = new Task();
 
@@ -107,21 +112,45 @@ public class TaskGenerator {
         task.setManualPriority(assignPriority(definition));
         task.setStatus(status);
         task.setDueDate(dueDate);
-        task.setCompletedAt(assignCompletedAt(status, dueDate));
-        task.setAwardedPoints(0L);
-        task.setLabel(selectLabel(userLabels));
+        task.setCompletedAt(completedAt);
+        task.setLabel(label);
+        dateGenerator.applyTimestamps(task, createdAt, updatedAt);
+        task.setAwardedPoints(assignAwardedPoints(task));
 
         return task;
+    }
+
+    private LocalDateTime assignCreatedAt(
+            GeneratedUser generatedUser,
+            Label label
+    ) {
+
+        LocalDateTime earliest = generatedUser.getUser().getCreatedAt();
+
+        if (label != null
+                && label.getCreatedAt().isAfter(earliest)) {
+            earliest = label.getCreatedAt();
+        }
+
+        return dateGenerator.randomTimelineDateAfter(
+                earliest,
+                LocalDateTime.now().minusHours(1),
+                30
+        );
     }
 
     private Status assignStatus() {
         return randomData.weighted(STATUS_WEIGHTS);
     }
 
-    private LocalDateTime assignDueDate(Status status) {
+    private LocalDateTime assignDueDate(
+            Status status,
+            LocalDateTime createdAt,
+            LocalDateTime completedAt
+    ) {
 
         if (status == Status.COMPLETED) {
-            return assignCompletedDueDate();
+            return dateGenerator.randomDueDateForCompletion(createdAt, completedAt);
         }
 
         int bucket = randomData.between(1, 100);
@@ -131,7 +160,7 @@ public class TaskGenerator {
         }
 
         if (bucket <= 30) {
-            return dateGenerator.randomPastDays(14);
+            return overdueDueDate(createdAt);
         }
 
         if (bucket <= 40) {
@@ -147,35 +176,57 @@ public class TaskGenerator {
         return dateGenerator.randomFutureDays(45);
     }
 
-    private LocalDateTime assignCompletedDueDate() {
+    private LocalDateTime overdueDueDate(LocalDateTime createdAt) {
 
-        if (!randomData.chance(COMPLETED_DUE_DATE_PROBABILITY)) {
-            return null;
+        LocalDateTime latestDueDate = LocalDateTime.now()
+                .minusMinutes(30);
+
+        if (!createdAt.isBefore(latestDueDate)) {
+            return latestDueDate;
         }
 
-        return dateGenerator.randomPastDays(30);
+        return dateGenerator.between(createdAt, latestDueDate);
     }
 
     private LocalDateTime assignCompletedAt(
             Status status,
-            LocalDateTime dueDate
+            LocalDateTime createdAt
     ) {
 
         if (status != Status.COMPLETED) {
             return null;
         }
 
-        if (dueDate == null) {
-            return dateGenerator.randomPastDays(30);
+        return dateGenerator.randomTimelineDateAfter(
+                createdAt,
+                LocalDateTime.now(),
+                30
+        );
+    }
+
+    private LocalDateTime assignUpdatedAt(
+            LocalDateTime createdAt,
+            LocalDateTime completedAt
+    ) {
+
+        if (completedAt != null) {
+            return completedAt;
         }
 
-        LocalDateTime completedAt = dueDate.plusHours(randomData.between(1, 72));
-
-        if (completedAt.isAfter(LocalDateTime.now())) {
-            return dateGenerator.randomPastDays(7);
+        if (randomData.chance(0.40)) {
+            return dateGenerator.randomTimelineDateAfter(createdAt, 15);
         }
 
-        return completedAt;
+        return createdAt;
+    }
+
+    private Long assignAwardedPoints(Task task) {
+
+        if (task.getStatus() != Status.COMPLETED) {
+            return 0L;
+        }
+
+        return rewardCalculator.calculateTaskCompletionPoints(task);
     }
 
     private TaskPriority assignPriority(TaskDefinition definition) {

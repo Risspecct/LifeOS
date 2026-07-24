@@ -6,11 +6,13 @@ import users.java.LifeOS.branch.Branch;
 import users.java.LifeOS.demo.config.DemoConfiguration;
 import users.java.LifeOS.demo.context.DemoContext;
 import users.java.LifeOS.demo.context.GeneratedUser;
+import users.java.LifeOS.demo.util.DateGenerator;
 import users.java.LifeOS.demo.util.RandomData;
 import users.java.LifeOS.friend.Friendship;
 import users.java.LifeOS.student.Student;
 import users.java.LifeOS.user.User;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ public class FriendshipGenerator {
 
     private final DemoConfiguration config;
     private final RandomData randomData;
+    private final DateGenerator dateGenerator;
 
     private Map<Branch, List<GeneratedUser>> usersByBranch;
     private Map<Integer, List<GeneratedUser>> usersByYear;
@@ -162,7 +165,15 @@ public class FriendshipGenerator {
         User first = firstUser(user.getUser(), candidate.getUser());
         User second = secondUser(user.getUser(), candidate.getUser());
 
-        context.getFriendships().add(new Friendship(first, second));
+        Friendship friendship = new Friendship(first, second);
+        friendship.setCreatedAt(
+                dateGenerator.randomTimelineDateAfter(
+                        latestCreatedAt(first, second),
+                        60
+                )
+        );
+
+        context.getFriendships().add(friendship);
 
         existingPairs.add(pairKey(first, second));
         incrementFriendCount(first);
@@ -203,6 +214,15 @@ public class FriendshipGenerator {
 
     private User secondUser(User user, User candidate) {
         return user.getId() < candidate.getId() ? candidate : user;
+    }
+
+    private LocalDateTime latestCreatedAt(User first, User second) {
+
+        if (first.getCreatedAt().isAfter(second.getCreatedAt())) {
+            return first.getCreatedAt();
+        }
+
+        return second.getCreatedAt();
     }
 
     private boolean sameBranch(

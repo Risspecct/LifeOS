@@ -21,6 +21,8 @@ public class DemoConfiguration {
 
     private int taskMax = 30;
 
+    private int timelineDays = 45;
+
     private int maxFriends = 8;
 
     private int friendMin = 4;

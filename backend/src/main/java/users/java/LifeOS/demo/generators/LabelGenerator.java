@@ -7,9 +7,11 @@ import users.java.LifeOS.demo.catalog.LabelDefinition;
 import users.java.LifeOS.demo.config.DemoConfiguration;
 import users.java.LifeOS.demo.context.DemoContext;
 import users.java.LifeOS.demo.context.GeneratedUser;
+import users.java.LifeOS.demo.util.DateGenerator;
 import users.java.LifeOS.demo.util.RandomData;
 import users.java.LifeOS.task.label.Label;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +21,7 @@ public class LabelGenerator {
 
     private final DemoConfiguration config;
     private final RandomData randomData;
+    private final DateGenerator dateGenerator;
 
     public void generate(DemoContext context) {
 
@@ -72,6 +75,15 @@ public class LabelGenerator {
         label.setColor(definition.color());
         label.setPriorityWeight(definition.priorityWeight());
         label.setUser(generatedUser.getUser());
+
+        dateGenerator.applyTimestamps(
+                label,
+                dateGenerator.randomTimelineDateAfter(
+                        generatedUser.getUser().getCreatedAt(),
+                        LocalDateTime.now().minusHours(2),
+                        30
+                )
+        );
 
         return label;
     }
