@@ -129,7 +129,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>spring-auth-starter</finalName>
+		<finalName>lifeos-backend</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
