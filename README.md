@@ -2,456 +2,193 @@
 
 [![Backend](https://img.shields.io/badge/Spring%20Boot-4.0.6-6DB33F?logo=springboot&logoColor=white)](#tech-stack)
 [![Frontend](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](#tech-stack)
-[![DB](https://img.shields.io/badge/PostgreSQL-supported-4169E1?logo=postgresql&logoColor=white)](#database-design)
-[![Architecture](https://img.shields.io/badge/Modular%20Monolith-Backend%20First-7D5FFF)](#architecture-overview)
+[![DB](https://img.shields.io/badge/PostgreSQL-supported-4169E1?logo=postgresql&logoColor=white)](#tech-stack)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](#tech-stack)
 
-LifeOS is a student productivity platform built to make academic work feel structured, visible, and easier to act on. It combines task management, smart prioritization, progress tracking, and lightweight social motivation into one focused workspace.
+LifeOS is a comprehensive student productivity and accountability platform designed to make academic work structured, visible, and easier to act on. It integrates task management, smart priority computation, progress tracking, and lightweight social motivation into a unified, calm dashboard workspace.
 
-The goal is not to become another noisy social app or a generic todo list. LifeOS is designed around a simple loop:
-
-**capture work → rank what matters most → show progress clearly → reinforce consistency**
-<p align="center">
-  <img src="Assets/dashboard.jpeg" width="100%" />
-</p>
-
-## What LifeOS is trying to solve
-
-Most student tools fall into one of two extremes:
-
-- task apps that store work but do not help you decide what to do next
-- productivity systems that add too much gamification and lose focus
-
-LifeOS sits in the middle. It is built for students who need:
-- a clear place to manage academic tasks
-- explainable task prioritization
-- visible progress signals like streaks and points
-- accountability through friends and scoped leaderboards
-- a calm dashboard that emphasizes momentum over noise
-
----
-
-## Design Principles
-
-The project was built around a few consistent architectural and product decisions that shaped both the backend and frontend.
-- **Backend-driven logic**  
-  Prioritization, scoring, aggregation, rewards, streaks, insights, and leaderboard computation are handled server-side instead of being duplicated across the client.
-- **Explainable prioritization**  
-  Tasks should not feel randomly ordered. The system exposes why a task is being prioritized through weighted scoring and readable priority reasons.
-- **Feature-oriented architecture**  
-  The backend is organized around domains such as tasks, activity, leaderboard, insights, and friendships rather than generic layered packages.
-- **Lightweight accountability**  
-  Social features are intentionally scoped around motivation and consistency tracking instead of content feeds or engagement mechanics.
-- **Focused interface design**  
-  The UI is designed to surface workload, progress, and priorities clearly without overwhelming the user with unnecessary complexity.
-- **Systems over isolated features**  
-  Most features are connected through shared productivity signals. Task completions feed into rewards, streaks, activity history, insights, and leaderboards rather than existing independently.
+Rather than relying on noisy social notifications or generic lists, LifeOS aligns around a core loop:
+**Capture Work $\rightarrow$ Prioritize Key Action Items $\rightarrow$ Display Progression Streaks $\rightarrow$ Foster Social Accountability.**
 
 ---
 
 ## Implemented Features
 
-### 1) Authentication and Security
-LifeOS uses email/password authentication with JWT-based sessions and stateless Spring Security.
+Every feature listed below is fully implemented and operational within the codebase:
 
-Implemented capabilities:
-- account registration and login
-- JWT issuance and validation
-- secured API access for the app shell
-- centralized exception handling for auth and request failures
-
-### 2) Student Profile System
-Each user can maintain a student profile that gives the app its academic context.
-
-Implemented capabilities:
-- create and update profile data
-- branch association
-- college-aware discovery/search
-- profile-based UI context for dashboard and connections
-  <p align="center">
-  <img src="Assets/profile_alex.jpeg" width="80%" />
-</p>
-
-### 3) Task Management
-Tasks are the main unit of work inside LifeOS.
-
-Implemented capabilities:
-- create, update, view, and delete tasks
-- task filtering and sorting
-- task status updates
-- upcoming task view
-- task statistics summary
-- support for task types, labels, due dates, and priorities
-<table>
-  <tr>
-    <td align="center">
-      <img src="Assets/task_board.jpeg" width="100%" />
-      <br />
-      <strong>Task Board</strong>
-    </td>
-    <td align="center">
-      <img src="Assets/task_detail.jpeg" width="100%" />
-      <br />
-      <strong>Task Details</strong>
-    </td>
-  </tr>
-</table>
-
-### 4) Smart Prioritization
-LifeOS does not just show tasks; it explains what should be worked on first.
-
-The prioritization engine weighs:
-- due date proximity
-- overdue status
-- task status
-- manual priority
-- label weight
-
-Each prioritized task returns:
-- computed score
-- priority level
-- human-readable reasons
-<p align="center">
-  <img src="Assets/priority.png" width="60%" />
-</p>
-
-### 5) Labels and Focus Categories
-Labels help the app understand what kind of work a task represents.
-
-Implemented capabilities:
-- user-owned labels
-- priority weight per label
-- default label seeding
-- label-driven prioritization and insights
-<p align="center">
-  <img src="Assets/label.png" width="50%" />
-</p>
-
-### 6) Activity Tracking
-LifeOS records meaningful user events so the app can visualize behavior over time.
-
-Implemented capabilities:
-- task created / updated / completed events
-- login activity
-- profile update events
-- activity timeline support
-- social activity
-- heatmap and insight generation from activity signals
-
-### 7) Stats, Rewards, and Streaks
-Progress is tracked as a real signal, not just a visual gimmick.
-
-Implemented capabilities:
-- current user stats endpoint
-- points accumulation
-- current streak tracking
-- longest streak tracking
-- completed task counters
-- reward updates when tasks are completed
-
-### 8) Dashboard
-The dashboard acts as the main “at a glance” workspace.
-
-Implemented capabilities:
-- profile summary
-- task summary counts
-- current streak
-- prioritized tasks
-- upcoming tasks
-- recent activity
-- aggregated response from a single endpoint
-  <br />
-  
-### 9) Connections and Social Accountability
-LifeOS includes a lightweight social layer for peer motivation.
-
-Implemented capabilities:
-- friend requests
-- accept / reject actions
-- friend list management
-- incoming / outgoing request views
-- discovery/search for connectable users
-<table>
-  <tr>
-    <td align="center">
-      <img src="Assets/connections_friends.jpeg" width="100%" />
-      <br />
-      <strong>Friends</strong>
-    </td>
-    <td align="center">
-      <img src="Assets/connections_request.jpeg" width="100%" />
-      <br />
-      <strong>Requests</strong>
-    </td>
-    <td align="center">
-      <img src="Assets/connections_discover.jpeg" width="100%" />
-      <br />
-      <strong>Discover</strong>
-    </td>
-  </tr>
-</table>
-
-### 10) Leaderboards
-Leaderboards are used as a structured motivation system, not a social feed.
-
-Implemented capabilities:
-- global leaderboard
-- friends leaderboard
-- college leaderboard
-- rank calculation from stored user stats
-- points + streak based ordering
-<table>
-  <tr>
-    <td align="center">
-      <img src="Assets/leaderboard_alex.jpeg" width="100%" />
-      <br />
-      <strong>Global</strong>
-    </td>
-    <td align="center">
-      <img src="Assets/leaderboard_friends.jpeg" width="100%" />
-      <br />
-      <strong>Friends</strong>
-    </td>
-    <td align="center">
-      <img src="Assets/leaderboard_college.jpeg" width="100%" />
-      <br />
-      <strong>College</strong>
-    </td>
-  </tr>
-</table>
-
-### 11) Insights and Productivity Signals
-LifeOS includes activity-driven insight surfaces that make progress easier to understand.
-
-Implemented capabilities:
-- productivity summary
-- task heatmap
-- weekly trend
-- focus distribution
-- activity timeline
-
-<p align="center">
-  <img src="Assets/activity.jpeg" width="80%" />
-</p>
----
-
-## Core Workflow
-
-LifeOS is built around a simple productivity loop where different backend systems continuously feed into each other instead of existing as isolated features.
-
-A typical flow inside the app looks like this:
-
-1. A user creates tasks for assignments, exams, projects, placement preparation, or personal work.
-2. Labels, deadlines, manual priority, and task state feed into the prioritization engine.
-3. The backend computes which tasks need the most attention and surfaces them through the dashboard.
-4. Completing tasks updates rewards, streaks, stats, activity history, and leaderboard rankings.
-5. Activity data is then reused for insights, trends, consistency tracking, and productivity visualization.
-6. Connections and scoped leaderboards add lightweight accountability without turning the platform into a social feed.
-
-Most of the important behavior in the system is intentionally backend-driven. The frontend primarily focuses on presenting aggregated productivity data clearly rather than duplicating application logic on the client.
+1. **JWT Authentication & Security**: Complete credentials registration and login using stateless Spring Security, JWT token issuance, verification, and centralized exception handling.
+2. **Google OAuth2 Sign-In**: Integration with Google login redirecting to a custom success handler, generating one-time exchange tokens to issue standard JWT sessions on the client.
+3. **Student Profile System**: Multi-field student profiles containing college, department branch, bio, and social links, supporting academic discoverability search.
+4. **Task Management**: Full CRUD for tasks, with status states, types, and deadline scheduling.
+5. **Smart Prioritization**: Computation engine calculating urgency scores for active tasks based on due date proximity, manual priorities, and focus label importance weights.
+6. **Focus Labels**: Custom categories with weight levels assigned by users, affecting priority algorithms.
+7. **Study Notes**: Rich markdown study notes that can be created independently or attached to specific tasks.
+8. **Connections & Friendships**: Discovery search, outgoing/incoming requests, friend removals, and friend list indexing.
+9. **Leaderboards**: Rankings sorted by user points and streaks, filterable by scope (Global, Friends-only, and College-wide).
+10. **Activity Tracking & Timelines**: Logging actions to generate heatmaps, analytics trends, and chronological activity feeds.
+11. **Real-time WebSockets Notifications**: STOMP protocol notifications pushing alerts (like friend requests) to online clients immediately.
+12. **AI-Powered Task Generation**: Google Gemini API client integration drafting structured tasks based on description prompts.
+13. **Unified Dashboard**: Aggregated workspace endpoint compiling profile summaries, streak milestones, prioritized tasks, upcoming deadlines, and recent activities in a single REST call.
 
 ---
 
 ## Tech Stack
 
 ### Backend
-- Java 21
-- Spring Boot 4.0.6
-- Spring Security
-- Spring Data JPA / Hibernate
-- PostgreSQL
-- JWT authentication (`jjwt`)
-- MapStruct
-- SpringDoc OpenAPI / Swagger
-- JPA auditing via `BaseEntity`
+- **Java 21**
+- **Spring Boot 4.0.6**
+- **Spring Security** (Stateless authentication, OAuth2 Client)
+- **Spring Data JPA** (Hibernate ORM, PostgreSQL dialect)
+- **JWT (jjwt)** (Token parsing and creation)
+- **MapStruct** (Compile-time DTO-to-entity mappings)
+- **SpringDoc OpenAPI / Swagger** (Endpoint cataloging)
+- **Google Gemini API Client** (AI integration)
 
 ### Frontend
-- React 18
-- Vite
-- React Router
-- Axios
-- Tailwind CSS
+- **React 18**
+- **Vite** (Compilation and dev server tooling)
+- **React Router v6** (Client-side routing)
+- **Axios** (REST API client middleware)
+- **Tailwind CSS** (Styling theme framework)
+- **@stomp/stompjs** (STOMP WebSocket broker client)
+
+### DevOps & Infrastructure
+- **Docker** & **Docker Compose**
+- **Nginx** (Serving React assets and redirecting routes inside the client container)
+- **PostgreSQL** (Relational database)
 
 ---
 
-## Architecture Overview
+## Project Structure
 
-### Backend
-LifeOS follows a feature-oriented modular structure. Each domain owns its own controller, service, DTOs, repositories, and related logic.
+This directory tree represents the actual codebase structure:
 
-The backend is responsible for:
-- business rules
-- task scoring and prioritization
-- reward/streak calculation
-- dashboard aggregation
-- leaderboard ranking
-- insight generation
-- authentication and authorization
-
-DTOs and records are used to keep API contracts separate from entities. MapStruct is used where transformation should stay clean and predictable.
-
-### Frontend
-The frontend is organized around page-level routes and reusable feature components. It focuses on rendering backend-driven data cleanly rather than duplicating logic on the client.
-
-The UI is designed to be:
-- responsive
-- modular
-- productivity-oriented
-
----
-
-## Backend Modules
-
-Current domains in the codebase include:
-
-- `auth` — login, registration, JWT handling
-- `user` — core identity model
-- `student` — student profile and discovery
-- `branch` — branch metadata
-- `task` — task CRUD, filtering, sorting, status updates
-- `task/label` — labels and default seed data
-- `task/prioritization` — priority scoring and explanation generation
-- `activity` — behavior/event tracking
-- `stats` — user stats, streaks, and current performance
-- `rewards` — points and completion rewards
-- `friend` — friendships and friend requests
-- `leaderboard` — scoped rankings
-- `dashboard` — aggregated overview payload
-- `insights` — heatmap, trends, distribution, timeline
-- `exceptions` — centralized API error handling
+```
+LifeOS/
+├── backend/               # Spring Boot Backend Code
+│   ├── src/               # Java Sources & Resources
+│   ├── Dockerfile         # Multi-stage Java Builder & JRE Runner
+│   └── pom.xml            # Maven Dependency Manifest
+├── frontend/              # React Frontend Code
+│   ├── src/               # JS/JSX Components, Pages, Hooks & API layer
+│   ├── Dockerfile         # Vite static builder & Nginx runner
+│   ├── nginx.conf         # Custom Nginx SPA Routing mapping
+│   ├── tailwind.config.js # Tailwind styling theme
+│   └── package.json       # Node Dependency Manifest
+├── docs/                  # Comprehensive Documentation Suite
+│   ├── architecture.md    # Systems Architecture & Communication Diagrams
+│   ├── backend.md         # Backend Modular Packages & Code Layout
+│   ├── frontend.md        # Frontend Layout & Global Auth Context States
+│   ├── docker.md          # Containerization Details
+│   ├── deployment.md      # Production Deployments Guidelines
+│   └── api.md             # Complete REST API Specifications
+├── docker-compose.yml     # Local orchestration manager
+├── LICENSE                # License details
+└── README.md              # Project Overview & Quickstart
+```
 
 ---
 
-## API Documentation
-Swagger/OpenAPI integration is included for interactive API exploration and testing.
+## Environment Variables
 
-Available endpoints:
-- `/swagger-ui`
-- `/v3/api-docs`
+Configure these variables inside your local `.env` or container platform settings:
 
----
+### Database & JPA Configuration
+- `DB_URL`: The JDBC database connection string (e.g. `jdbc:postgresql://host:port/database`).
+- `DB_USERNAME`: Database login username.
+- `DB_PASSWORD`: Database login password.
+- `DDL_AUTO`: Hibernate schema sync strategy (defaults to `update`, set to `validate` in production).
+- `SHOW_SQL`: Prints SQL queries in output logs (defaults to `true`, set to `false` in production).
 
-## Database Design
+### Security & Token Settings
+- `JWT_SECRET`: High-entropy secret key used to sign and verify JWT tokens.
+- `JWT_EXPIRATION`: Token lifespan in milliseconds (defaults to `60000000`).
 
-LifeOS uses PostgreSQL with JPA entities that reflect the main product domains.
+### Google OAuth2 Settings
+- `GOOGLE_CLIENT_ID`: The Client ID acquired from Google Cloud Console.
+- `GOOGLE_CLIENT_SECRET`: The Client Secret acquired from Google Cloud Console.
 
-Key relationships include:
-- `User` as the identity root
-- `Student` as the academic profile linked one-to-one with `User`
-- `Task` belonging to a user and optionally referencing labels
-- `Label` belonging to a user and influencing prioritization
-- `Activity` recording user actions and optionally linking to tasks
-- `UserStats` storing points, streaks, and completion counters for each user
-- `FriendRequest` and `Friendship` representing the connection layer
+### AI Integration
+- `GEMINI_API_KEY`: API Key to connect to Google Gemini services.
+- `GEMINI_MODEL`: Gemini AI model variant (defaults to `gemini-2.5-flash`).
 
-The database is designed to support both current app behavior and future expansion into more advanced productivity features.
+### Application Origins
+- `FRONTEND_URL`: Public domain URL of the frontend React app, used by the backend to map CORS policies (defaults to `http://localhost:5173`).
 
----
-
-## Current Product Direction
-
-LifeOS is currently focused on building a structured productivity system around real student workflows rather than generic task tracking.
-
-The project is centered around:
-- workload visibility
-- explainable prioritization
-- consistency tracking
-- lightweight accountability
-- backend-driven productivity logic
-
-A major focus of the system is keeping meaningful logic on the backend instead of reducing the application to basic CRUD operations. Features like prioritization, dashboard aggregation, leaderboard ranking, streak tracking, and insights are all designed as connected backend systems rather than isolated pages.
-
-The current direction is to continue expanding the platform without losing clarity or focus. New additions should strengthen:
-- organization
-- visibility
-- consistency
-- accountability
-without turning the app into a noisy social platform.
+### Seeder Settings (Local Development)
+- `DEMO_ENABLED`: Enables database seeding with mock data on startup (defaults to `false`).
+- `DEMO_USERS`: Number of user profiles to generate when demo is enabled (defaults to `40`).
+- `TASKS_PER_USER`: Number of mock tasks to generate per user (defaults to `25`).
+- `MAX_FRIENDS`: Maximum number of random friend requests per user (defaults to `8`).
+- `RANDOM_SEED`: Random seed value for reproducible mock data generation (defaults to `42`).
 
 ---
 
-## Roadmap
-
-The current roadmap builds outward from the systems already in place.
-
-### Near-Term Additions
-- richer notification and reminder flows
-- websocket-based realtime updates for lightweight social or alert surfaces
-- notes support for study content and task-linked reference material
-- activity feed for friend progress and streak updates
-
-### Longer-Term Intelligence
-- smarter workload balancing
-- burnout and consistency analysis
-- adaptive prioritization based on behavior
-- richer productivity insights and patterns
-- recommendations that stay explainable rather than black-box
-
-### Social and Motivation Layer
-- deeper friend-aware visibility
-- more granular leaderboard scopes
-- optional privacy controls for comparisons
-- consistency-based achievements and milestones
-
-The intent is to expand the system without turning it into a noisy engagement product.
-
-### Technical Direction
-From an engineering perspective, the project is also being used to explore:
-- scalable backend design
-- modular monolith architecture
-- realtime communication patterns
-- aggregation-heavy backend systems
-- cleaner domain separation
-- backend-driven application logic
-
----
-
-## Setup Instructions
+## Running Locally
 
 ### Prerequisites
-- Java 21
-- PostgreSQL
-- Node.js and npm
+- Java 21 JDK
+- Node.js (v22+)
+- PostgreSQL instance running locally
 
-### Backend
-Configure the database and JWT settings in `src/main/resources/application.properties`.
+### Running Services Independently
 
-Common environment overrides:
-- `DB_URL`
-- `DB_USERNAME`
-- `DB_PASSWORD`
+#### 1. Start Backend
+Navigate to the `backend` directory, override application variables in `src/main/resources/application.properties` or set them in your environment, and run:
+- **On Linux/macOS**:
+  ```bash
+  ./mvnw spring-boot:run
+  ```
+- **On Windows (PowerShell/CMD)**:
+  ```bash
+  ./mvnw.cmd spring-boot:run
+  ```
 
-Run backend:
-
-```bash
-./mvnw spring-boot:run
-```
-
-On Windows:
-
-```bash
-./mvnw.cmd spring-boot:run
-```
-
-### Frontend
-From the frontend directory:
-
+#### 2. Start Frontend
+Navigate to the `frontend` directory, ensure a `.env.development` exists with `VITE_API_URL=http://localhost:8080`, and run:
 ```bash
 npm install
 npm run dev
 ```
 
-Production build:
+---
 
+## Running with Docker Compose
+
+Docker Compose coordinates the backend, frontend, and environment variables dynamically.
+
+### 1. Build Containers
+Compiles the Maven JAR and Vite static assets inside build containers:
 ```bash
-npm run build
+docker compose build
+```
+
+### 2. Start Services
+Launches the backend and Nginx frontend in the background:
+```bash
+docker compose up -d
+```
+The application will be accessible at:
+- **Frontend App**: `http://localhost:5173`
+- **Backend API**: `http://localhost:8080`
+
+### 3. Stop Services
+Stops running containers and clears internal networks:
+```bash
+docker compose down
 ```
 
 ---
 
-## Notes
+## Deployment Summary
 
-- Swagger/OpenAPI is available for exploring the backend endpoints.
-- The frontend is intended to stay thin and presentation-focused, while the backend owns the meaningful logic.
+1. **Database**: Create a PostgreSQL instance with a provider (e.g. Neon, AWS RDS) and verify SSL.
+2. **Backend**: Host the backend container on a Docker platform. Map the ports and assign the required environment variables.
+3. **Google OAuth**: Add your server domains into Google Console's Redirect URIs (`https://api-domain.com/login/oauth2/code/google`) and Origins (`https://app-domain.com`).
+4. **Frontend Build**: Compile static files with the environment variable `VITE_API_URL` pointing to the public backend domain, then host them with a static provider (e.g. Vercel) or a containerized instance of Nginx.
+5. **SSL**: Map custom domains and enforce HTTPS to enable secure APIs, OAuth callback handshakes, and secure WebSockets (`wss://`).
+
+*For a detailed walkthrough, see [deployment.md](file:///c:/Users/Rishi/Desktop/Program%20related/Projects/LifeOS/docs/deployment.md).*
 
 ---
 
