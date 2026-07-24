@@ -1,107 +1,166 @@
-# LifeOS Containerization & Docker Documentation
+# Docker
 
-This document explains the Docker configuration, multi-stage image builds, container responsibilities, network bridges, port layouts, and container environment variables for the LifeOS application.
+This document explains the Docker setup for LifeOS: backend and frontend Dockerfiles, Docker Compose, container networking, local development, and production considerations.
 
----
+## Overview
 
-## High-Level Architecture Overview
+The repository includes two application images:
 
-LifeOS uses a dual-container layout run via Docker Compose. The setup builds and runs both the React web client and the Java Spring Boot service in isolated environments.
+- `backend/Dockerfile`: builds and runs the Spring Boot API.
+- `frontend/Dockerfile`: builds the Vite app and serves static assets with Nginx.
 
-```
-                  Client Browser (External)
-                           │
-             ┌─────────────┴─────────────┐
-             ▼ (Port 5173)               ▼ (Port 8080)
-      ┌──────────────┐            ┌──────────────┐
-      │  lifeos-     │            │  lifeos-     │
-      │  frontend    │            │  backend     │
-      │  (Nginx:80)  │            │  (Java:8080) │
-      └──────────────┘            └──────────────┘
-             │ (Web API requests via browser redirect)
-             └───────────────────────────►
+The root `docker-compose.yml` runs both services for local containerized development.
+
+```mermaid
+graph TD
+    Browser["Browser"] --> Frontend["lifeos-frontend container"]
+    Browser --> Backend["lifeos-backend container"]
+    Frontend --> Nginx["Nginx serving static React assets"]
+    Backend --> Spring["Spring Boot API on 8080"]
+    Spring --> Database[("External PostgreSQL from DB_URL")]
 ```
 
----
+## Backend Dockerfile
 
-## 1. Backend Container Configuration
+`backend/Dockerfile` is a multi-stage build.
 
-- **Source Location**: `backend/Dockerfile`
-- **Docker Image Base**: `eclipse-temurin:21-jre`
-- **Build Strategy**: Multi-stage build to isolate the build tools (Maven) from the runtime environment.
+| Stage | Base Image | Purpose |
+| --- | --- | --- |
+| `builder` | `maven:3.9.11-eclipse-temurin-21` | Downloads Maven dependencies and packages the application JAR. |
+| runtime | `eclipse-temurin:21-jre` | Runs the compiled `lifeos-backend.jar` with Java 21. |
 
-### Multi-stage Build Phases
-1. **Compilation Phase (`builder`)**:
-   - Uses `maven:3.9.11-eclipse-temurin-21` as the build environment.
-   - Copies `pom.xml` and downloads dependencies (`mvn dependency:go-offline`) to cache dependency layers.
-   - Copies Java sources from `src/` and compiles the production JAR (`mvn clean package -DskipTests`), generating the output artifact at `/app/target/lifeos-backend.jar`.
-2. **Runtime Execution Phase**:
-   - Spawns a clean `eclipse-temurin:21-jre` runtime container (reducing image footprint and attack surface).
-   - Copies the compiled `lifeos-backend.jar` as `/app/app.jar`.
-   - Exposes container port `8080`.
-   - Launches the JVM process via the entrypoint: `["java", "-jar", "app.jar"]`.
+Build behavior:
 
----
+1. Copy `pom.xml`.
+2. Run `mvn dependency:go-offline` for dependency layer caching.
+3. Copy `src`.
+4. Run `mvn clean package -DskipTests`.
+5. Copy `/app/target/lifeos-backend.jar` into the runtime image as `app.jar`.
+6. Expose port `8080`.
 
-## 2. Frontend Container Configuration
+## Frontend Dockerfile
 
-- **Source Location**: `frontend/Dockerfile`
-- **Docker Image Base**: `nginx:alpine`
-- **Build Strategy**: Multi-stage build to compile Vite assets and serve them using a high-performance web server (Nginx).
+`frontend/Dockerfile` is also a multi-stage build.
 
-### Multi-stage Build Phases
-1. **Compilation Phase (`builder`)**:
-   - Uses `node:22-alpine` to compile assets.
-   - Installs packages via `npm install` based on lockfiles.
-   - Accepts the build argument `VITE_API_URL` and binds it as an environment variable (`ENV VITE_API_URL`). This builds the backend API endpoint URL directly into the compiled JavaScript bundle.
-   - Runs `npm run build` to compile code into HTML, CSS, and JS artifacts in `/app/dist`.
-2. **Static Server Phase**:
-   - Uses `nginx:alpine` as the runtime server.
-   - Copies compiled production assets from the builder stage `/app/dist` to `/usr/share/nginx/html`.
-   - Replaces Nginx default configurations with a custom server mapping config (`frontend/nginx.conf`).
-   - Exposes container port `80`.
+| Stage | Base Image | Purpose |
+| --- | --- | --- |
+| `builder` | `node:22-alpine` | Installs npm dependencies and runs the Vite production build. |
+| runtime | `nginx:alpine` | Serves compiled static files from `/usr/share/nginx/html`. |
 
-### Custom Nginx Config (`frontend/nginx.conf`)
-Because React Router handles routing on the client side, accessing paths directly (e.g. `http://localhost:5173/dashboard`) would cause Nginx to return a 404 error if it searched for that directory statically.
-The custom Nginx configuration resolves this by mapping requests to check for static files first, falling back to serving `index.html` to let React Router handle routing on the client side:
+The build accepts:
+
+```text
+ARG VITE_API_URL
+```
+
+That value is embedded into the compiled frontend bundle during `npm run build`.
+
+## Nginx SPA Fallback
+
+`frontend/nginx.conf` serves the React app and falls back to `index.html` for client-side routes:
+
 ```nginx
-server {
-    listen 80;
-    server_name localhost;
-
-    root /usr/share/nginx/html;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
+location / {
+    try_files $uri $uri/ /index.html;
 }
 ```
 
----
+This is required because routes such as `/dashboard` and `/tasks/1` are handled by React Router, not by static files on disk.
 
-## 3. Docker Compose Orchestration (`docker-compose.yml`)
+## Docker Compose
 
-The root `docker-compose.yml` configures service mappings, port redirections, and dependencies.
+The root `docker-compose.yml` defines:
 
-### Services Defined
+| Service | Container | Host Port | Container Port | Notes |
+| --- | --- | --- | --- | --- |
+| `backend` | `lifeos-backend` | `8080` | `8080` | Loads variables from root `.env`. |
+| `frontend` | `lifeos-frontend` | `5173` | `80` | Builds with `VITE_API_URL=http://localhost:8080`. |
 
-#### 1. `backend`
-- **Build Context**: `./backend`
-- **Container Name**: `lifeos-backend`
-- **Environment variables**: Loads configurations directly from the `.env` file at the root.
-- **Port Mapping**: Map host port `8080` to container port `8080` (`8080:8080`).
-- **Restart Policy**: `unless-stopped` (always restarts unless intentionally halted).
+Run locally:
 
-#### 2. `frontend`
-- **Build Context**: `./frontend`
-- **Build Arguments**: Passes `VITE_API_URL: http://localhost:8080` to the compiler.
-- **Container Name**: `lifeos-frontend`
-- **Dependency Constraint**: Depends on the `backend` container (`depends_on`).
-- **Port Mapping**: Map host port `5173` to container port `80` (`5173:80`). This serves Nginx traffic on the standard development port.
-- **Restart Policy**: `unless-stopped`.
+```bash
+docker compose build
+docker compose up -d
+```
 
-### Networking and Communications
-- Docker Compose automatically creates a default network bridge.
-- Both containers are mounted on the same network bridge, enabling direct container-to-container calls using service hostnames (e.g., `http://backend:8080` could be called from inside the frontend container if required).
-- *Note*: Because the React SPA executes inside the client's browser (external to the Docker bridge network), the `VITE_API_URL` build parameter must point to the public-facing backend host URL (e.g., `http://localhost:8080`) rather than the internal container hostname (`http://backend:8080`).
+Stop services:
+
+```bash
+docker compose down
+```
+
+## Required Environment File
+
+Compose expects backend variables in a root `.env` file:
+
+```env
+DB_URL=jdbc:postgresql://<host>:<port>/<database>
+DB_USERNAME=<username>
+DB_PASSWORD=<password>
+JWT_SECRET=<long-random-secret>
+GOOGLE_CLIENT_ID=<google-client-id>
+GOOGLE_CLIENT_SECRET=<google-client-secret>
+GEMINI_API_KEY=<gemini-api-key>
+FRONTEND_URL=http://localhost:5173
+```
+
+Optional values include `JWT_EXPIRATION`, `DDL_AUTO`, `SHOW_SQL`, `GEMINI_MODEL`, and demo-data settings.
+
+## Container Networking
+
+Docker Compose creates a default network where containers can resolve each other by service name. However, the React app runs in the user's browser after it is served by Nginx. Browser API calls do not originate inside Docker's internal network.
+
+That is why the Compose frontend build uses:
+
+```yaml
+VITE_API_URL: http://localhost:8080
+```
+
+Using `http://backend:8080` would only work from inside another container, not from the browser on the host machine.
+
+## Local Development Options
+
+### Fully Containerized
+
+Use Docker Compose for frontend and backend containers, while the backend connects to the PostgreSQL database configured by `DB_URL`.
+
+### Hybrid Development
+
+Run PostgreSQL and the backend locally, then run the frontend with Vite:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Hybrid mode is often faster for frontend iteration because Vite hot reload is available directly.
+
+## Production Considerations
+
+- Use production secrets from the hosting platform rather than committing `.env` files.
+- Set `SHOW_SQL=false` in production.
+- Prefer `DDL_AUTO=validate` or a migration tool once schema changes need stricter control.
+- Set `VITE_API_URL` to the public backend URL before building the frontend image.
+- Expose the backend through HTTPS so OAuth and WebSockets work reliably.
+- If running multiple backend instances, review WebSocket scaling because the current implementation uses Spring's simple broker.
+
+## Troubleshooting
+
+| Problem | Likely Cause | Fix |
+| --- | --- | --- |
+| Frontend cannot reach backend | `VITE_API_URL` points to an internal Docker hostname or wrong port. | Rebuild frontend with the public browser-reachable backend URL. |
+| Backend fails on startup | Missing database or secret variables. | Check `.env` and required backend variables. |
+| Direct page refresh returns 404 | Static server does not fallback to `index.html`. | Use `frontend/nginx.conf` or equivalent host rewrites. |
+| WebSocket fails in production | HTTPS page tries `ws://` or proxy blocks upgrades. | Use `https://` API URL and configure upgrade headers. |
+
+## Related Documentation
+
+- [Deployment](deployment.md)
+- [System Architecture](architecture.md)
+- [Frontend Guide](frontend.md)
+- [Backend Guide](backend.md)
+
+## Conclusion
+
+Docker support keeps LifeOS portable: the backend ships as a Java runtime image, the frontend ships as static assets behind Nginx, and Compose provides a simple local orchestration path while still relying on explicit environment configuration.

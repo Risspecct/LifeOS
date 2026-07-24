@@ -1,116 +1,160 @@
-# LifeOS Frontend Architecture & Developer Documentation
+# Frontend Guide
 
-This document describes the design patterns, folder structure, routing, authentication state management, API layer, and real-time WebSocket communication in the LifeOS React SPA.
+This guide explains the LifeOS frontend implementation: routing, protected screens, API access, authentication state, real-time notifications, and source organization.
 
----
+## Frontend Overview
 
-## Folder & Component Structure
+The frontend is a React 18 single-page application built with Vite. It lives in `frontend/` and communicates with the backend through Axios REST clients and a STOMP WebSocket client.
 
-The frontend codebase is organized to separate API calling layers, visual presentation components, reusable React hooks, routing layout definitions, and utility scripts.
+Primary responsibilities include:
 
-```
+- Public authentication screens.
+- Profile setup gating.
+- Protected dashboard, tasks, notes, activity, profile, leaderboard, connections, and settings pages.
+- API orchestration through feature-specific client modules.
+- Real-time notification connection management.
+- Reusable UI components and domain hooks.
+
+## Source Structure
+
+```text
 frontend/src/
-├── api/                  # Axios configuration and backend endpoint services
-├── auth/                 # React Context and ProtectedRoute authorization guard
-├── components/           # Feature-scoped modular UI components
-│   ├── activity/
-│   ├── connections/
-│   ├── dashboard/
-│   ├── form/
-│   ├── layout/
-│   ├── leaderboard/
-│   ├── level/
-│   ├── navigation/
-│   ├── notes/
-│   ├── notifications/
-│   ├── profile/
-│   ├── tasks/
-│   └── ui/
-├── config/               # API base URL configuration mapping
-├── features/             # Business features logic and structures
-├── hooks/                # Custom React hooks (auth, tasks, labels, etc.)
-├── pages/                # Page-level components matched directly to routing paths
-├── routes/               # AppRoutes layout router definitions
-├── services/             # Client controllers (WebSockets STOMP broker, notifications)
-├── utils/                # Constants, date formatters, and error helpers
-├── App.jsx               # App container wrapping routing and global toast state
-├── index.css             # Tailwind directive rules and theme definitions
-└── main.jsx              # React DOM mounting entrypoint
+|-- api/             Axios client and REST API modules
+|-- auth/            AuthContext, auth loading screen, and protected route guard
+|-- components/      Feature-scoped UI components
+|-- config/          Runtime API URL configuration
+|-- features/        Feature service helpers
+|-- hooks/           Reusable React hooks
+|-- pages/           Route-level page components
+|-- routes/          React Router route definitions
+|-- services/        WebSocket, notifications, connections, and activity clients
+|-- utils/           Constants, date helpers, validation, and UI utility logic
+|-- App.jsx          BrowserRouter and route shell
+|-- index.css        Tailwind and global CSS
+`-- main.jsx         React DOM entrypoint
 ```
 
----
+## Routing
 
-## Application Routing & Guards
+Routes are defined in `frontend/src/routes/AppRoutes.jsx`.
 
-LifeOS handles client-side routing using `react-router-dom` (v6). Routes are partitioned into **Public Routes**, **Profile-Setup Guards**, and **Fully-Protected Page Routes**.
+| Route | Access | Purpose |
+| --- | --- | --- |
+| `/signup` | Public | Account creation. |
+| `/login` | Public | Credentials login and Google sign-in entry. |
+| `/oauth-success` | Public | Completes OAuth exchange-code flow. |
+| `/profile-setup` | Authenticated, profile not required | Student profile onboarding. |
+| `/dashboard` | Authenticated with profile | Main workspace. |
+| `/tasks` and nested task/note routes | Authenticated with profile | Task workspace and task-attached notes. |
+| `/notes/:noteId` | Authenticated with profile | Standalone note detail page. |
+| `/profile` | Authenticated with profile | Student profile page. |
+| `/activity` | Authenticated with profile | Activity and insight views. |
+| `/leaderboard` | Authenticated with profile | Ranking views. |
+| `/connections` | Authenticated with profile | Friend discovery and requests. |
+| `/settings` | Authenticated with profile | Account/settings screen. |
 
-### 1. Routes Mapping Configuration (`routes/AppRoutes.jsx`)
-- **Public access paths**: `/login`, `/signup`, and `/oauth-success` are open to all visitors. Unmatched routes fall back automatically to `/signup`.
-- **Pre-profile paths**: `/profile-setup` is protected by authorization checks but allows students who have not completed their profile setup to access it.
-- **App Shell protected paths**: The dashboard, task manager, settings, leaderboards, connections, activity, and notes details require authorization *and* a completed student profile.
+Unknown routes redirect to `/signup`.
 
-### 2. Authorization Guarding Component (`auth/ProtectedRoute.jsx`)
-Guarding is controlled at the layout level using `ProtectedRoute`:
-- **Uninitialized State**: While loading credentials, an `AuthLoadingScreen` is displayed.
-- **Unauthenticated Session**: Users lacking tokens are redirected to `/login` with location states preserved.
-- **Profile Check Redirects**:
-  - If a route requires a profile and the user hasn't set one up (`requireProfile={true}` and `!hasProfile`), they are redirected to `/profile-setup`.
-  - If a route does *not* require a profile (like `/profile-setup`) and the user has completed their profile, they are redirected to the homepage dashboard (`/`).
+## Route Guards
 
----
+`auth/ProtectedRoute.jsx` controls access based on authentication and profile state.
 
-## State Management & Authentication Flow
+```mermaid
+graph TD
+    Route["Requested Route"] --> Init{"Auth initialized?"}
+    Init -- No --> Loading["AuthLoadingScreen"]
+    Init -- Yes --> Token{"JWT token present?"}
+    Token -- No --> Login["Redirect to /login"]
+    Token -- Yes --> Profile{"Route requires profile?"}
+    Profile -- No --> Existing{"Profile already exists?"}
+    Existing -- Yes --> Dashboard["Redirect to /dashboard"]
+    Existing -- No --> AllowSetup["Render profile setup"]
+    Profile -- Yes --> HasProfile{"Profile exists?"}
+    HasProfile -- No --> Setup["Redirect to /profile-setup"]
+    HasProfile -- Yes --> Protected["Render protected page"]
+```
 
-Global session credentials and user profile states are maintained in a unified React Context.
+## Authentication State
 
-### 1. Context Structure (`auth/AuthContext.jsx`)
-The `AuthContext` provides the following reactive states:
-- `token`: The current JWT token string.
-- `isAuthenticated`: A boolean indicating if a token is present (`Boolean(token)`).
-- `profile`: Student profile data object.
-- `hasProfile`: Indicates if a database profile exists.
-- `profileChecked`: Boolean flagging whether profile verification completed.
-- `profileLoading`: Fetching status spinner flag.
-- `isInitialized`: Signals if initial LocalStorage token validation completes.
+`auth/AuthContext.jsx` owns frontend session state.
 
-### 2. Context Actions
-- `setAuthFromToken(token)`: Persists token in LocalStorage and updates state.
-- `clearAuth()`: Discards tokens from LocalStorage, resets contexts, and redirects.
-- `refreshProfileStatus()`: Makes an API call to fetch profile data. Handled as a promise catching `404` errors (triggering profile-setup redirects) and `401/403` credentials errors (logging out).
+| State/Action | Purpose |
+| --- | --- |
+| `token` | Current JWT token. |
+| `isAuthenticated` | Boolean derived from token presence. |
+| `profile` | Current student profile data. |
+| `hasProfile` | Whether the authenticated user has created a profile. |
+| `profileChecked` | Whether profile lookup has completed. |
+| `isInitialized` | Whether initial token loading has completed. |
+| `setAuthFromToken(token)` | Saves a JWT to local storage and updates state. |
+| `clearAuth()` | Removes the token and clears session/profile state. |
+| `refreshProfileStatus()` | Fetches profile state and handles missing/invalid sessions. |
 
----
+The token storage key is defined in `utils/constants.js` as `lifeos_jwt_token`.
 
-## API Layer & Axios Middleware
+## API Layer
 
-API calls are coordinated through a centralized Axios client instance (`api/axiosClient.js`).
+The frontend centralizes HTTP behavior in `api/axiosClient.js`.
 
-### 1. Axios Base Configuration
-- Resolves server base URL through Vite meta variables: `import.meta.env.VITE_API_URL`.
-- Configured with `withCredentials: true` and default JSON headers.
+- `VITE_API_URL` supplies the backend base URL at build time.
+- Requests attach `Authorization: Bearer <token>` when a token exists.
+- JSON headers are configured by default.
+- `401` and `403` responses clear local auth state and redirect to `/login`, except for login/registration flows where errors are passed back to the page.
 
-### 2. Request Interceptor
-- Intercepts outgoing requests, loads any present JWT token from LocalStorage (`AUTH_TOKEN_KEY`), and injects it as a Bearer string in the headers:
-  `config.headers['Authorization'] = 'Bearer <token>'`
-- Logs requests in development mode for debugging.
+Feature-specific API modules live in `frontend/src/api`, including task, label, notes, dashboard, profile, leaderboard, friends, stats, level, branch, and auth clients.
 
-### 3. Response Interceptor
-- Automatically detects `401 Unauthorized` or `403 Forbidden` statuses. If it intercepts these codes, and the request was *not* targeting login/registration, it wipes the LocalStorage token and redirects the browser page to `/login`.
-- Rejects promises to propagate specific errors to the calling UI components.
+## WebSocket Notifications
 
----
+`services/websocketService.js` creates the STOMP client. It derives the WebSocket endpoint from `VITE_API_URL`:
 
-## WebSocket & Notification Services
+- `http://localhost:8080` becomes `ws://localhost:8080/ws`.
+- `https://api.example.com` becomes `wss://api.example.com/ws`.
 
-LifeOS integrates real-time notifications (friend requests, activity alerts) via STOMP WebSockets over native transport channels.
+The client sends the JWT in the STOMP `CONNECT` headers and subscribes to:
 
-### 1. Connection Lifecycle (`services/websocketService.js`)
-- **Protocol Resolution**: Derives a WebSocket connection URL by transforming standard HTTP protocols (e.g. `http://localhost:8080/ws` becomes `ws://localhost:8080/ws`).
-- **Client Client Initialization**: Uses `@stomp/stompjs` client instances.
-- **Authorization Handshake**: Injects the Bearer JWT token directly into the CONNECT headers.
-- **Subscription broker mapping**:
-  Upon connection validation, subscribes the active user to a user-specific private queue:
-  `/user/queue/notifications`
-  Received messages are parsed from JSON strings and passed to dynamic callbacks (e.g. Toast notifications or header badges).
+```text
+/user/queue/notifications
+```
 
-### 2. Disconnection
-- Handled when logging out or closing pages via `disconnectWebSocket()`, calling `deactivate()` on the active STOMP broker client.
+Incoming messages are parsed as JSON and passed to registered notification callbacks.
+
+## Build and Runtime Configuration
+
+Run locally:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Build for production:
+
+```bash
+cd frontend
+npm run build
+```
+
+Required build variable:
+
+```env
+VITE_API_URL=https://<backend-domain>
+```
+
+The repository includes:
+
+- `frontend/vercel.json` for SPA fallback rewrites on Vercel.
+- `frontend/Dockerfile` for building static assets and serving them with Nginx.
+- `frontend/nginx.conf` for React Router fallback routing.
+
+## Related Documentation
+
+- [System Architecture](architecture.md)
+- [Authentication](authentication.md)
+- [WebSockets](websocket.md)
+- [API Guide](api.md)
+- [Project Structure](project-structure.md)
+
+## Conclusion
+
+The frontend is intentionally thin around business rules. It owns user experience, routing, session state, API orchestration, and real-time subscriptions, while the backend remains responsible for persistence, authorization, and domain decisions.

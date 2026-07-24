@@ -1,197 +1,330 @@
 # LifeOS
 
-[![Backend](https://img.shields.io/badge/Spring%20Boot-4.0.6-6DB33F?logo=springboot&logoColor=white)](#tech-stack)
-[![Frontend](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](#tech-stack)
-[![DB](https://img.shields.io/badge/PostgreSQL-supported-4169E1?logo=postgresql&logoColor=white)](#tech-stack)
-[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](#tech-stack)
+[![Backend](https://img.shields.io/badge/Spring%20Boot-4.0.6-6DB33F?logo=springboot&logoColor=white)](#technology-stack)
+[![Frontend](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](#technology-stack)
+[![Database](https://img.shields.io/badge/PostgreSQL-supported-4169E1?logo=postgresql&logoColor=white)](#technology-stack)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-LifeOS is a comprehensive student productivity and accountability platform designed to make academic work structured, visible, and easier to act on. It integrates task management, smart priority computation, progress tracking, and lightweight social motivation into a unified, calm dashboard workspace.
+LifeOS is a student productivity and accountability platform for managing academic work, study notes, progress, and peer motivation in one workspace. It combines a React single-page application with a Spring Boot API, PostgreSQL persistence, JWT security, Google OAuth sign-in, STOMP WebSocket notifications, and an AI-assisted task draft workflow backed by Google Gemini.
 
-Rather than relying on noisy social notifications or generic lists, LifeOS aligns around a core loop:
-**Capture Work $\rightarrow$ Prioritize Key Action Items $\rightarrow$ Display Progression Streaks $\rightarrow$ Foster Social Accountability.**
+The project is built around a simple product loop: capture work, prioritize the next useful action, track consistency, and make progress visible.
 
----
+## Problem Statement
 
-## Implemented Features
+Students often manage academic work across disconnected tools: task lists, notes apps, chat threads, calendar reminders, and informal accountability groups. That fragmentation makes it hard to see what matters now, what is overdue, how consistent the student has been, and where social motivation can help.
 
-Every feature listed below is fully implemented and operational within the codebase:
+LifeOS addresses that problem by bringing task management, focus labels, notes, smart prioritization, activity tracking, friend connections, leaderboards, and notifications into a single application.
 
-1. **JWT Authentication & Security**: Complete credentials registration and login using stateless Spring Security, JWT token issuance, verification, and centralized exception handling.
-2. **Google OAuth2 Sign-In**: Integration with Google login redirecting to a custom success handler, generating one-time exchange tokens to issue standard JWT sessions on the client.
-3. **Student Profile System**: Multi-field student profiles containing college, department branch, bio, and social links, supporting academic discoverability search.
-4. **Task Management**: Full CRUD for tasks, with status states, types, and deadline scheduling.
-5. **Smart Prioritization**: Computation engine calculating urgency scores for active tasks based on due date proximity, manual priorities, and focus label importance weights.
-6. **Focus Labels**: Custom categories with weight levels assigned by users, affecting priority algorithms.
-7. **Study Notes**: Rich markdown study notes that can be created independently or attached to specific tasks.
-8. **Connections & Friendships**: Discovery search, outgoing/incoming requests, friend removals, and friend list indexing.
-9. **Leaderboards**: Rankings sorted by user points and streaks, filterable by scope (Global, Friends-only, and College-wide).
-10. **Activity Tracking & Timelines**: Logging actions to generate heatmaps, analytics trends, and chronological activity feeds.
-11. **Real-time WebSockets Notifications**: STOMP protocol notifications pushing alerts (like friend requests) to online clients immediately.
-12. **AI-Powered Task Generation**: Google Gemini API client integration drafting structured tasks based on description prompts.
-13. **Unified Dashboard**: Aggregated workspace endpoint compiling profile summaries, streak milestones, prioritized tasks, upcoming deadlines, and recent activities in a single REST call.
+## Motivation
 
----
+LifeOS was built as a full-stack engineering project to explore how a productivity app can be designed as more than a CRUD task board. The implementation focuses on:
 
-## Tech Stack
+- A decoupled frontend/backend architecture that can be deployed independently.
+- Stateless authentication that works for both credentials login and Google OAuth.
+- Domain-oriented backend modules that keep task, profile, social, notification, and analytics concerns navigable.
+- Real-time notifications for social events instead of repeated polling.
+- A priority engine that explains why a task is ranked highly.
+- Containerized local development and production-oriented deployment paths.
+
+## Key Features
+
+- Credentials registration and login with JWT-based authorization.
+- Google OAuth login using a short-lived exchange code before issuing the application JWT.
+- Student profile setup with college, branch, year, bio, and discovery support.
+- Task creation, filtering, status updates, deadlines, manual priorities, and task detail views.
+- Focus labels with priority weights used by the smart prioritization engine.
+- Study notes that can stand alone or attach to tasks.
+- Prioritized task ranking based on due date, status, manual priority, and label weight.
+- Dashboard aggregation for profile, streak, stats, tasks, activity, and social state.
+- Friend discovery, incoming/outgoing requests, friend lists, and social activity feeds.
+- Leaderboards scoped by global, friends, or college.
+- Activity insights, timeline data, productivity heatmaps, and focus distribution views.
+- STOMP WebSocket notifications for user-specific real-time updates.
+- Google Gemini integration for AI-generated task drafts.
+- Dockerfiles and Docker Compose for local containerized execution.
+
+## Live Demo
+
+A public demo URL is not stored in this repository. When deployed, add the hosted frontend URL here.
+
+- Frontend: `https://life-os-rho-liard.vercel.app/`
+- Backend health/API base: `https://lifeos-kycz.onrender.com/swagger-ui/index.html`
+
+## Swagger Documentation
+
+The backend includes SpringDoc OpenAPI UI.
+
+- Local Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- Local OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+Do not manually maintain a duplicate endpoint catalog outside Swagger. The API documentation in this repository explains API organization, authentication expectations, and how to use the generated Swagger UI.
+
+## Documentation Index
+
+Start with [docs/README.md](docs/README.md) for the full documentation map.
+
+| Area | Document |
+| --- | --- |
+| Architecture | [System Architecture](docs/architecture.md) |
+| Backend | [Backend Guide](docs/backend.md) |
+| Frontend | [Frontend Guide](docs/frontend.md) |
+| Authentication | [Authentication](docs/authentication.md) |
+| API | [API Guide](docs/api.md) |
+| Database | [Database](docs/database.md) |
+| WebSockets | [WebSockets](docs/websocket.md) |
+| Docker | [Docker](docs/docker.md) |
+| Deployment | [Deployment](docs/deployment.md) |
+| Project Structure | [Project Structure](docs/project-structure.md) |
+| Engineering Decisions | [Engineering Decisions](docs/engineering-decisions.md) |
+
+## Technology Stack
 
 ### Backend
-- **Java 21**
-- **Spring Boot 4.0.6**
-- **Spring Security** (Stateless authentication, OAuth2 Client)
-- **Spring Data JPA** (Hibernate ORM, PostgreSQL dialect)
-- **JWT (jjwt)** (Token parsing and creation)
-- **MapStruct** (Compile-time DTO-to-entity mappings)
-- **SpringDoc OpenAPI / Swagger** (Endpoint cataloging)
-- **Google Gemini API Client** (AI integration)
+
+- Java 21
+- Spring Boot 4.0.6
+- Spring Security
+- Spring Data JPA and Hibernate
+- PostgreSQL
+- SpringDoc OpenAPI / Swagger UI
+- Spring WebSocket with STOMP
+- JJWT
+- MapStruct
+- Lombok
+- Bucket4j
+- Caffeine
+- Google GenAI client
 
 ### Frontend
-- **React 18**
-- **Vite** (Compilation and dev server tooling)
-- **React Router v6** (Client-side routing)
-- **Axios** (REST API client middleware)
-- **Tailwind CSS** (Styling theme framework)
-- **@stomp/stompjs** (STOMP WebSocket broker client)
 
-### DevOps & Infrastructure
-- **Docker** & **Docker Compose**
-- **Nginx** (Serving React assets and redirecting routes inside the client container)
-- **PostgreSQL** (Relational database)
+- React 18
+- Vite 5
+- React Router 6
+- Axios
+- Tailwind CSS
+- `@stomp/stompjs`
+- `sockjs-client` dependency is present, though the current WebSocket client uses native STOMP broker URLs.
 
----
+### Infrastructure
 
-## Project Structure
+- Docker
+- Docker Compose
+- Nginx for the production frontend container
+- Vercel SPA rewrites via `frontend/vercel.json`
+- PostgreSQL-compatible hosting such as Neon
+- Backend container hosting such as Render
 
-This directory tree represents the actual codebase structure:
+## High-Level Architecture
 
-```
-LifeOS/
-├── backend/               # Spring Boot Backend Code
-│   ├── src/               # Java Sources & Resources
-│   ├── Dockerfile         # Multi-stage Java Builder & JRE Runner
-│   └── pom.xml            # Maven Dependency Manifest
-├── frontend/              # React Frontend Code
-│   ├── src/               # JS/JSX Components, Pages, Hooks & API layer
-│   ├── Dockerfile         # Vite static builder & Nginx runner
-│   ├── nginx.conf         # Custom Nginx SPA Routing mapping
-│   ├── tailwind.config.js # Tailwind styling theme
-│   └── package.json       # Node Dependency Manifest
-├── docs/                  # Comprehensive Documentation Suite
-│   ├── architecture.md    # Systems Architecture & Communication Diagrams
-│   ├── backend.md         # Backend Modular Packages & Code Layout
-│   ├── frontend.md        # Frontend Layout & Global Auth Context States
-│   ├── docker.md          # Containerization Details
-│   ├── deployment.md      # Production Deployments Guidelines
-│   └── api.md             # Complete REST API Specifications
-├── docker-compose.yml     # Local orchestration manager
-├── LICENSE                # License details
-└── README.md              # Project Overview & Quickstart
+LifeOS is a decoupled web application: the React SPA runs in the browser, calls the Spring Boot REST API through Axios, and opens a STOMP WebSocket connection for private notifications. The backend persists relational data in PostgreSQL and keeps business logic organized by domain package.
+
+```mermaid
+graph TD
+    Browser["Browser"] --> SPA["React + Vite SPA"]
+    SPA --> Axios["Axios API Client"]
+    SPA --> Stomp["STOMP WebSocket Client"]
+    Axios --> API["Spring Boot REST API"]
+    Stomp --> WS["Spring WebSocket Broker"]
+    API --> Services["Domain Services"]
+    WS --> Realtime["NotificationRealtimeService"]
+    Services --> Repositories["Spring Data JPA Repositories"]
+    Repositories --> Postgres[("PostgreSQL")]
+    Realtime --> WS
+    WS --> SPA
 ```
 
----
+For deeper diagrams, see [System Architecture](docs/architecture.md).
 
-## Environment Variables
+## Feature Highlights
 
-Configure these variables inside your local `.env` or container platform settings:
+### Smart Prioritization
 
-### Database & JPA Configuration
-- `DB_URL`: The JDBC database connection string (e.g. `jdbc:postgresql://host:port/database`).
-- `DB_USERNAME`: Database login username.
-- `DB_PASSWORD`: Database login password.
-- `DDL_AUTO`: Hibernate schema sync strategy (defaults to `update`, set to `validate` in production).
-- `SHOW_SQL`: Prints SQL queries in output logs (defaults to `true`, set to `false` in production).
+Tasks are scored using due date proximity, task status, manual priority, and label weight. The backend returns both the computed level and explanations so the UI can show why a task is important.
 
-### Security & Token Settings
-- `JWT_SECRET`: High-entropy secret key used to sign and verify JWT tokens.
-- `JWT_EXPIRATION`: Token lifespan in milliseconds (defaults to `60000000`).
+### OAuth Exchange Code Flow
 
-### Google OAuth2 Settings
-- `GOOGLE_CLIENT_ID`: The Client ID acquired from Google Cloud Console.
-- `GOOGLE_CLIENT_SECRET`: The Client Secret acquired from Google Cloud Console.
+Google OAuth is handled by Spring Security, but the backend does not redirect the final JWT directly in the OAuth callback URL. Instead, it redirects the frontend with a temporary exchange code. The frontend posts that code to `/api/auth/oauth/exchange` and receives the normal JWT session token.
 
-### AI Integration
-- `GEMINI_API_KEY`: API Key to connect to Google Gemini services.
-- `GEMINI_MODEL`: Gemini AI model variant (defaults to `gemini-2.5-flash`).
+### Real-Time Notifications
 
-### Application Origins
-- `FRONTEND_URL`: Public domain URL of the frontend React app, used by the backend to map CORS policies (defaults to `http://localhost:5173`).
+The backend exposes `/ws` as a STOMP endpoint. The frontend authenticates the `CONNECT` frame with the same Bearer token used for REST calls and subscribes to `/user/queue/notifications`.
 
-### Seeder Settings (Local Development)
-- `DEMO_ENABLED`: Enables database seeding with mock data on startup (defaults to `false`).
-- `DEMO_USERS`: Number of user profiles to generate when demo is enabled (defaults to `40`).
-- `TASKS_PER_USER`: Number of mock tasks to generate per user (defaults to `25`).
-- `MAX_FRIENDS`: Maximum number of random friend requests per user (defaults to `8`).
-- `RANDOM_SEED`: Random seed value for reproducible mock data generation (defaults to `42`).
+### Dashboard Aggregation
 
----
+The dashboard is backed by an aggregation service that collects profile, streak, stats, prioritized tasks, upcoming tasks, recent activity, and social presence data for the authenticated user.
 
-## Running Locally
+## Screenshots
+
+Screenshots are stored in [Assets](Assets).
+
+| Dashboard | Task Board | Profile |
+| --- | --- | --- |
+| ![Dashboard](Assets/dashboard.jpeg) | ![Task board](Assets/task_board.jpeg) | ![Profile](Assets/profile.jpeg) |
+
+| Connections | Leaderboard | Activity |
+| --- | --- | --- |
+| ![Connections](Assets/connections_friends.jpeg) | ![Leaderboard](Assets/leaderboard_college.jpeg) | ![Activity](Assets/activity.jpeg) |
+
+## Quick Start
+
+Run the application with Docker Compose:
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+Then open:
+
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+
+Docker Compose expects backend environment variables from a root `.env` file.
+
+## Local Setup
 
 ### Prerequisites
-- Java 21 JDK
-- Node.js (v22+)
-- PostgreSQL instance running locally
 
-### Running Services Independently
+- Java 21
+- Node.js 22 or compatible modern Node runtime
+- npm
+- PostgreSQL
+- Google OAuth credentials, if using Google sign-in
+- Gemini API key, if using AI task generation
 
-#### 1. Start Backend
-Navigate to the `backend` directory, override application variables in `src/main/resources/application.properties` or set them in your environment, and run:
-- **On Linux/macOS**:
-  ```bash
-  ./mvnw spring-boot:run
-  ```
-- **On Windows (PowerShell/CMD)**:
-  ```bash
-  ./mvnw.cmd spring-boot:run
-  ```
+### Backend
 
-#### 2. Start Frontend
-Navigate to the `frontend` directory, ensure a `.env.development` exists with `VITE_API_URL=http://localhost:8080`, and run:
+Create environment variables for the backend, then run:
+
 ```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+On Windows:
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+Required backend variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `DB_URL` | JDBC PostgreSQL URL |
+| `DB_USERNAME` | Database username |
+| `DB_PASSWORD` | Database password |
+| `JWT_SECRET` | HMAC signing secret for JWTs |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `GEMINI_API_KEY` | Google Gemini API key |
+
+Common optional variables:
+
+| Variable | Default |
+| --- | --- |
+| `JWT_EXPIRATION` | `60000000` |
+| `GEMINI_MODEL` | `gemini-2.5-flash` |
+| `FRONTEND_URL` | `http://localhost:5173` |
+| `DDL_AUTO` | `update` |
+| `SHOW_SQL` | `true` |
+| `DEMO_ENABLED` | `false` |
+
+### Frontend
+
+Create `frontend/.env.development`:
+
+```env
+VITE_API_URL=http://localhost:8080
+```
+
+Install and run:
+
+```bash
+cd frontend
 npm install
 npm run dev
 ```
 
----
+## Deployment
 
-## Running with Docker Compose
+The repository supports separate frontend and backend deployment.
 
-Docker Compose coordinates the backend, frontend, and environment variables dynamically.
+- Backend: build and deploy `backend/Dockerfile` to a container platform such as Render.
+- Frontend: deploy `frontend` to Vercel or build `frontend/Dockerfile` and serve via Nginx.
+- Database: provision PostgreSQL, commonly through Neon or another managed PostgreSQL provider.
+- OAuth: configure Google redirect URI as `https://<backend-domain>/login/oauth2/code/google`.
+- CORS: set `FRONTEND_URL` to the exact deployed frontend origin.
+- Frontend API URL: set `VITE_API_URL` at frontend build time.
 
-### 1. Build Containers
-Compiles the Maven JAR and Vite static assets inside build containers:
-```bash
-docker compose build
+See [Deployment](docs/deployment.md) and [Docker](docs/docker.md) for the full workflow and troubleshooting notes.
+
+## Project Structure
+
+```text
+LifeOS/
+|-- backend/                 Spring Boot backend
+|   |-- src/main/java/        Domain packages, controllers, services, repositories
+|   |-- src/main/resources/   Application configuration
+|   |-- src/test/java/        Backend tests
+|   |-- Dockerfile            Backend multi-stage image
+|   `-- pom.xml               Maven dependencies and build
+|-- frontend/                React + Vite frontend
+|   |-- src/                  Pages, components, hooks, API clients, services
+|   |-- Dockerfile            Frontend build and Nginx runtime image
+|   |-- nginx.conf            SPA fallback routing
+|   |-- vercel.json           Vercel rewrite configuration
+|   `-- package.json          Frontend dependencies and scripts
+|-- docs/                    Project documentation
+|-- Assets/                  Screenshots used by documentation
+|-- docker-compose.yml       Local container orchestration
+|-- LICENSE                  MIT license
+`-- README.md                Project landing page
 ```
 
-### 2. Start Services
-Launches the backend and Nginx frontend in the background:
+See [Project Structure](docs/project-structure.md) for package-level detail.
+
+## Roadmap
+
+The following items are consistent with current gaps or extension points in the repository:
+
+- Add CI checks for backend tests, frontend builds, and linting.
+- Add production database migrations instead of relying on Hibernate `ddl-auto`.
+- Expand automated tests around authentication, task prioritization, friends, notifications, and dashboard aggregation.
+- Add operational monitoring and structured production logging.
+- Improve public landing/demo experience once a hosted deployment URL is available.
+- Add rate-limit configuration documentation if Bucket4j-backed limits are expanded beyond the current implementation.
+
+## Future Improvements
+
+- Move from local storage token persistence to a more hardened browser storage strategy if the threat model requires it.
+- Add refresh-token support if longer sessions become a product requirement.
+- Introduce a durable external message broker if WebSocket traffic grows beyond the simple in-memory broker.
+- Add OpenAPI metadata annotations for richer Swagger descriptions.
+- Add seed data and demo-mode documentation for public portfolio demos.
+
+## Contribution Guide
+
+Contributions should keep the project accurate, testable, and easy to maintain.
+
+1. Read [docs/README.md](docs/README.md) and the relevant domain guide before changing code.
+2. Keep backend changes inside the existing domain package unless a new domain is justified.
+3. Keep frontend changes aligned with the existing page/component/hook/API-service structure.
+4. Update documentation when behavior, setup, routes, or environment variables change.
+5. Run the relevant checks before opening a pull request:
+
 ```bash
-docker compose up -d
+cd backend
+./mvnw test
 ```
-The application will be accessible at:
-- **Frontend App**: `http://localhost:5173`
-- **Backend API**: `http://localhost:8080`
 
-### 3. Stop Services
-Stops running containers and clears internal networks:
 ```bash
-docker compose down
+cd frontend
+npm run build
 ```
-
----
-
-## Deployment Summary
-
-1. **Database**: Create a PostgreSQL instance with a provider (e.g. Neon, AWS RDS) and verify SSL.
-2. **Backend**: Host the backend container on a Docker platform. Map the ports and assign the required environment variables.
-3. **Google OAuth**: Add your server domains into Google Console's Redirect URIs (`https://api-domain.com/login/oauth2/code/google`) and Origins (`https://app-domain.com`).
-4. **Frontend Build**: Compile static files with the environment variable `VITE_API_URL` pointing to the public backend domain, then host them with a static provider (e.g. Vercel) or a containerized instance of Nginx.
-5. **SSL**: Map custom domains and enforce HTTPS to enable secure APIs, OAuth callback handshakes, and secure WebSockets (`wss://`).
-
-*For a detailed walkthrough, see [deployment.md](file:///c:/Users/Rishi/Desktop/Program%20related/Projects/LifeOS/docs/deployment.md).*
-
----
 
 ## License
 
-This project is licensed under the MIT License.
+LifeOS is licensed under the [MIT License](LICENSE).

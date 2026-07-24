@@ -1,99 +1,148 @@
-# LifeOS Backend Architecture & Developer Documentation
+# Backend Guide
 
-This document describes the architectural layout, package structures, module responsibilities, components, and security setup of the LifeOS Spring Boot backend monolith.
+This guide explains the LifeOS backend implementation: package organization, request boundaries, persistence patterns, authentication integration, and the main domain modules.
 
----
+## Backend Overview
 
-## Package & Project Structure
+The backend is a Java 21 Spring Boot application under `backend/`. It exposes REST APIs, handles Spring Security authentication, publishes STOMP WebSocket notifications, runs scheduled/statistical services, integrates with Google OAuth and Gemini, and persists data in PostgreSQL through Spring Data JPA.
 
-The LifeOS backend follows a **domain-driven feature structure**. Instead of partitioning classes into generic horizontal layers (e.g., placing all controllers in a global `controllers` package), code is grouped by operational business domains (e.g., `task`, `student`, `friend`, `stats`). This isolates domain context and simplifies code navigation.
+The main package is:
 
-The main codebase is rooted at the package `users.java.LifeOS` under `src/main/java`.
+```text
+users.java.LifeOS
+```
 
-### Domain Packages Map
-- **`auth`**: Security configurations, OAuth2 login handlers, user details services, and JWT helpers.
-- **`user`**: User identity accounts, credentials database layer, and general settings.
-- **`student`**: Student profiles (associated branch, college, bio) and discovery searches.
-- **`branch`**: Academic departments / branch entities and startup metadata seeds.
-- **`task`**: Core task CRUD operations, filters, specifications, and data views.
-- **`task.label`**: Focus labels, customization weights, and default seeder configurations.
-- **`task.prioritization`**: Priority scoring algorithm and explanations engine.
-- **`note`**: Task-linked study notes and annotations.
-- **`activity`**: Behavior analytics logs, timeline endpoints, and heatmap data.
-- **`stats`**: Points accumulation, completions stats, and recalculation engines.
-- **`stats.streak`**: Consecutive daily activity streak tracking and schedulers.
-- **`level`**: XP calculation, milestone progress, and academic leveling-up rules.
-- **`rewards`**: Action points calculator and reward dispatch.
-- **`friend` & `friend.request`**: Friends management, requests validations, and relationships status.
-- **`feed`**: Aggregated social feed of friends' activities.
-- **`dashboard`**: Single-call workspace aggregator compiling current user status.
-- **`insights`**: Activity analytics, weekly trends, and category distribution computations.
-- **`notification`**: User notifications database layer, mark-read APIs, and schedulers.
-- **`websocket`**: Real-time STOMP WebSockets config and authorization channel interceptors.
-- **`taskgeneration`**: AI tasks seeder integrating with the Google Gemini API client.
-- **`exceptions`**: Centralized API exception handler and custom application exceptions.
-- **`util`**: Shared helper entities (e.g., JPA audit logging base class).
+## Package Organization
 
----
+LifeOS uses a package-by-domain structure. Related controllers, services, repositories, DTOs, mappers, and entities live close to the domain they support.
 
-## Component Layers Design
+| Package | Responsibility |
+| --- | --- |
+| `auth` | Security configuration, JWT service, credentials auth, OAuth handlers, user principal, and filters. |
+| `user` | Core user account model and account APIs. |
+| `student` | Student profile creation, updates, public profile views, and discovery search. |
+| `branch` | Academic branch metadata and branch seeding. |
+| `task` | Task CRUD, filtering, status updates, task views, and task statistics. |
+| `task.label` | User-owned labels, default labels, colors, and priority weights. |
+| `task.prioritization` | Task scoring, priority levels, explanation generation, and prioritized task responses. |
+| `taskgeneration` | AI-assisted task generation request handling and Gemini integration. |
+| `note` | Study notes and optional task-linked notes. |
+| `activity` | Activity records, points metadata, and timeline-style activity responses. |
+| `stats` | User stats, rebuild/update services, points counters, and scheduled recalculation. |
+| `stats.streak` | Streak tracking, milestone services, and scheduled streak updates. |
+| `level` | Level and progression calculations. |
+| `rewards` | Reward actions and point calculation. |
+| `friend` | Friendships, relationship status, and friend list operations. |
+| `friend.request` | Incoming/outgoing friend request lifecycle and validation rules. |
+| `feed` | Friend activity feed aggregation. |
+| `leaderboard` | Global, friends, and college leaderboard scopes. |
+| `dashboard` | Aggregated dashboard response for the authenticated user. |
+| `insights` | Productivity summaries, heatmap data, weekly trends, and focus distribution. |
+| `notification` | Notification storage, unread/read APIs, scheduled notifications, and response mapping. |
+| `websocket` | STOMP endpoint configuration, JWT channel interception, and real-time notification dispatch. |
+| `exceptions` | Centralized exception types and API error handling. |
+| `demo` | Optional demo data generation controlled by environment variables. |
+| `util` | Shared base entity timestamp support. |
 
-Within each package, LifeOS adheres to a clean separation of concerns using Spring MVC design layers:
+## Layering Pattern
 
-### 1. Database Entities
-Relational data schemas mapped to Java classes via Jakarta Persistence (JPA).
-- Most entity classes extend `BaseEntity` (located in `users.java.LifeOS.util`), which provides automatic auditing fields (`createdAt`, `updatedAt`) through Spring Data JPA auditing.
-- Primary keys are annotated with `@Id` and generated using identity sequences.
+Most backend domains follow this structure:
 
-### 2. JPA Repositories
-Data access interfaces extending `JpaRepository` or custom JPA Specifications (like `TaskSpecification`).
-- Handle database operations using built-in methods or declarative queries (`@Query`).
+```mermaid
+graph LR
+    Controller["REST Controller"] --> Service["Service"]
+    Service --> Repository["Repository"]
+    Repository --> Entity["JPA Entity"]
+    Entity --> DB[("PostgreSQL")]
+    Service --> Mapper["Mapper / DTO Builder"]
+    Mapper --> Response["DTO / View"]
+```
 
-### 3. Business Services
-Core logic resides within service components annotated with `@Service`.
-- Services coordinate data transitions, enforce business requirements (e.g. validating friend request limits), and operate within transaction boundaries using `@Transactional`.
+| Layer | Role |
+| --- | --- |
+| Controller | Defines HTTP routes, validates input, and delegates business work. |
+| Service | Enforces domain rules, owns transactions, and coordinates repositories/helpers. |
+| Repository | Uses Spring Data JPA for persistence queries. |
+| Entity | Maps the database model with Jakarta Persistence annotations. |
+| DTO/View | Shapes request and response payloads for the frontend. |
+| Mapper | Converts entities into client-safe response models. MapStruct is used where mapper interfaces are present. |
 
-### 4. Data Transfer Objects (DTOs) & Views
-Immutability models representing request inputs and response payloads.
-- **`*Dto`**: Used to capture incoming requests, bound to JSR-380 validation annotations (`@Valid`, `@NotBlank`, `@Size`).
-- **`*View` / `*Response`**: Output DTO representations customized for the client UI to prevent leakage of internal database structures.
+## Core Backend Systems
 
-### 5. Object Mappers
-Performance mapping layers converting internal Entities to client DTOs.
-- Handled cleanly using **MapStruct** (interfaces suffixed with `*Mapper` compiled into optimized conversion classes).
+### Authentication and Authorization
 
-### 6. Rest Controllers
-Endpoints exposing endpoints using `@RestController` and `@RequestMapping`.
-- Controllers handle HTTP status bindings, path/query variables parsing, inputs validation checks, and delegate actions to services.
+`SecurityConfig` defines a stateless Spring Security chain. Public routes include `/api/auth/**`, OAuth endpoints, `/ws`, Swagger UI, and OpenAPI docs. Other routes require authentication.
 
----
+`JwtAuthenticationFilter` extracts Bearer tokens from HTTP requests and asks `JwtService` to parse, validate, and map them to a Spring Security principal.
 
-## Core Operational Modules
+See [Authentication](authentication.md) for the complete lifecycle.
 
-### 1. Authentication & Identity Context
-- **Security Chain (`auth.config.SecurityConfig`)**: Exposes public login, registration, websocket, and Swagger endpoints while enforcing bearer token verification on all other paths.
-- **JWT Authorization (`auth.filters.JwtAuthenticationFilter`)**: Intercepts requests, extracts JWT bearer tokens, validates claims via `JwtService`, and populates the `SecurityContextHolder`.
-- **Google OAuth2 Login**:
-  - `CustomOAuth2UserService` maps Google user attributes.
-  - `CustomOAuth2SuccessHandler` generates a temporary OAuth code and redirects to the frontend with it.
-  - `OAuthExchangeController` exposes a public endpoint to consume the code and issue the long-lived JWT.
+### Task and Prioritization Domain
 
-### 2. Task Prioritization Engine
-LifeOS calculates a priority score ($S$) for active tasks using `TaskPriorityCalculator`. The system weights the following attributes:
-- **Deadlines**: Tasks nearing their due dates receive higher scores. Overdue tasks trigger additional score boosts.
-- **Manual Priority**: Explicit priorities (e.g. High, Medium, Low) scale the base priority.
-- **Label Weight**: Labels carry numeric priority values configured by the student, affecting the task ranking.
-- **Calculated Results**: The algorithm produces a `SmartPriorityLevel` and a list of human-readable explanations (`PriorityResult`) clarifying why the task is ranked at that position.
+Task management is centered on `Task`, `TaskService`, `TaskController`, and supporting DTO/view classes. Smart prioritization is separated into `task.prioritization`, where `TaskPriorityCalculator` scores tasks using:
 
-### 3. Gamification System (Streaks, Levels & Rewards)
-- **Streaks (`stats.streak.StreakService`)**: Daily job checking for recent user activity. If the user completes a task or logs in, the streak is maintained; otherwise, it is reset.
-- **Levels (`level.LevelService`)**: XP increases on task completions. Level thresholds are determined in `LevelProgressionService` using exponential growth curves.
-- **Rewards (`rewards.RewardService`)**: Actions (like completing tasks, maintaining streaks) trigger points dispatch via `RewardCalculator` which maps directly to the active `UserStats`.
+- Due date proximity and overdue state.
+- Current task status.
+- Manual priority.
+- Label priority weight.
 
-### 4. AI-Powered Task Generation
-- **Gemini Client (`taskgeneration.gemini.GeminiClient`)**: Dispatches tasks generation requests to Google's Gemini models using an API key environment variable.
-- **Prompt Construction (`taskgeneration.ai.TaskGenerationPromptBuilder`)**: Accepts student focus inputs and structures prompts instructing Gemini to output structured JSON matching `GeneratedTaskDraft`.
+The calculator returns a score, a `SmartPriorityLevel`, and human-readable reasons.
 
-### 5. WebSockets Message Broker
-- **STOMP Configuration (`websocket.WebSocketConfig`)**: Maps the connection endpoint `/ws` and enables a simple message broker routing traffic on `/topic` and `/queue`.
-- **JWT Handshake Interceptor (`websocket.JwtChannelInterceptor`)**: Extracts JWT credentials from STOMP connection headers during the initial WebSocket handshake to authenticate the user session.
+### Profile, Social, and Accountability
+
+Student profiles extend user accounts with academic metadata. Friend requests and friendships are modeled separately so the system can represent pending requests independently from accepted relationships. Leaderboards and social feeds build on stats, friend relationships, and activity data.
+
+### Dashboard and Insights
+
+The dashboard service aggregates several backend domains into a single response for the main workspace. Insights services expose trend, timeline, heatmap, and focus-distribution data used by the activity UI.
+
+### Notifications and WebSockets
+
+Notifications are persisted in the `notifications` table and can also be pushed to online users through `NotificationRealtimeService`. WebSocket authentication is handled during the STOMP `CONNECT` frame by `JwtChannelInterceptor`.
+
+See [WebSockets](websocket.md).
+
+### AI-Assisted Task Generation
+
+The `taskgeneration` package contains the request controller, prompt-building logic, an AI client interface, and a Gemini-backed implementation. The Gemini model and API key are supplied through environment variables.
+
+## Configuration
+
+Backend configuration is stored in `backend/src/main/resources/application.properties` and reads environment variables for database, JWT, OAuth, Gemini, frontend origin, and demo-data settings.
+
+| Area | Variables |
+| --- | --- |
+| Database | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `DDL_AUTO`, `SHOW_SQL` |
+| Security | `JWT_SECRET`, `JWT_EXPIRATION` |
+| Google OAuth | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
+| Gemini | `GEMINI_API_KEY`, `GEMINI_MODEL` |
+| Frontend/CORS | `FRONTEND_URL` |
+| Demo data | `DEMO_ENABLED`, `DEMO_USERS`, `TASKS_PER_USER`, `MAX_FRIENDS`, `RANDOM_SEED` |
+
+## Testing
+
+Backend tests live under `backend/src/test/java`. Run them with:
+
+```bash
+cd backend
+./mvnw test
+```
+
+On Windows:
+
+```powershell
+cd backend
+.\mvnw.cmd test
+```
+
+## Related Documentation
+
+- [System Architecture](architecture.md)
+- [API Guide](api.md)
+- [Authentication](authentication.md)
+- [Database](database.md)
+- [Engineering Decisions](engineering-decisions.md)
+
+## Conclusion
+
+The backend is organized as a modular monolith: one deployable Spring Boot service, but with clear domain boundaries. That keeps local development and deployment simple while preserving enough structure for future maintainers to reason about each feature area independently.

@@ -1,168 +1,202 @@
-# LifeOS System Architecture
+# System Architecture
 
-This document describes the high-level architecture, communication protocols, authentication lifecycles, and request execution paths for the LifeOS application.
+This document explains how LifeOS is assembled at a system level: the browser client, REST API, WebSocket broker, security flow, business modules, and PostgreSQL database.
 
----
+## Overview
 
-## High-Level Architecture
-
-LifeOS uses a decoupled client-server architecture:
-- **Frontend SPA**: A single-page application built with React, Vite, and Tailwind CSS.
-- **Backend Service**: A modular monolith built with Java 21, Spring Boot, and Spring Security.
-- **Database**: A PostgreSQL database for persistent relational storage.
-- **Real-time Engine**: Native WebSockets running the STOMP message protocol.
+LifeOS uses a decoupled client-server architecture. The frontend is a React single-page application built with Vite. The backend is a Spring Boot modular monolith that exposes REST APIs, handles authentication, runs domain services, publishes WebSocket notifications, and persists data through Spring Data JPA.
 
 ```mermaid
 graph TD
-    Browser["Web Browser (User Interface)"]
-    React["React SPA (Client-side UI & State)"]
-    Axios["Axios (REST API Client)"]
-    STOMP["STOMP / WebSockets (Real-time Broker client)"]
-    SpringBoot["Spring Boot App (Backend Server)"]
-    Postgres["PostgreSQL Database"]
-
-    Browser <--> React
-    React <--> Axios
-    React <--> STOMP
-    Axios <--> SpringBoot
-    STOMP <--> SpringBoot
-    SpringBoot <--> Postgres
+    User["Student in Browser"] --> React["React SPA"]
+    React --> Router["React Router"]
+    React --> Axios["Axios Client"]
+    React --> Stomp["STOMP Client"]
+    Axios --> Security["Spring Security Filter Chain"]
+    Security --> Controllers["REST Controllers"]
+    Controllers --> Services["Domain Services"]
+    Services --> Repositories["JPA Repositories"]
+    Repositories --> Database[("PostgreSQL")]
+    Services --> Realtime["NotificationRealtimeService"]
+    Stomp --> Broker["Spring Simple STOMP Broker"]
+    Realtime --> Broker
+    Broker --> React
 ```
 
----
+## Core Components
 
-## Authentication Lifecycle (JWT)
+| Component | Implementation | Responsibility |
+| --- | --- | --- |
+| Frontend SPA | `frontend/src` | Pages, protected routing, dashboard, task workspace, profile, social, notifications, and API clients. |
+| REST API | `backend/src/main/java/users/java/LifeOS` | Domain endpoints for auth, tasks, labels, notes, profile, friends, stats, insights, dashboard, and notifications. |
+| Security | `auth.config`, `auth.filters`, `auth.oauth` | JWT validation, stateless Spring Security, credentials login, and Google OAuth exchange. |
+| WebSockets | `websocket` | STOMP endpoint `/ws`, JWT-authenticated `CONNECT`, and private notification queues. |
+| Persistence | JPA entities and repositories | PostgreSQL-backed data model for users, profiles, tasks, labels, notes, activity, friends, stats, and notifications. |
+| AI integration | `taskgeneration` | Google Gemini-backed task draft generation. |
 
-LifeOS uses stateless JWT-based authorization. When users register or log in with credentials, they receive a JWT that must be sent in the `Authorization` header of subsequent API calls.
+## Request Lifecycle
+
+Protected HTTP requests use the same bearer token model across domains.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Student
-    participant FE as React Frontend
-    participant Filter as Security Filter (JwtAuthenticationFilter)
-    participant AuthC as AuthController
-    participant AuthM as AuthenticationManager
-    participant JwtS as JwtService
-    participant DB as PostgreSQL Database
+    participant UI as React UI
+    participant Axios as Axios Client
+    participant Filter as JwtAuthenticationFilter
+    participant Security as SecurityContext
+    participant Controller as REST Controller
+    participant Service as Domain Service
+    participant Repo as JPA Repository
+    participant DB as PostgreSQL
 
-    User->>FE: Enters email & password, clicks login
-    FE->>Filter: POST /api/auth/login
-    Note over Filter: Path /api/auth/** is permitted in SecurityConfig. Passes through.
-    Filter->>AuthC: Invokes login(LoginDto)
-    AuthC->>AuthM: authenticate(UsernamePasswordAuthenticationToken)
-    AuthM->>DB: Loads user details & validates Bcrypt hash
-    DB-->>AuthM: User details matching
-    AuthM-->>AuthC: Authentication successful
-    AuthC->>JwtS: generateToken(User)
-    JwtS-->>AuthC: JWT Token (String)
-    AuthC-->>FE: Return LoginResponse (JWT Token + User details)
-    FE->>FE: Store JWT in LocalStorage (token key)
-    Note over FE, User: Redirects to /dashboard
+    UI->>Axios: Trigger API action
+    Axios->>Filter: HTTP request with Authorization: Bearer token
+    Filter->>Filter: Extract and validate JWT
+    Filter->>Security: Set authenticated principal
+    Security->>Controller: Continue request
+    Controller->>Service: Delegate business operation
+    Service->>Repo: Query or persist entities
+    Repo->>DB: SQL through Hibernate
+    DB-->>Repo: Result set
+    Repo-->>Service: Entity or projection
+    Service-->>Controller: DTO or view model
+    Controller-->>Axios: JSON response
+    Axios-->>UI: Update UI state
 ```
 
----
+## Backend Component Interaction
 
-## Google OAuth2 Exchange Flow
+The backend follows a package-by-domain structure. Within each domain, controllers delegate to services, services coordinate repositories and domain helpers, and mappers shape entities into DTOs or views.
 
-LifeOS implements social authentication using Google Sign-In, integrated into the Spring Security OAuth2 login filter chain. Rather than sending credentials directly to the frontend, a secure redirection-exchange protocol is implemented.
+```mermaid
+graph LR
+    Controller["Controller"] --> DTO["Request DTO / Query Params"]
+    DTO --> Service["Service"]
+    Service --> DomainLogic["Domain Rules"]
+    Service --> Repository["Repository"]
+    Repository --> Entity["JPA Entity"]
+    Entity --> Database[("PostgreSQL")]
+    Service --> Mapper["Mapper / Response Builder"]
+    Mapper --> Response["Response DTO / View"]
+```
+
+## JWT Authentication Flow
+
+Credentials-based login creates the same JWT session format that OAuth exchange eventually produces.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Student
+    actor User
     participant FE as React Frontend
-    participant SpringSec as Spring Security (OAuth2 Login)
-    participant Google as Google Auth Servers
+    participant Auth as AuthController
+    participant Manager as AuthenticationManager
+    participant Users as UserDetailsService
+    participant JWT as JwtService
+    participant DB as PostgreSQL
+
+    User->>FE: Submit email and password
+    FE->>Auth: POST /api/auth/login
+    Auth->>Manager: Authenticate credentials
+    Manager->>Users: Load user by email
+    Users->>DB: Read user account
+    DB-->>Users: User record
+    Manager-->>Auth: Authentication success
+    Auth->>JWT: Generate signed JWT
+    JWT-->>Auth: Token with subject and userId claim
+    Auth-->>FE: JWT response
+    FE->>FE: Store token under lifeos_jwt_token
+```
+
+## Google OAuth Flow
+
+LifeOS uses Spring Security OAuth2 login with a custom success handler. The success handler redirects the frontend with a temporary exchange code instead of putting the final JWT in the redirect URL.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant FE as React Frontend
+    participant Spring as Spring OAuth2 Login
+    participant Google as Google OAuth
+    participant UserService as CustomOAuth2UserService
     participant Success as CustomOAuth2SuccessHandler
-    participant CodeS as OAuthCodeService
+    participant Code as OAuthCodeService
     participant Exchange as OAuthExchangeController
-    participant JwtS as JwtService
-    participant DB as PostgreSQL Database
+    participant JWT as JwtService
 
-    User->>FE: Clicks "Sign in with Google"
-    FE->>SpringSec: Redirect to /oauth2/authorization/google
-    SpringSec->>Google: Redirects to Google consent screen
-    Google-->>User: Show consent prompt
-    User->>Google: Grant permissions
-    Google-->>SpringSec: Redirect with Auth Authorization Code to /login/oauth2/code/google
-    SpringSec->>Google: Exchange code for Access Token
-    Google-->>SpringSec: Google Access Token & User Profile Info
-    SpringSec->>DB: Check if user exists (creates if missing in CustomOAuth2UserService)
-    SpringSec->>Success: Trigger onAuthenticationSuccess
-    Success->>CodeS: Generate temporary OAuth Exchange Code (valid 5 min)
-    CodeS-->>Success: One-time Code
-    Success-->>FE: Redirect client to /oauth-success?code=<code>
-    FE->>FE: Read "code" query param
-    FE->>Exchange: POST /api/auth/oauth/exchange with {"code": "<code>"}
-    Exchange->>CodeS: Consume & validate code
-    CodeS-->>Exchange: Returns userId
-    Exchange->>DB: Retrieve User details
-    Exchange->>JwtS: generateToken(User)
-    JwtS-->>Exchange: JWT Token
-    Exchange-->>FE: Return OAuthExchangeResponse with {"token": "<jwt>"}
-    FE->>FE: Complete Login (save token in LocalStorage)
+    User->>FE: Click Google sign-in
+    FE->>Spring: Navigate to /oauth2/authorization/google
+    Spring->>Google: Redirect to Google consent
+    Google-->>Spring: Callback to /login/oauth2/code/google
+    Spring->>UserService: Load or create local user
+    Spring->>Success: Authentication success
+    Success->>Code: Create short-lived exchange code
+    Success-->>FE: Redirect to /oauth-success?code=...
+    FE->>Exchange: POST /api/auth/oauth/exchange
+    Exchange->>Code: Consume exchange code
+    Exchange->>JWT: Generate application JWT
+    Exchange-->>FE: Return token
 ```
 
----
+## WebSocket Communication
 
-## WebSocket Notification Lifecycle
-
-Real-time capabilities (like instant friend alerts or milestone notifications) run over STOMP WebSockets. A custom Spring Message `ChannelInterceptor` extracts the JWT to authorize connection handshakes before subscription.
+WebSocket notifications reuse JWT identity during the STOMP `CONNECT` frame. The backend binds the authenticated principal to the session and sends private notifications through `/user/queue/notifications`.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Student
-    participant FE as React Frontend
-    participant WS as WebSocket Config / STOMP Broker
+    participant FE as React STOMP Client
+    participant WS as /ws Endpoint
     participant Interceptor as JwtChannelInterceptor
-    participant JwtS as JwtService
-    participant Realtime as NotificationRealtimeService
+    participant JWT as JwtService
+    participant Broker as Simple Broker
+    participant Service as NotificationRealtimeService
 
-    FE->>WS: Connect to /ws (Authorization Bearer Header)
-    WS->>Interceptor: Intercept CONNECT Command
-    Interceptor->>JwtS: Extract & validate JWT
-    JwtS-->>Interceptor: Valid username
-    Interceptor->>WS: Authenticate user details session
-    WS-->>FE: CONNECTED ACK
-    FE->>WS: Subscribe to /user/queue/notifications
-    Note over FE: Listening for real-time notifications
-    Note over Realtime, WS: Event occurs (e.g. friend request accepted)
-    Realtime->>WS: sendPrivateNotification(userId, NotificationPayload)
-    WS-->>FE: Pushes Notification payload on /user/queue/notifications
-    FE->>User: Shows UI toast / increments notification badge
+    FE->>WS: CONNECT with Authorization header
+    WS->>Interceptor: Intercept CONNECT frame
+    Interceptor->>JWT: Validate token
+    JWT-->>Interceptor: Email subject is valid
+    Interceptor->>WS: Set authenticated principal
+    WS-->>FE: CONNECTED
+    FE->>Broker: Subscribe /user/queue/notifications
+    Service->>Broker: convertAndSendToUser(email, /queue/notifications, payload)
+    Broker-->>FE: Private notification payload
 ```
 
----
+## Deployment Architecture
 
-## Request Lifecycle (Spring Boot)
-
-Every API request targeting a protected route passes through a structured execution pipeline:
+The repository supports independent frontend, backend, and database deployment. Current files support Vercel-style SPA rewrites for the frontend, Docker image builds for both apps, and PostgreSQL through environment variables.
 
 ```mermaid
 graph TD
-    Client["Client App (React Axios)"] --> CORS["CORS & CSRF Filters"]
-    CORS --> SecurityFilter["JwtAuthenticationFilter (Verify JWT in Header)"]
-    SecurityFilter --> Context["SecurityContextHolder (Set Auth details)"]
-    Context --> Controller["Controller (e.g. TaskController)"]
-    Controller --> Validation["JSR 380 Validation (@Valid DTO)"]
-    Validation --> Service["Service layer (@Service, @Transactional)"]
-    Service --> Repository["Repository layer (Spring Data JPA)"]
-    Repository --> DB["PostgreSQL Database"]
-    DB --> Repository
-    Repository --> Service
-    Service --> Mapper["MapStruct Mapper (Entity -> DTO View)"]
-    Mapper --> Controller
-    Controller --> ClientResponse["ResponseEntity (JSON Payload + Status)"]
-    ClientResponse --> Client
+    Browser["Browser"] --> Vercel["Frontend Host (Vercel or Nginx Container)"]
+    Browser --> Render["Backend Host (Render or Docker Platform)"]
+    Vercel --> Browser
+    Render --> Neon[("PostgreSQL / Neon")]
+    Render --> GoogleOAuth["Google OAuth"]
+    Render --> Gemini["Google Gemini API"]
+    Browser --> WebSocket["wss:// backend /ws"]
+    WebSocket --> Render
 ```
 
-1. **CORS & Security Configurations**: Validates request headers and checks allowed origins.
-2. **JwtAuthenticationFilter**: If an `Authorization` header is present with a `Bearer ` token, it extracts and validates the token. If valid, the security context is updated.
-3. **Security Context Guard**: Matches the request URI against the filter chain configuration. If the path requires authentication, it asserts that the authentication token is present in the session context.
-4. **Controller Handling**: Routes requests to the designated mapping methods, executing JSR-380 binding validations (`@Valid`) on incoming bodies.
-5. **Business Services**: Controllers delegate logic to services, running within transactional boundaries (`@Transactional`).
-6. **Persistence Repositories**: Services execute DB actions using Spring Data JPA.
-7. **Mapping Layer**: Maps internal Database Entities to clean View DTOs using MapStruct converters.
-8. **REST Response**: The controller returns a `ResponseEntity` serializing the DTO as a JSON body back to the client.
+## Architectural Boundaries
+
+- The frontend owns client-side routing, presentation state, route guards, API orchestration, and user-facing workflows.
+- The backend owns authentication, authorization, persistence, business rules, score calculation, notification creation, and data aggregation.
+- PostgreSQL owns durable relational state.
+- Swagger/OpenAPI is generated from the running backend rather than hand-maintained as duplicated endpoint documentation.
+
+## Related Documentation
+
+- [Backend Guide](backend.md)
+- [Frontend Guide](frontend.md)
+- [Authentication](authentication.md)
+- [WebSockets](websocket.md)
+- [Database](database.md)
+- [Engineering Decisions](engineering-decisions.md)
+
+## Conclusion
+
+LifeOS is intentionally structured as a deployable full-stack system rather than a single-process prototype. Its strongest architectural throughline is separation of concerns: a browser-based SPA, a domain-oriented Spring Boot API, stateless identity, real-time notifications, and PostgreSQL persistence.
