@@ -9,11 +9,14 @@ import users.java.LifeOS.demo.context.DemoContext;
 import users.java.LifeOS.demo.context.GeneratedUser;
 import users.java.LifeOS.demo.generators.FriendshipGenerator;
 import users.java.LifeOS.demo.generators.LabelGenerator;
+import users.java.LifeOS.demo.generators.TaskGenerator;
 import users.java.LifeOS.demo.generators.UserGenerator;
 import users.java.LifeOS.friend.Friendship;
 import users.java.LifeOS.friend.FriendshipRepository;
 import users.java.LifeOS.stats.UserStatsRepository;
 import users.java.LifeOS.student.StudentRepository;
+import users.java.LifeOS.task.Task;
+import users.java.LifeOS.task.TaskRepository;
 import users.java.LifeOS.task.label.Label;
 import users.java.LifeOS.task.label.LabelRepository;
 import users.java.LifeOS.user.UserRepository;
@@ -28,12 +31,14 @@ public class DemoDataRunner implements CommandLineRunner {
     private final UserGenerator userGenerator;
     private final FriendshipGenerator friendshipGenerator;
     private final LabelGenerator labelGenerator;
+    private final TaskGenerator taskGenerator;
 
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final UserStatsRepository userStatsRepository;
     private final FriendshipRepository friendshipRepository;
     private final LabelRepository labelRepository;
+    private final TaskRepository taskRepository;
 
     @Override
     @Transactional
@@ -56,17 +61,20 @@ public class DemoDataRunner implements CommandLineRunner {
 
         friendshipGenerator.generate(context);
         labelGenerator.generate(context);
+        taskGenerator.generate(context);
 
         saveStudents(context.getUsers());
         saveStats(context.getUsers());
         saveFriendships(context.getFriendships());
         saveLabels(context.getLabels());
+        saveTasks(context.getTasks());
 
         System.out.printf(
-                "Generated %d demo users, %d friendships, and %d labels%n",
+                "Generated %d demo users, %d friendships, %d labels, and %d tasks%n",
                 context.getUsers().size(),
                 context.getFriendships().size(),
-                context.getLabels().size()
+                context.getLabels().size(),
+                context.getTasks().size()
         );
     }
 
@@ -100,5 +108,9 @@ public class DemoDataRunner implements CommandLineRunner {
 
     private void saveLabels(List<Label> labels) {
         labelRepository.saveAll(labels);
+    }
+
+    private void saveTasks(List<Task> tasks) {
+        taskRepository.saveAll(tasks);
     }
 }

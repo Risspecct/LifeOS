@@ -17,6 +17,10 @@ public class DemoConfiguration {
 
     private int tasksPerUser = 25;
 
+    private int taskMin = 15;
+
+    private int taskMax = 30;
+
     private int maxFriends = 8;
 
     private int friendMin = 4;
