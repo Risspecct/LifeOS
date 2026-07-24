@@ -1,6 +1,11 @@
 import { Client } from "@stomp/stompjs";
+import { API_BASE_URL } from "../config/api";
 
 let stompClient = null;
+
+const wsBaseUrl = API_BASE_URL
+    ?.replace(/^http/, "ws")
+    .replace(/\/$/, "");
 
 export const connectWebSocket = (
     token,
@@ -11,7 +16,7 @@ export const connectWebSocket = (
 
     stompClient = new Client({
 
-        brokerURL: "ws://localhost:8080/ws",
+        brokerURL: `${wsBaseUrl}/ws`,
 
         connectHeaders: {
             Authorization: `Bearer ${token}`

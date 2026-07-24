@@ -1,12 +1,10 @@
 import axios from "axios";
 import { AUTH_TOKEN_KEY } from "../utils/constants";
-
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+import { API_BASE_URL } from "../config/api";
 
 const apiClient = axios.create({
-  // Use Vite proxy in development to avoid CORS blocking.
-  // In production, set VITE_API_BASE_URL to your backend origin.
-  baseURL: API_BASE_URL || "/",
+  baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json"
   }

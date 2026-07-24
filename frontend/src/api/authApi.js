@@ -1,4 +1,5 @@
-import apiClient, { API_BASE_URL } from "./axiosClient";
+import apiClient from "./axiosClient";
+import { API_BASE_URL } from "../config/api";
 
 export const signup = async (payload) => {
   console.log("[AuthAPI] signup called with payload:", payload);
